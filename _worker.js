@@ -5,6 +5,34 @@ const SITE = {
     "Toumyou LLC is an independent digital studio in Japan for brand identities, animation, WeChat mini-programs, websites, software, and AI workflows.",
 };
 
+const SHOP = {
+  name: "Toumyou Fastener Supply",
+  description:
+    "Cross-border fastener and industrial accessory sourcing from Japan and Asia, built for small-batch buyers, distributors, and product teams.",
+  categories: [
+    {
+      name: "Hex bolts and socket screws",
+      slug: "hex-bolts-socket-screws",
+      summary: "Metric bolts, socket head cap screws, set screws, and machine screws for assembly, repair, and OEM projects.",
+    },
+    {
+      name: "Nuts, washers, and threaded inserts",
+      slug: "nuts-washers-inserts",
+      summary: "Hex nuts, lock nuts, flat washers, spring washers, inserts, and related threaded components.",
+    },
+    {
+      name: "Stainless, alloy, and specialty parts",
+      slug: "stainless-alloy-specialty",
+      summary: "Corrosion-resistant stainless parts, high-strength alloy fasteners, custom finishes, and hard-to-source specifications.",
+    },
+    {
+      name: "Industrial accessories",
+      slug: "industrial-accessories",
+      summary: "Brackets, clips, anchors, pins, rivets, tools, and complementary hardware for procurement bundles.",
+    },
+  ],
+};
+
 const encoder = new TextEncoder();
 
 function html(body, init = {}) {
@@ -148,7 +176,7 @@ function shell({ title, description, path = "/", content, schema }) {
   ${schema ? `<script type="application/ld+json">${JSON.stringify(schema)}</script>` : ""}
 </head>
 <body>
-  <header><a class="brand" href="/">TOUMYOU<span>®</span></a><nav><a class="nav" href="/#portfolio">Portfolio</a><a class="nav" href="/#about">About</a><a class="nav" href="/articles">Insights</a><a class="nav" href="/#contact">Contact</a><a class="nav nav-admin" href="/admin">Editor</a></nav></header>
+  <header><a class="brand" href="/">TOUMYOU<span>®</span></a><nav><a class="nav" href="/#portfolio">Portfolio</a><a class="nav" href="/#about">About</a><a class="nav" href="/shop">Shop</a><a class="nav" href="/articles">Insights</a><a class="nav" href="/#contact">Contact</a><a class="nav nav-admin" href="/admin">Editor</a></nav></header>
   ${content}
   <footer><span>© ${new Date().getFullYear()} Toumyou LLC</span><span>Designed for clarity and useful digital work.</span></footer>
 </body>
@@ -163,7 +191,7 @@ async function home(env) {
       <p class="eyebrow">Independent digital studio, Japan</p>
       <h1>Make the next<br><em>clear move.</em></h1>
       <p class="lead">Toumyou builds brand, web, software, and AI systems for teams that need useful digital work.</p>
-      <div class="toolbar"><a class="btn" href="#contact">Start a conversation</a><a class="btn secondary" href="/articles">Read insights</a></div>
+      <div class="toolbar"><a class="btn" href="#contact">Start a conversation</a><a class="btn secondary" href="/shop">Visit fastener shop</a><a class="btn secondary" href="/articles">Read insights</a></div>
       <div class="hero-note">Design, development and digital business</div>
     </section>
     <section class="section">
@@ -182,8 +210,8 @@ async function home(env) {
       <h2>Digital work with<br>a point of view.</h2>
       <div class="service-grid">
         <article><span>Web platforms</span><h3>First impressions that keep earning attention.</h3><p>Fast, expressive websites for teams that need clarity, performance, and a strong public presence.</p></article>
+        <article><span>Cross-border shop</span><h3>Fasteners and industrial accessories for global buyers.</h3><p>A new commerce channel for metric screws, bolts, nuts, washers, and sourcing support.</p></article>
         <article><span>Product design</span><h3>Interfaces people can move through with confidence.</h3><p>Design systems, flows, and product surfaces shaped around the actual decision in front of the user.</p></article>
-        <article><span>Software and AI</span><h3>Focused tools for work that should feel lighter.</h3><p>Automations, internal tools, and AI-assisted workflows built to solve a real operating problem.</p></article>
       </div>
     </section>
     <section id="portfolio" class="section">
@@ -274,6 +302,81 @@ async function article(env, slug) {
   }));
 }
 
+function shopPage(env) {
+  const medusaUrl = env.MEDUSA_BACKEND_URL || "";
+  const checkoutStatus = env.STRIPE_SECRET_KEY || env.STRIPE_RESTRICTED_KEY ? "Payment gateway ready for Stripe configuration." : "Payment gateway pending merchant configuration.";
+  const categoryCards = SHOP.categories
+    .map(
+      (item) => `<article class="article-card"><div class="meta">Catalog / ${escapeHtml(item.slug)}</div><h3>${escapeHtml(item.name)}</h3><p>${escapeHtml(item.summary)}</p><b>Request quote</b></article>`,
+    )
+    .join("");
+  const content = `<main>
+    <section class="hero">
+      <p class="eyebrow">Cross-border fastener supply</p>
+      <h1>Fasteners,<br><em>without friction.</em></h1>
+      <p class="lead">${escapeHtml(SHOP.description)}</p>
+      <div class="toolbar"><a class="btn" href="mailto:sunflyerjp@gmail.com?subject=Fastener%20quote%20request">Request a quote</a><a class="btn secondary" href="#catalog">View catalog</a></div>
+      <div class="hero-note">Bolts, screws, nuts, washers and sourcing support</div>
+    </section>
+    <section id="catalog" class="section">
+      <p class="eyebrow">Product direction</p>
+      <h2>A practical catalog<br>for global hardware buyers.</h2>
+      <div class="intro-strip">
+        <p>The store is being prepared for a mature headless commerce backend, with product management, orders, customers, and payment handled outside the static page layer. This Cloudflare site will remain the fast public storefront.</p>
+        <ul>
+          <li>Metric and inch fastener categories</li>
+          <li>Small-batch procurement and distributor supply</li>
+          <li>Stripe / PayPal checkout route after merchant setup</li>
+        </ul>
+      </div>
+      <div class="article-grid">${categoryCards}</div>
+    </section>
+    <section class="section">
+      <p class="eyebrow">Commerce system</p>
+      <h2>Built to connect<br>with Medusa.</h2>
+      <div class="service-grid">
+        <article><span>Backend</span><h3>Medusa commerce admin.</h3><p>Recommended mature GitHub project: medusajs/medusa for catalog, orders, customers, regions, and payment providers.</p></article>
+        <article><span>Storefront</span><h3>Cloudflare stays fast.</h3><p>This site can consume a Medusa Store API when the backend URL is configured as MEDUSA_BACKEND_URL.</p></article>
+        <article><span>Payments</span><h3>${escapeHtml(checkoutStatus)}</h3><p>Use Stripe Checkout first for safer cross-border card payment rollout, then add PayPal or bank-transfer flows if needed.</p></article>
+      </div>
+      <div class="notice" style="margin-top:34px">
+        <strong>Current integration status:</strong>
+        ${medusaUrl ? `Backend URL configured: ${escapeHtml(medusaUrl)}` : "Backend URL not configured yet. After Medusa is deployed, add MEDUSA_BACKEND_URL in Cloudflare Pages environment variables."}
+      </div>
+    </section>
+    <section class="contact">
+      <div class="contact-grid">
+        <div><p class="eyebrow">Start procurement</p><h2>Send the size,<br>material and quantity.</h2><a href="mailto:sunflyerjp@gmail.com?subject=Fastener%20quote%20request" class="contact-mail">sunflyerjp@gmail.com</a></div>
+        <ul class="contact-list">
+          <li><span>Examples</span><p class="address">M3–M24 screws, stainless bolts, nuts, washers, anchors, pins, rivets, clips, brackets, and custom hardware.</p></li>
+          <li><span>Markets</span><p class="address">Japan, Asia, North America, Europe, and cross-border B2B buyers.</p></li>
+          <li><span>Next</span><p class="address">Configure Medusa backend, upload SKU catalog, connect Stripe, then turn quote cards into checkout products.</p></li>
+        </ul>
+      </div>
+    </section>
+  </main>`;
+  return html(shell({
+    title: "Fastener Shop | Toumyou",
+    description: SHOP.description,
+    path: "/shop",
+    content,
+    schema: {
+      "@context": "https://schema.org",
+      "@type": "Store",
+      name: SHOP.name,
+      url: `${SITE.url}/shop`,
+      description: SHOP.description,
+      email: "sunflyerjp@gmail.com",
+      parentOrganization: { "@type": "Organization", name: "Toumyou LLC" },
+      makesOffer: SHOP.categories.map((item) => ({
+        "@type": "Offer",
+        itemOffered: { "@type": "Product", name: item.name, description: item.summary },
+        availability: "https://schema.org/PreOrder",
+      })),
+    },
+  }));
+}
+
 function adminPage() {
   const content = `<main class="admin-wrap"><h1>Editor</h1><p class="lead">Create, publish, and update Toumyou articles.</p>
     <div id="app" class="notice">Loading...</div>
@@ -328,7 +431,7 @@ async function handleApi(request, env, pathname) {
 
 async function sitemap(env) {
   const posts = await listPublished(env);
-  const urls = ["/", "/articles", ...posts.map((p) => `/articles/${p.slug}`)];
+  const urls = ["/", "/shop", "/articles", ...posts.map((p) => `/articles/${p.slug}`)];
   return new Response(`<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${urls.map((u) => `<url><loc>${SITE.url}${u}</loc></url>`).join("")}</urlset>`, {
     headers: { "content-type": "application/xml; charset=utf-8", "cache-control": "no-store, no-cache, must-revalidate" },
   });
@@ -341,6 +444,7 @@ export default {
     if (url.pathname === "/sitemap.xml") return sitemap(env);
     if (url.pathname.startsWith("/api/")) return handleApi(request, env, url.pathname);
     if (url.pathname === "/") return home(env);
+    if (url.pathname === "/shop") return shopPage(env);
     if (url.pathname === "/articles") return articles(env);
     if (url.pathname.startsWith("/articles/")) return article(env, decodeURIComponent(url.pathname.split("/").pop()));
     if (url.pathname === "/admin") return adminPage();
