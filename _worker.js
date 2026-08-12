@@ -145,6 +145,7 @@ async function ensureCommerce(env) {
     material TEXT,
     size TEXT,
     image_url TEXT,
+    image_urls TEXT,
     price_cents INTEGER DEFAULT 0,
     currency TEXT DEFAULT 'USD',
     inventory INTEGER DEFAULT 0,
@@ -153,6 +154,7 @@ async function ensureCommerce(env) {
     created_at INTEGER,
     updated_at INTEGER
   )`).run();
+  await env.DB.prepare("ALTER TABLE products ADD COLUMN image_urls TEXT").run().catch(() => {});
 }
 
 function normalizeProduct(p = {}, id = crypto.randomUUID()) {
@@ -171,6 +173,7 @@ function normalizeProduct(p = {}, id = crypto.randomUUID()) {
     material: String(p.material || "").trim(),
     size: String(p.size || "").trim(),
     image_url: String(p.image_url || p.imageUrl || "").trim(),
+    image_urls: String(p.image_urls || p.imageUrls || "").trim(),
     price_cents: priceCents,
     currency: String(p.currency || "USD").trim().toUpperCase().slice(0, 3) || "USD",
     inventory,
@@ -186,6 +189,16 @@ function money(cents = 0, currency = "USD") {
   } catch {
     return `${currency || "USD"} ${value.toFixed(2)}`;
   }
+}
+
+function productImages(product = {}) {
+  const urls = [
+    product.image_url,
+    ...String(product.image_urls || "")
+      .split(/\r?\n|,/)
+      .map((x) => x.trim()),
+  ].filter(Boolean);
+  return [...new Set(urls)].slice(0, 12);
 }
 
 async function listProducts(env, { admin = false } = {}) {
@@ -378,8 +391,9 @@ function productCard(product, env) {
   const canCheckout = product.allow_checkout && product.price_cents > 0 && (env.STRIPE_SECRET_KEY || env.STRIPE_RESTRICTED_KEY);
   const price = product.price_cents > 0 ? money(product.price_cents, product.currency) : "Quote";
   const meta = [product.category, product.material, product.size].filter(Boolean).join(" / ") || "Fastener";
-  const image = product.image_url
-    ? `<img src="${escapeHtml(product.image_url)}" alt="${escapeHtml(product.name)}" loading="lazy" style="width:100%;height:190px;object-fit:cover;border-radius:6px;margin-bottom:18px">`
+  const images = productImages(product);
+  const image = images[0]
+    ? `<img src="${escapeHtml(images[0])}" alt="${escapeHtml(product.name)}" loading="lazy" style="width:100%;height:190px;object-fit:cover;border-radius:6px;margin-bottom:18px">`
     : "";
   return `<article class="article-card">
     ${image}
@@ -483,11 +497,25 @@ async function productPage(env, slug) {
     return html(shell({ title: "Product not found | Toumyou", description: "Product not found.", content: "<main><h1>Product not found</h1></main>" }), { status: 404 });
   }
   const canCheckout = product.allow_checkout && product.price_cents > 0 && (env.STRIPE_SECRET_KEY || env.STRIPE_RESTRICTED_KEY);
+  const images = productImages(product);
+  const gallery = images.length
+    ? `<div class="product-gallery" data-gallery>
+        <img data-main src="${escapeHtml(images[0])}" alt="${escapeHtml(product.name)}" style="width:100%;max-height:500px;object-fit:cover;border-radius:10px;margin:10px 0 16px">
+        ${
+          images.length > 1
+            ? `<div class="toolbar">${images.map((src, index) => `<button class="btn secondary" type="button" data-img="${escapeHtml(src)}">${index + 1}</button>`).join("")}</div>`
+            : ""
+        }
+      </div>
+      <script>
+        document.querySelectorAll('[data-gallery]').forEach(g=>{const main=g.querySelector('[data-main]');g.querySelectorAll('[data-img]').forEach(b=>b.onclick=()=>{main.src=b.dataset.img})});
+      </script>`
+    : "";
   const content = `<main class="article-page article"><article>
     <div class="meta">${escapeHtml(product.category || "Fasteners")} / ${escapeHtml(product.sku || product.slug)}</div>
     <h1>${escapeHtml(product.name)}</h1>
     <p class="article-dek">${escapeHtml(product.excerpt || "Cross-border fastener and industrial accessory supply.")}</p>
-    ${product.image_url ? `<img src="${escapeHtml(product.image_url)}" alt="${escapeHtml(product.name)}" style="width:100%;max-height:460px;object-fit:cover;border-radius:10px;margin:10px 0 34px">` : ""}
+    ${gallery}
     <div class="post-body">${escapeHtml(product.description || "")}</div>
     <div class="notice" style="margin-top:34px">
       <p><strong>Price:</strong> ${escapeHtml(product.price_cents > 0 ? money(product.price_cents, product.currency) : "Quote required")}</p>
@@ -515,7 +543,7 @@ async function productPage(env, slug) {
       name: product.name,
       sku: product.sku || product.slug,
       description: product.excerpt || product.description,
-      image: product.image_url || undefined,
+      image: images.length ? images : undefined,
       offers: {
         "@type": "Offer",
         price: product.price_cents ? (product.price_cents / 100).toFixed(2) : undefined,
@@ -553,9 +581,9 @@ function adminProductsPage() {
       function login(){app.className='notice';app.innerHTML='<label>Password</label><input id="pw" type="password" autocomplete="current-password"><div class="toolbar"><button class="btn" id="go">Log in</button></div>';document.getElementById('go').onclick=async()=>{try{await api('/api/admin/login',{method:'POST',body:JSON.stringify({password:document.getElementById('pw').value})});load()}catch(e){alert('Login failed')}}}
       function centsFromPrice(v){const n=Number(String(v||'').replace(/[^0-9.]/g,'')); return Math.round((Number.isFinite(n)?n:0)*100)}
       function priceFromCents(v){return ((Number(v)||0)/100).toFixed(2)}
-      function form(p={}){const status=p.status||'draft'; const checkout=Number(p.allow_checkout||0)===1; return '<label>Name</label><input id="name" value="'+esc(p.name||'')+'"><label>Slug</label><input id="slug" value="'+esc(p.slug||'')+'"><label>SKU</label><input id="sku" value="'+esc(p.sku||'')+'"><label>Short excerpt</label><textarea id="excerpt">'+esc(p.excerpt||'')+'</textarea><label>Description</label><textarea id="description">'+esc(p.description||'')+'</textarea><label>Category</label><input id="category" value="'+esc(p.category||'Fasteners')+'"><label>Material</label><input id="material" value="'+esc(p.material||'')+'"><label>Size</label><input id="size" value="'+esc(p.size||'')+'"><label>Image URL</label><input id="image_url" value="'+esc(p.image_url||'')+'"><label>Price</label><input id="price" inputmode="decimal" value="'+esc(priceFromCents(p.price_cents))+'"><label>Currency</label><input id="currency" value="'+esc(p.currency||'USD')+'"><label>Inventory</label><input id="inventory" type="number" min="0" value="'+esc(p.inventory||0)+'"><label>Status</label><select id="status"><option value="draft" '+(status==='draft'?'selected':'')+'>draft</option><option value="published" '+(status==='published'?'selected':'')+'>published</option></select><label><input id="allow_checkout" type="checkbox" style="width:auto" '+(checkout?'checked':'')+'> Enable Stripe Checkout for this product</label><div class="editor-actions"><button class="btn" id="save">Save product</button>'+(p.id?'<button class="btn danger" id="delete">Delete</button>':'')+'<a class="btn secondary" href="/shop" target="_blank">Open shop</a><a class="btn secondary" href="/admin">Articles</a></div><p id="saved" class="status"></p>'}
+      function form(p={}){const status=p.status||'draft'; const checkout=Number(p.allow_checkout||0)===1; return '<label>Name</label><input id="name" value="'+esc(p.name||'')+'"><label>Slug</label><input id="slug" value="'+esc(p.slug||'')+'"><label>SKU</label><input id="sku" value="'+esc(p.sku||'')+'"><label>Short excerpt</label><textarea id="excerpt">'+esc(p.excerpt||'')+'</textarea><label>Description</label><textarea id="description">'+esc(p.description||'')+'</textarea><label>Category</label><input id="category" value="'+esc(p.category||'Fasteners')+'"><label>Material</label><input id="material" value="'+esc(p.material||'')+'"><label>Size</label><input id="size" value="'+esc(p.size||'')+'"><label>Main image URL</label><input id="image_url" value="'+esc(p.image_url||'')+'"><label>Gallery image URLs</label><textarea id="image_urls" placeholder="One image URL per line. Upload images to Cloudflare Images, R2, or another CDN first.">'+esc(p.image_urls||'')+'</textarea><label>Price</label><input id="price" inputmode="decimal" value="'+esc(priceFromCents(p.price_cents))+'"><label>Currency</label><input id="currency" value="'+esc(p.currency||'USD')+'"><label>Inventory</label><input id="inventory" type="number" min="0" value="'+esc(p.inventory||0)+'"><label>Status</label><select id="status"><option value="draft" '+(status==='draft'?'selected':'')+'>draft</option><option value="published" '+(status==='published'?'selected':'')+'>published</option></select><label><input id="allow_checkout" type="checkbox" style="width:auto" '+(checkout?'checked':'')+'> Enable Stripe Checkout for this product</label><div class="editor-actions"><button class="btn" id="save">Save product</button>'+(p.id?'<button class="btn danger" id="delete">Delete</button>':'')+'<a class="btn secondary" href="/shop" target="_blank">Open shop</a><a class="btn secondary" href="/admin">Articles</a></div><p id="saved" class="status"></p>'}
       async function load(){try{const s=await api('/api/admin/session'); if(!s.authenticated)return login(); const products=await api('/api/admin/products'); app.className='editor'; app.innerHTML='<aside><button class="btn" id="new">New product</button><div class="articles">'+products.map(p=>'<a class="article-link" data-id="'+esc(p.id)+'"><div class="meta">'+esc(p.status)+' / '+esc(p.category||'Fasteners')+'</div><h3>'+esc(p.name)+'</h3><p>'+esc(p.sku||p.slug)+' · '+esc(priceFromCents(p.price_cents))+' '+esc(p.currency||'USD')+'</p></a>').join('')+'</div></aside><section id="edit">'+form()+'</section>'; const edit=document.getElementById('edit'); document.getElementById('new').onclick=()=>{edit.innerHTML=form(); wireSave()}; document.querySelectorAll('[data-id]').forEach(a=>a.onclick=()=>{const p=products.find(x=>x.id===a.dataset.id); edit.innerHTML=form(p); wireSave(p.id)}); wireSave()}catch(e){app.className='notice';app.textContent=e.message}}
-      function payload(){return {name:document.getElementById('name').value,slug:document.getElementById('slug').value,sku:document.getElementById('sku').value,excerpt:document.getElementById('excerpt').value,description:document.getElementById('description').value,category:document.getElementById('category').value,material:document.getElementById('material').value,size:document.getElementById('size').value,image_url:document.getElementById('image_url').value,price_cents:centsFromPrice(document.getElementById('price').value),currency:document.getElementById('currency').value,inventory:Number(document.getElementById('inventory').value||0),status:document.getElementById('status').value,allow_checkout:document.getElementById('allow_checkout').checked?1:0}}
+      function payload(){return {name:document.getElementById('name').value,slug:document.getElementById('slug').value,sku:document.getElementById('sku').value,excerpt:document.getElementById('excerpt').value,description:document.getElementById('description').value,category:document.getElementById('category').value,material:document.getElementById('material').value,size:document.getElementById('size').value,image_url:document.getElementById('image_url').value,image_urls:document.getElementById('image_urls').value,price_cents:centsFromPrice(document.getElementById('price').value),currency:document.getElementById('currency').value,inventory:Number(document.getElementById('inventory').value||0),status:document.getElementById('status').value,allow_checkout:document.getElementById('allow_checkout').checked?1:0}}
       function wireSave(id){document.getElementById('save').onclick=async()=>{const p=payload(); const result=await api(id?'/api/admin/products/'+id:'/api/admin/products',{method:id?'PUT':'POST',body:JSON.stringify(p)}); const slug=result.slug||p.slug; document.getElementById('saved').innerHTML='Saved. <a class="text-link" target="_blank" href="/shop/products/'+encodeURIComponent(slug)+'?fresh='+Date.now()+'">Open product</a> or <a class="text-link" target="_blank" href="/shop?fresh='+Date.now()+'">check shop</a>.'; if(!id)setTimeout(load,700)}; const del=document.getElementById('delete'); if(del)del.onclick=async()=>{if(!confirm('Delete this product?'))return; await api('/api/admin/products/'+id,{method:'DELETE'}); load()}}
       load();
     </script></main>`;
@@ -650,8 +678,8 @@ async function handleApi(request, env, pathname) {
     const id = crypto.randomUUID();
     const p = normalizeProduct(raw, id);
     await ensureCommerce(env);
-    await env.DB.prepare("INSERT INTO products (id,slug,name,sku,excerpt,description,category,material,size,image_url,price_cents,currency,inventory,status,allow_checkout,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
-      .bind(id, p.slug, p.name, p.sku, p.excerpt, p.description, p.category, p.material, p.size, p.image_url, p.price_cents, p.currency, p.inventory, p.status, p.allow_checkout, now, now).run();
+    await env.DB.prepare("INSERT INTO products (id,slug,name,sku,excerpt,description,category,material,size,image_url,image_urls,price_cents,currency,inventory,status,allow_checkout,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
+      .bind(id, p.slug, p.name, p.sku, p.excerpt, p.description, p.category, p.material, p.size, p.image_url, p.image_urls, p.price_cents, p.currency, p.inventory, p.status, p.allow_checkout, now, now).run();
     return json({ ok: true, id, slug: p.slug });
   }
   const productMatch = pathname.match(/^\/api\/admin\/products\/([^/]+)$/);
@@ -660,8 +688,8 @@ async function handleApi(request, env, pathname) {
     if (!existing) return json({ error: "Product not found" }, { status: 404 });
     const p = normalizeProduct(await request.json(), existing.id);
     const now = Math.floor(Date.now() / 1000);
-    await env.DB.prepare("UPDATE products SET slug=?,name=?,sku=?,excerpt=?,description=?,category=?,material=?,size=?,image_url=?,price_cents=?,currency=?,inventory=?,status=?,allow_checkout=?,updated_at=? WHERE id=?")
-      .bind(p.slug, p.name, p.sku, p.excerpt, p.description, p.category, p.material, p.size, p.image_url, p.price_cents, p.currency, p.inventory, p.status, p.allow_checkout, now, existing.id).run();
+    await env.DB.prepare("UPDATE products SET slug=?,name=?,sku=?,excerpt=?,description=?,category=?,material=?,size=?,image_url=?,image_urls=?,price_cents=?,currency=?,inventory=?,status=?,allow_checkout=?,updated_at=? WHERE id=?")
+      .bind(p.slug, p.name, p.sku, p.excerpt, p.description, p.category, p.material, p.size, p.image_url, p.image_urls, p.price_cents, p.currency, p.inventory, p.status, p.allow_checkout, now, existing.id).run();
     return json({ ok: true, slug: p.slug });
   }
   if (productMatch && request.method === "DELETE") {

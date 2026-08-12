@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS products (
   material TEXT,
   size TEXT,
   image_url TEXT,
+  image_urls TEXT,
   price_cents INTEGER DEFAULT 0,
   currency TEXT DEFAULT 'USD',
   inventory INTEGER DEFAULT 0,
@@ -34,4 +35,3 @@ ON CONFLICT(id) DO UPDATE SET
   material=excluded.material,
   size=excluded.size,
   updated_at=strftime('%s','now');
-

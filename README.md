@@ -38,7 +38,8 @@ Do not commit secret values to GitHub.
 ## Shop operations
 
 - Open `/admin/products` with the existing admin password.
-- Add products with name, SKU, category, material, size, price, inventory, and status.
+- Add products with name, SKU, category, material, size, price, inventory, images, and status.
+- Use the main image URL plus gallery image URLs, one URL per line. Upload the actual image files to Cloudflare Images, R2, or another CDN first.
 - Publish a product to show it on `/shop`.
 - Enable checkout per product only after Stripe is configured.
 - Use Stripe-hosted Checkout for card and wallet payments. Do not store card details in this project.
