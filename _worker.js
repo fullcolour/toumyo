@@ -1002,6 +1002,22 @@ async function stripeWebhook(request, env) {
       }
     }
   }
+  if (event.type === "checkout.session.async_payment_failed" || event.type === "checkout.session.expired") {
+    const session = event.data?.object || {};
+    const orderId = session.metadata?.order_id || "";
+    const status = event.type === "checkout.session.expired" ? "expired" : "failed";
+    const paymentIntent = typeof session.payment_intent === "string" ? session.payment_intent : (session.payment_intent?.id || "");
+    const result = orderId
+      ? await env.DB.prepare("UPDATE orders SET stripe_session_id=?,payment_status=?,stripe_payment_intent=?,raw_event=?,updated_at=? WHERE id=?")
+        .bind(session.id || "", status, paymentIntent, payload.slice(0, 12000), now, orderId).run()
+      : await env.DB.prepare("UPDATE orders SET payment_status=?,stripe_payment_intent=?,raw_event=?,updated_at=? WHERE stripe_session_id=?")
+        .bind(status, paymentIntent, payload.slice(0, 12000), now, session.id || "").run();
+    if (!result.meta?.changes && session.id) {
+      const fallbackId = orderId || crypto.randomUUID();
+      await env.DB.prepare("INSERT OR IGNORE INTO orders (id,stripe_session_id,product_id,product_slug,product_name,sku,quantity,amount_total,currency,payment_status,fulfillment_status,stripe_payment_intent,raw_event,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
+        .bind(fallbackId, session.id, session.metadata?.product_id || "", session.metadata?.product_slug || "", session.metadata?.product_slug || "Stripe order", session.metadata?.sku || "", 1, session.amount_total || 0, String(session.currency || "JPY").toUpperCase(), status, "new", paymentIntent, payload.slice(0, 12000), now, now).run();
+    }
+  }
   return json({ received: true });
 }
 
@@ -1020,15 +1036,15 @@ async function quoteRequest(request, env) {
 
 function checkoutSuccessPage() {
   return html(shell({
-    title: "Payment received | Toumyou",
+    title: "Order submitted | Toumyou",
     description: "Thank you for your Toumyou shop order.",
     path: "/shop/success",
-    content: `<main class="listing"><h1>Payment received,<br><em>thank you.</em></h1><p class="lead">Your Stripe checkout has completed. We will review the order and contact you about shipping, export handling, and delivery details.</p>
+    content: `<main class="listing"><h1>Order submitted,<br><em>thank you.</em></h1><p class="lead">Your Stripe checkout was submitted. Some local payment methods, including Alipay, can take a little longer to confirm, so we will mark the order as paid only after Stripe sends the final payment confirmation.</p>
       <div class="notice">
         <p><strong>What happens next</strong></p>
-        <p>1. Stripe sends the payment confirmation to Toumyou.</p>
-        <p>2. We verify SKU, stock, export handling, and freight details.</p>
-        <p>3. You receive follow-up by email if any information is required before dispatch.</p>
+        <p>1. Stripe sends Toumyou a signed payment update.</p>
+        <p>2. Paid orders move to the admin order list automatically.</p>
+        <p>3. We verify SKU, stock, export handling, and freight details before dispatch.</p>
         <p id="sessionNote" class="muted"></p>
       </div>
       <div class="toolbar"><a class="btn" href="/shop">Back to shop</a><a class="btn secondary" href="mailto:sunflyerjp@gmail.com">Contact us</a></div>
