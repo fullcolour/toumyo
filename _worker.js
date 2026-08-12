@@ -146,6 +146,9 @@ async function ensureCommerce(env) {
     size TEXT,
     image_url TEXT,
     image_urls TEXT,
+    specs TEXT,
+    moq INTEGER DEFAULT 1,
+    weight_grams INTEGER DEFAULT 0,
     price_cents INTEGER DEFAULT 0,
     currency TEXT DEFAULT 'JPY',
     inventory INTEGER DEFAULT 0,
@@ -155,6 +158,49 @@ async function ensureCommerce(env) {
     updated_at INTEGER
   )`).run();
   await env.DB.prepare("ALTER TABLE products ADD COLUMN image_urls TEXT").run().catch(() => {});
+  await env.DB.prepare("ALTER TABLE products ADD COLUMN specs TEXT").run().catch(() => {});
+  await env.DB.prepare("ALTER TABLE products ADD COLUMN moq INTEGER DEFAULT 1").run().catch(() => {});
+  await env.DB.prepare("ALTER TABLE products ADD COLUMN weight_grams INTEGER DEFAULT 0").run().catch(() => {});
+  await env.DB.prepare(`CREATE TABLE IF NOT EXISTS orders (
+    id TEXT PRIMARY KEY,
+    stripe_session_id TEXT UNIQUE,
+    product_id TEXT,
+    product_slug TEXT,
+    product_name TEXT,
+    sku TEXT,
+    quantity INTEGER DEFAULT 1,
+    amount_total INTEGER DEFAULT 0,
+    currency TEXT DEFAULT 'JPY',
+    payment_status TEXT DEFAULT 'pending',
+    fulfillment_status TEXT DEFAULT 'new',
+    customer_email TEXT,
+    customer_name TEXT,
+    customer_phone TEXT,
+    shipping_name TEXT,
+    shipping_address TEXT,
+    shipping_country TEXT,
+    stripe_payment_intent TEXT,
+    raw_event TEXT,
+    notes TEXT,
+    created_at INTEGER,
+    updated_at INTEGER
+  )`).run();
+  await env.DB.prepare(`CREATE TABLE IF NOT EXISTS inquiries (
+    id TEXT PRIMARY KEY,
+    product_id TEXT,
+    product_slug TEXT,
+    product_name TEXT,
+    name TEXT,
+    email TEXT,
+    company TEXT,
+    country TEXT,
+    quantity TEXT,
+    specs TEXT,
+    message TEXT,
+    status TEXT DEFAULT 'new',
+    created_at INTEGER,
+    updated_at INTEGER
+  )`).run();
 }
 
 function normalizeProduct(p = {}, id = crypto.randomUUID()) {
@@ -162,6 +208,8 @@ function normalizeProduct(p = {}, id = crypto.randomUUID()) {
   const slug = slugify(p.slug || name || id);
   const priceCents = Math.max(0, Number.parseInt(p.price_cents ?? p.priceCents ?? 0, 10) || 0);
   const inventory = Math.max(0, Number.parseInt(p.inventory ?? 0, 10) || 0);
+  const moq = Math.max(1, Number.parseInt(p.moq ?? 1, 10) || 1);
+  const weightGrams = Math.max(0, Number.parseInt(p.weight_grams ?? p.weightGrams ?? 0, 10) || 0);
   return {
     id,
     slug,
@@ -174,6 +222,9 @@ function normalizeProduct(p = {}, id = crypto.randomUUID()) {
     size: String(p.size || "").trim(),
     image_url: String(p.image_url || p.imageUrl || "").trim(),
     image_urls: String(p.image_urls || p.imageUrls || "").trim(),
+    specs: String(p.specs || "").trim(),
+    moq,
+    weight_grams: weightGrams,
     price_cents: priceCents,
     currency: String(p.currency || "JPY").trim().toUpperCase().slice(0, 3) || "JPY",
     inventory,
@@ -227,6 +278,40 @@ async function getProduct(env, slugOrId) {
   await ensureCommerce(env);
   if (!env.DB) return null;
   return await env.DB.prepare("SELECT * FROM products WHERE slug=? OR id=?").bind(slugOrId, slugOrId).first();
+}
+
+async function listOrders(env) {
+  await ensureCommerce(env);
+  if (!env.DB) return [];
+  const result = await env.DB.prepare("SELECT * FROM orders ORDER BY created_at DESC, updated_at DESC").all();
+  return result.results || [];
+}
+
+async function listInquiries(env) {
+  await ensureCommerce(env);
+  if (!env.DB) return [];
+  const result = await env.DB.prepare("SELECT * FROM inquiries ORDER BY created_at DESC").all();
+  return result.results || [];
+}
+
+function formatAddress(address = {}) {
+  if (!address || typeof address !== "object") return "";
+  return [
+    address.line1,
+    address.line2,
+    address.city,
+    address.state,
+    address.postal_code,
+    address.country,
+  ].filter(Boolean).join(", ");
+}
+
+function safeJson(value) {
+  try {
+    return JSON.stringify(value || {});
+  } catch {
+    return "{}";
+  }
 }
 
 function shell({ title, description, path = "/", content, schema }) {
@@ -403,6 +488,7 @@ function productCard(product, env) {
   const canCheckout = product.allow_checkout && product.price_cents > 0 && (env.STRIPE_SECRET_KEY || env.STRIPE_RESTRICTED_KEY);
   const price = product.price_cents > 0 ? money(product.price_cents, product.currency) : "Quote";
   const meta = [product.category, product.material, product.size].filter(Boolean).join(" / ") || "Fastener";
+  const moq = Number(product.moq || 1) > 1 ? ` · MOQ ${escapeHtml(product.moq)}` : "";
   const images = productImages(product);
   const image = images[0]
     ? `<img src="${escapeHtml(images[0])}" alt="${escapeHtml(product.name)}" loading="lazy" style="width:100%;height:190px;object-fit:cover;border-radius:6px;margin-bottom:18px">`
@@ -412,7 +498,7 @@ function productCard(product, env) {
     <div class="meta">${escapeHtml(meta)}</div>
     <h3>${escapeHtml(product.name)}</h3>
     <p>${escapeHtml(product.excerpt || product.description || "Industrial supply item available for cross-border sourcing.")}</p>
-    <p class="muted">SKU: ${escapeHtml(product.sku || product.slug)} · ${escapeHtml(price)}${product.inventory ? ` · Stock ${escapeHtml(product.inventory)}` : ""}</p>
+    <p class="muted">SKU: ${escapeHtml(product.sku || product.slug)} · ${escapeHtml(price)}${moq}${product.inventory ? ` · Stock ${escapeHtml(product.inventory)}` : ""}</p>
     <div class="toolbar" style="margin-top:auto">
       <a class="btn secondary" href="/shop/products/${escapeHtml(product.slug)}">Details</a>
       ${
@@ -507,6 +593,15 @@ async function productPage(env, slug) {
   }
   const canCheckout = product.allow_checkout && product.price_cents > 0 && (env.STRIPE_SECRET_KEY || env.STRIPE_RESTRICTED_KEY);
   const images = productImages(product);
+  const specs = String(product.specs || "").trim();
+  const specRows = [
+    ["SKU", product.sku || product.slug],
+    ["Category", product.category || "Fasteners"],
+    ["Material", product.material || "Confirm by order"],
+    ["Size", product.size || "Confirm by order"],
+    ["MOQ", product.moq || 1],
+    ["Weight", product.weight_grams ? `${product.weight_grams} g / unit` : "Confirm by order"],
+  ];
   const gallery = images.length
     ? `<div class="product-gallery" data-gallery>
         <img data-main src="${escapeHtml(images[0])}" alt="${escapeHtml(product.name)}" style="width:100%;max-height:500px;object-fit:cover;border-radius:10px;margin:10px 0 16px">
@@ -528,10 +623,13 @@ async function productPage(env, slug) {
     <div class="post-body">${escapeHtml(product.description || "")}</div>
     <div class="notice" style="margin-top:34px">
       <p><strong>Price:</strong> ${escapeHtml(product.price_cents > 0 ? money(product.price_cents, product.currency) : "Quote required")}</p>
-      <p><strong>Material:</strong> ${escapeHtml(product.material || "Confirm by order")}</p>
-      <p><strong>Size:</strong> ${escapeHtml(product.size || "Confirm by order")}</p>
       <p><strong>Inventory:</strong> ${escapeHtml(product.inventory || "Confirm availability")}</p>
       <p><strong>Delivery:</strong> Standard 7–14 business days or Express 3–7 business days. Freight is calculated in Stripe Checkout; duties and import taxes are normally payable by the recipient.</p>
+    </div>
+    <div class="notice" style="margin-top:18px">
+      <h3>Specifications</h3>
+      ${specRows.map(([k, v]) => `<p><strong>${escapeHtml(k)}:</strong> ${escapeHtml(v)}</p>`).join("")}
+      ${specs ? `<p><strong>Detailed specs:</strong><br>${escapeHtml(specs).replaceAll("\n", "<br>")}</p>` : ""}
     </div>
   </article>
   <div class="toolbar">
@@ -542,11 +640,34 @@ async function productPage(env, slug) {
     }
     <a class="btn secondary" href="/shop">Back to shop</a>
   </div></main>`;
+  const quoteForm = `<section class="section" style="padding-top:40px"><p class="eyebrow">Need a custom quote?</p><h2>Send quantity,<br>drawing or specs.</h2><div class="notice"><form id="quoteForm" class="quote-form">
+    <input type="hidden" name="product_id" value="${escapeHtml(product.id)}">
+    <label>Name</label><input name="name" required>
+    <label>Email</label><input name="email" type="email" required>
+    <label>Company</label><input name="company">
+    <label>Country / region</label><input name="country">
+    <label>Quantity</label><input name="quantity" placeholder="Example: 500 pcs / 20 boxes">
+    <label>Specifications</label><textarea name="specs" placeholder="Material, size, standard, finish, drawing link, packaging..."></textarea>
+    <label>Message</label><textarea name="message" placeholder="Tell us delivery country, target date, or anything special."></textarea>
+    <div class="toolbar"><button class="btn" type="submit">Submit quote request</button><a class="btn secondary" href="mailto:sunflyerjp@gmail.com?subject=${encodeURIComponent(`Quote request: ${product.name}`)}">Email instead</a></div>
+    <p id="quoteStatus" class="status"></p>
+  </form></div>
+  <script>
+    document.getElementById('quoteForm')?.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const status = document.getElementById('quoteStatus');
+      status.textContent = 'Sending...';
+      const payload = Object.fromEntries(new FormData(event.target).entries());
+      const res = await fetch('/api/quote', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(payload) });
+      status.textContent = res.ok ? 'Quote request saved. We will contact you by email.' : 'Could not save request. Please email us directly.';
+      if (res.ok) event.target.reset();
+    });
+  </script></section>`;
   return html(shell({
     title: `${product.name} | Toumyou Shop`,
     description: product.excerpt || product.description || SHOP.description,
     path: `/shop/products/${product.slug}`,
-    content,
+    content: content.replace("</main>", `${quoteForm}</main>`),
     schema: {
       "@context": "https://schema.org",
       "@type": "Product",
@@ -573,7 +694,7 @@ function adminPage() {
       const esc = (v='') => String(v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
       async function api(url, options={}){const r=await fetch(url,{cache:'no-store',headers:{'content-type':'application/json'},...options}); if(!r.ok) throw new Error(await r.text()); return r.json();}
       function login(){app.className='notice';app.innerHTML='<label>Password</label><input id="pw" type="password" autocomplete="current-password"><div class="toolbar"><button class="btn" id="go">Log in</button></div>';document.getElementById('go').onclick=async()=>{try{await api('/api/admin/login',{method:'POST',body:JSON.stringify({password:document.getElementById('pw').value})});load()}catch(e){alert('Login failed')}}}
-      function form(p={}){const currentStatus=p.status||'published';return '<label>Title</label><input id="title" value="'+esc(p.title||'')+'"><label>Slug</label><input id="slug" value="'+esc(p.slug||'')+'"><label>Excerpt</label><textarea id="excerpt">'+esc(p.excerpt||'')+'</textarea><label>Body</label><textarea id="body">'+esc(p.body||'')+'</textarea><label>Category</label><input id="category" value="'+esc(p.category||'Insights')+'"><label>Status</label><select id="status"><option value="published" '+(currentStatus==='published'?'selected':'')+'>published</option><option value="draft" '+(currentStatus==='draft'?'selected':'')+'>draft</option></select><div class="editor-actions"><button class="btn" id="save">Save and publish</button>'+(p.id?'<button class="btn danger" id="delete">Delete</button>':'')+'<a class="btn secondary" href="/" target="_blank">Open home</a><a class="btn secondary" href="/articles" target="_blank">Open insights</a></div><p id="saved" class="status"></p>'}
+      function form(p={}){const currentStatus=p.status||'published';return '<label>Title</label><input id="title" value="'+esc(p.title||'')+'"><label>Slug</label><input id="slug" value="'+esc(p.slug||'')+'"><label>Excerpt</label><textarea id="excerpt">'+esc(p.excerpt||'')+'</textarea><label>Body</label><textarea id="body">'+esc(p.body||'')+'</textarea><label>Category</label><input id="category" value="'+esc(p.category||'Insights')+'"><label>Status</label><select id="status"><option value="published" '+(currentStatus==='published'?'selected':'')+'>published</option><option value="draft" '+(currentStatus==='draft'?'selected':'')+'>draft</option></select><div class="editor-actions"><button class="btn" id="save">Save and publish</button>'+(p.id?'<button class="btn danger" id="delete">Delete</button>':'')+'<a class="btn secondary" href="/" target="_blank">Open home</a><a class="btn secondary" href="/articles" target="_blank">Open insights</a><a class="btn secondary" href="/admin/products">Products</a><a class="btn secondary" href="/admin/orders">Orders</a></div><p id="saved" class="status"></p>'}
       async function load(){try{const s=await api('/api/admin/session'); if(!s.authenticated)return login(); const posts=await api('/api/admin/posts'); app.className='editor'; app.innerHTML='<aside><button class="btn" id="new">New article</button><div class="articles">'+posts.map(p=>'<a class="article-link" data-id="'+esc(p.id)+'"><div class="meta">'+esc(p.status)+' / '+esc(p.category||'Insights')+'</div><h3>'+esc(p.title)+'</h3><p>'+esc(p.slug)+'</p></a>').join('')+'</div></aside><section id="edit">'+form()+'</section>'; const edit=document.getElementById('edit'); document.getElementById('new').onclick=()=>{edit.innerHTML=form(); wireSave()}; document.querySelectorAll('[data-id]').forEach(a=>a.onclick=()=>{const p=posts.find(x=>x.id===a.dataset.id); edit.innerHTML=form(p); wireSave(p.id)}); wireSave()}catch(e){app.className='notice';app.textContent=e.message}}
       function wireSave(id){document.getElementById('save').onclick=async()=>{const payload={title:document.getElementById('title').value,slug:document.getElementById('slug').value,excerpt:document.getElementById('excerpt').value,body:document.getElementById('body').value,category:document.getElementById('category').value,status:document.getElementById('status').value}; const result=await api(id?'/api/admin/posts/'+id:'/api/admin/posts',{method:id?'PUT':'POST',body:JSON.stringify(payload)}); const slug=result.slug||payload.slug; document.getElementById('saved').innerHTML='Saved. <a class="text-link" target="_blank" href="/articles/'+encodeURIComponent(slug)+'?fresh='+Date.now()+'">Open article</a> or <a class="text-link" target="_blank" href="/?fresh='+Date.now()+'">check home</a>.'; if(!id)setTimeout(load,700)}; const del=document.getElementById('delete'); if(del)del.onclick=async()=>{if(!confirm('Delete this article?'))return; await api('/api/admin/posts/'+id,{method:'DELETE'}); load()}}
       load();
@@ -593,13 +714,31 @@ function adminProductsPage() {
       function currencyScale(currency){return zeroDecimalCurrencies.has(String(currency||'USD').toUpperCase())?1:100}
       function amountFromPrice(v,currency){const n=Number(String(v||'').replace(/[^0-9.]/g,'')); return Math.round((Number.isFinite(n)?n:0)*currencyScale(currency))}
       function priceFromAmount(v,currency){const scale=currencyScale(currency); return ((Number(v)||0)/scale).toFixed(scale===1?0:2)}
-      function form(p={}){const status=p.status||'draft'; const checkout=Number(p.allow_checkout||0)===1; const currency=p.currency||'JPY'; return '<label>Name</label><input id="name" value="'+esc(p.name||'')+'"><label>Slug</label><input id="slug" value="'+esc(p.slug||'')+'"><label>SKU</label><input id="sku" value="'+esc(p.sku||'')+'"><label>Short excerpt</label><textarea id="excerpt">'+esc(p.excerpt||'')+'</textarea><label>Description</label><textarea id="description">'+esc(p.description||'')+'</textarea><label>Category</label><input id="category" value="'+esc(p.category||'Fasteners')+'"><label>Material</label><input id="material" value="'+esc(p.material||'')+'"><label>Size</label><input id="size" value="'+esc(p.size||'')+'"><label>Main image URL</label><input id="image_url" value="'+esc(p.image_url||'')+'"><label>Gallery image URLs</label><textarea id="image_urls" placeholder="One image URL per line. Upload images to Cloudflare Images, R2, or another CDN first.">'+esc(p.image_urls||'')+'</textarea><label>Price</label><input id="price" inputmode="decimal" value="'+esc(priceFromAmount(p.price_cents,currency))+'"><label>Currency</label><input id="currency" value="'+esc(currency)+'"><label>Inventory</label><input id="inventory" type="number" min="0" value="'+esc(p.inventory||0)+'"><label>Status</label><select id="status"><option value="draft" '+(status==='draft'?'selected':'')+'>draft</option><option value="published" '+(status==='published'?'selected':'')+'>published</option></select><label><input id="allow_checkout" type="checkbox" style="width:auto" '+(checkout?'checked':'')+'> Enable Stripe Checkout for this product</label><div class="editor-actions"><button class="btn" id="save">Save product</button>'+(p.id?'<button class="btn danger" id="delete">Delete</button>':'')+'<a class="btn secondary" href="/shop" target="_blank">Open shop</a><a class="btn secondary" href="/admin">Articles</a></div><p id="saved" class="status"></p>'}
+      function form(p={}){const status=p.status||'draft'; const checkout=Number(p.allow_checkout||0)===1; const currency=p.currency||'JPY'; return '<label>Name</label><input id="name" value="'+esc(p.name||'')+'"><label>Slug</label><input id="slug" value="'+esc(p.slug||'')+'"><label>SKU</label><input id="sku" value="'+esc(p.sku||'')+'"><label>Short excerpt</label><textarea id="excerpt">'+esc(p.excerpt||'')+'</textarea><label>Description</label><textarea id="description">'+esc(p.description||'')+'</textarea><label>Category</label><input id="category" value="'+esc(p.category||'Fasteners')+'"><label>Material</label><input id="material" value="'+esc(p.material||'')+'"><label>Size</label><input id="size" value="'+esc(p.size||'')+'"><label>Detailed specifications</label><textarea id="specs" placeholder="Standards, finish, thread pitch, packaging, drawing notes...">'+esc(p.specs||'')+'</textarea><label>MOQ</label><input id="moq" type="number" min="1" value="'+esc(p.moq||1)+'"><label>Weight grams / unit</label><input id="weight_grams" type="number" min="0" value="'+esc(p.weight_grams||0)+'"><label>Main image URL</label><input id="image_url" value="'+esc(p.image_url||'')+'"><label>Gallery image URLs</label><textarea id="image_urls" placeholder="One image URL per line. Upload images to Cloudflare Images, R2, or another CDN first.">'+esc(p.image_urls||'')+'</textarea><label>Price</label><input id="price" inputmode="decimal" value="'+esc(priceFromAmount(p.price_cents,currency))+'"><label>Currency</label><input id="currency" value="'+esc(currency)+'"><label>Inventory</label><input id="inventory" type="number" min="0" value="'+esc(p.inventory||0)+'"><label>Status</label><select id="status"><option value="draft" '+(status==='draft'?'selected':'')+'>draft</option><option value="published" '+(status==='published'?'selected':'')+'>published</option></select><label><input id="allow_checkout" type="checkbox" style="width:auto" '+(checkout?'checked':'')+'> Enable Stripe Checkout for this product</label><div class="editor-actions"><button class="btn" id="save">Save product</button>'+(p.id?'<button class="btn danger" id="delete">Delete</button>':'')+'<a class="btn secondary" href="/shop" target="_blank">Open shop</a><a class="btn secondary" href="/admin/orders">Orders</a><a class="btn secondary" href="/admin">Articles</a></div><p id="saved" class="status"></p>'}
       async function load(){try{const s=await api('/api/admin/session'); if(!s.authenticated)return login(); const products=await api('/api/admin/products'); app.className='editor'; app.innerHTML='<aside><button class="btn" id="new">New product</button><div class="articles">'+products.map(p=>'<a class="article-link" data-id="'+esc(p.id)+'"><div class="meta">'+esc(p.status)+' / '+esc(p.category||'Fasteners')+'</div><h3>'+esc(p.name)+'</h3><p>'+esc(p.sku||p.slug)+' · '+esc(priceFromAmount(p.price_cents,p.currency))+' '+esc(p.currency||'JPY')+'</p></a>').join('')+'</div></aside><section id="edit">'+form()+'</section>'; const edit=document.getElementById('edit'); document.getElementById('new').onclick=()=>{edit.innerHTML=form(); wireSave()}; document.querySelectorAll('[data-id]').forEach(a=>a.onclick=()=>{const p=products.find(x=>x.id===a.dataset.id); edit.innerHTML=form(p); wireSave(p.id)}); wireSave()}catch(e){app.className='notice';app.textContent=e.message}}
-      function payload(){const currency=document.getElementById('currency').value; return {name:document.getElementById('name').value,slug:document.getElementById('slug').value,sku:document.getElementById('sku').value,excerpt:document.getElementById('excerpt').value,description:document.getElementById('description').value,category:document.getElementById('category').value,material:document.getElementById('material').value,size:document.getElementById('size').value,image_url:document.getElementById('image_url').value,image_urls:document.getElementById('image_urls').value,price_cents:amountFromPrice(document.getElementById('price').value,currency),currency,inventory:Number(document.getElementById('inventory').value||0),status:document.getElementById('status').value,allow_checkout:document.getElementById('allow_checkout').checked?1:0}}
+      function payload(){const currency=document.getElementById('currency').value; return {name:document.getElementById('name').value,slug:document.getElementById('slug').value,sku:document.getElementById('sku').value,excerpt:document.getElementById('excerpt').value,description:document.getElementById('description').value,category:document.getElementById('category').value,material:document.getElementById('material').value,size:document.getElementById('size').value,specs:document.getElementById('specs').value,moq:Number(document.getElementById('moq').value||1),weight_grams:Number(document.getElementById('weight_grams').value||0),image_url:document.getElementById('image_url').value,image_urls:document.getElementById('image_urls').value,price_cents:amountFromPrice(document.getElementById('price').value,currency),currency,inventory:Number(document.getElementById('inventory').value||0),status:document.getElementById('status').value,allow_checkout:document.getElementById('allow_checkout').checked?1:0}}
       function wireSave(id){document.getElementById('save').onclick=async()=>{const p=payload(); const result=await api(id?'/api/admin/products/'+id:'/api/admin/products',{method:id?'PUT':'POST',body:JSON.stringify(p)}); const slug=result.slug||p.slug; document.getElementById('saved').innerHTML='Saved. <a class="text-link" target="_blank" href="/shop/products/'+encodeURIComponent(slug)+'?fresh='+Date.now()+'">Open product</a> or <a class="text-link" target="_blank" href="/shop?fresh='+Date.now()+'">check shop</a>.'; if(!id)setTimeout(load,700)}; const del=document.getElementById('delete'); if(del)del.onclick=async()=>{if(!confirm('Delete this product?'))return; await api('/api/admin/products/'+id,{method:'DELETE'}); load()}}
       load();
     </script></main>`;
   return html(shell({ title: "Product Admin | Toumyou", description: "Toumyou product admin.", path: "/admin/products", content }), { cache: "no-store" });
+}
+
+function adminOrdersPage() {
+  const content = `<main class="admin-wrap"><h1>Orders & quotes</h1><p class="lead">Review Stripe checkout orders, update fulfillment status, and follow up on quote requests.</p>
+    <div id="app" class="notice">Loading...</div>
+    <script>
+      const app = document.getElementById('app');
+      const esc = (v='') => String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
+      async function api(url, options={}){const r=await fetch(url,{cache:'no-store',headers:{'content-type':'application/json'},...options}); if(!r.ok) throw new Error(await r.text()); return r.json();}
+      function login(){app.className='notice';app.innerHTML='<label>Password</label><input id="pw" type="password" autocomplete="current-password"><div class="toolbar"><button class="btn" id="go">Log in</button></div>';document.getElementById('go').onclick=async()=>{try{await api('/api/admin/login',{method:'POST',body:JSON.stringify({password:document.getElementById('pw').value})});load()}catch(e){alert('Login failed')}}}
+      function money(amount,currency){try{return new Intl.NumberFormat('en',{style:'currency',currency:currency||'JPY'}).format(Number(amount||0)/(['BIF','CLP','DJF','GNF','JPY','KMF','KRW','MGA','PYG','RWF','UGX','VND','VUV','XAF','XOF','XPF'].includes(String(currency||'JPY').toUpperCase())?1:100))}catch{return (currency||'JPY')+' '+amount}}
+      function dt(v){return v?new Date(Number(v)*1000).toLocaleString():'-'}
+      function orderCard(o){return '<article class="article-card"><div class="meta">'+esc(o.payment_status||'pending')+' / '+esc(o.fulfillment_status||'new')+'</div><h3>'+esc(o.product_name||o.product_slug||'Order')+'</h3><p>'+esc(o.sku||'No SKU')+' · Qty '+esc(o.quantity||1)+' · '+esc(money(o.amount_total,o.currency))+'</p><p class="muted">'+esc(o.customer_email||'No email yet')+'<br>'+esc(o.shipping_address||'No shipping address yet')+'</p><label>Fulfillment</label><select data-status="'+esc(o.id)+'"><option value="new">new</option><option value="processing">processing</option><option value="shipped">shipped</option><option value="completed">completed</option><option value="cancelled">cancelled</option></select><label>Notes</label><textarea data-notes="'+esc(o.id)+'">'+esc(o.notes||'')+'</textarea><div class="toolbar"><button class="btn" data-save-order="'+esc(o.id)+'">Save</button><a class="btn secondary" href="https://dashboard.stripe.com/payments/'+esc(o.stripe_payment_intent||'')+'" target="_blank">Stripe</a></div><p class="muted">Created '+esc(dt(o.created_at))+'</p></article>'}
+      function inquiryCard(q){return '<article class="article-card"><div class="meta">Quote / '+esc(q.status||'new')+'</div><h3>'+esc(q.product_name||'General inquiry')+'</h3><p>'+esc(q.name||'')+' · '+esc(q.email||'')+' · '+esc(q.company||'')+'</p><p class="muted">Qty '+esc(q.quantity||'-')+' · '+esc(q.country||'')+'</p><p>'+esc(q.specs||q.message||'').replace(/\\n/g,'<br>')+'</p><label>Status</label><select data-inquiry-status="'+esc(q.id)+'"><option value="new">new</option><option value="quoted">quoted</option><option value="won">won</option><option value="lost">lost</option><option value="archived">archived</option></select><div class="toolbar"><button class="btn" data-save-inquiry="'+esc(q.id)+'">Save</button><a class="btn secondary" href="mailto:'+encodeURIComponent(q.email||'')+'?subject='+encodeURIComponent('Quote request: '+(q.product_name||'Toumyou shop'))+'">Reply</a></div><p class="muted">Created '+esc(dt(q.created_at))+'</p></article>'}
+      async function load(){try{const s=await api('/api/admin/session'); if(!s.authenticated)return login(); const orders=await api('/api/admin/orders'); const inquiries=await api('/api/admin/inquiries'); app.className=''; app.innerHTML='<div class="toolbar" style="margin-bottom:24px"><a class="btn secondary" href="/admin/products">Products</a><a class="btn secondary" href="/admin">Articles</a><a class="btn secondary" href="/shop" target="_blank">Open shop</a></div><section class="section" style="padding:0"><p class="eyebrow">Paid checkout</p><h2>Orders</h2><div class="article-grid">'+(orders.length?orders.map(orderCard).join(''):'<div class="notice">No orders yet. New checkout attempts will appear here after customers click Pay.</div>')+'</div></section><section class="section" style="padding:40px 0 0"><p class="eyebrow">Quote requests</p><h2>Inquiries</h2><div class="article-grid">'+(inquiries.length?inquiries.map(inquiryCard).join(''):'<div class="notice">No quote requests yet.</div>')+'</div></section>'; orders.forEach(o=>{const s=document.querySelector('[data-status="'+CSS.escape(o.id)+'"]'); if(s)s.value=o.fulfillment_status||'new'}); inquiries.forEach(q=>{const s=document.querySelector('[data-inquiry-status="'+CSS.escape(q.id)+'"]'); if(s)s.value=q.status||'new'}); document.querySelectorAll('[data-save-order]').forEach(b=>b.onclick=async()=>{const id=b.dataset.saveOrder; await api('/api/admin/orders/'+encodeURIComponent(id),{method:'PATCH',body:JSON.stringify({fulfillment_status:document.querySelector('[data-status="'+CSS.escape(id)+'"]').value,notes:document.querySelector('[data-notes="'+CSS.escape(id)+'"]').value})}); b.textContent='Saved'}); document.querySelectorAll('[data-save-inquiry]').forEach(b=>b.onclick=async()=>{const id=b.dataset.saveInquiry; await api('/api/admin/inquiries/'+encodeURIComponent(id),{method:'PATCH',body:JSON.stringify({status:document.querySelector('[data-inquiry-status="'+CSS.escape(id)+'"]').value})}); b.textContent='Saved'})}catch(e){app.className='notice';app.textContent=e.message}}
+      load();
+    </script></main>`;
+  return html(shell({ title: "Orders | Toumyou", description: "Toumyou order and quote admin.", path: "/admin/orders", content }), { cache: "no-store" });
 }
 
 async function readBody(request) {
@@ -626,6 +765,9 @@ async function stripeCheckout(request, env) {
   if (!product || product.status !== "published" || !product.allow_checkout || product.price_cents <= 0) {
     return json({ error: "Product is not available for checkout" }, { status: 400 });
   }
+  await ensureCommerce(env);
+  const orderId = crypto.randomUUID();
+  const now = Math.floor(Date.now() / 1000);
   const params = new URLSearchParams();
   params.set("mode", "payment");
   params.set("success_url", `${SITE.url}/shop/success?session_id={CHECKOUT_SESSION_ID}`);
@@ -673,6 +815,8 @@ async function stripeCheckout(request, env) {
   if (product.image_url) params.set("line_items[0][price_data][product_data][images][0]", product.image_url);
   params.set("metadata[product_id]", product.id);
   params.set("metadata[product_slug]", product.slug);
+  params.set("metadata[order_id]", orderId);
+  params.set("metadata[sku]", product.sku || "");
   const response = await fetch("https://api.stripe.com/v1/checkout/sessions", {
     method: "POST",
     headers: {
@@ -684,7 +828,77 @@ async function stripeCheckout(request, env) {
   });
   const data = await response.json().catch(() => ({}));
   if (!response.ok || !data.url) return json({ error: "Stripe checkout failed", details: data.error?.message || "Unknown error" }, { status: 502 });
+  if (env.DB) {
+    await env.DB.prepare("INSERT INTO orders (id,stripe_session_id,product_id,product_slug,product_name,sku,quantity,amount_total,currency,payment_status,fulfillment_status,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)")
+      .bind(orderId, data.id || "", product.id, product.slug, product.name, product.sku || "", quantity, product.price_cents * quantity, product.currency, "checkout_created", "new", now, now).run()
+      .catch(() => {});
+  }
   return Response.redirect(data.url, 303);
+}
+
+function timingSafeEqualHex(a = "", b = "") {
+  if (a.length !== b.length) return false;
+  let result = 0;
+  for (let i = 0; i < a.length; i += 1) result |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return result === 0;
+}
+
+async function verifyStripeSignature(payload, header = "", secret = "") {
+  if (!payload || !header || !secret) return false;
+  const parts = Object.fromEntries(header.split(",").map((part) => {
+    const [key, ...rest] = part.split("=");
+    return [key, rest.join("=")];
+  }));
+  const timestamp = parts.t;
+  const signature = parts.v1;
+  if (!timestamp || !signature) return false;
+  const signedPayload = `${timestamp}.${payload}`;
+  const expected = await hmac(secret, signedPayload);
+  return timingSafeEqualHex(expected, signature);
+}
+
+async function stripeWebhook(request, env) {
+  if (!env.STRIPE_WEBHOOK_SECRET) return json({ error: "Webhook signing secret is not configured" }, { status: 503 });
+  const payload = await request.text();
+  const signature = request.headers.get("stripe-signature") || "";
+  if (!(await verifyStripeSignature(payload, signature, env.STRIPE_WEBHOOK_SECRET))) {
+    return json({ error: "Invalid Stripe signature" }, { status: 400 });
+  }
+  const event = JSON.parse(payload);
+  await ensureCommerce(env);
+  const now = Math.floor(Date.now() / 1000);
+  if (event.type === "checkout.session.completed" || event.type === "checkout.session.async_payment_succeeded") {
+    const session = event.data?.object || {};
+    const orderId = session.metadata?.order_id || "";
+    const customer = session.customer_details || {};
+    const shipping = session.shipping_details || {};
+    const shippingAddress = shipping.address ? formatAddress(shipping.address) : "";
+    const updateSql = orderId
+      ? "UPDATE orders SET stripe_session_id=?,amount_total=?,currency=?,payment_status=?,customer_email=?,customer_name=?,customer_phone=?,shipping_name=?,shipping_address=?,shipping_country=?,stripe_payment_intent=?,raw_event=?,updated_at=? WHERE id=?"
+      : "UPDATE orders SET amount_total=?,currency=?,payment_status=?,customer_email=?,customer_name=?,customer_phone=?,shipping_name=?,shipping_address=?,shipping_country=?,stripe_payment_intent=?,raw_event=?,updated_at=? WHERE stripe_session_id=?";
+    const result = orderId
+      ? await env.DB.prepare(updateSql).bind(session.id || "", session.amount_total || 0, String(session.currency || "").toUpperCase(), session.payment_status || "paid", customer.email || "", customer.name || "", customer.phone || "", shipping.name || "", shippingAddress, shipping.address?.country || "", session.payment_intent || "", payload.slice(0, 12000), now, orderId).run()
+      : await env.DB.prepare(updateSql).bind(session.amount_total || 0, String(session.currency || "").toUpperCase(), session.payment_status || "paid", customer.email || "", customer.name || "", customer.phone || "", shipping.name || "", shippingAddress, shipping.address?.country || "", session.payment_intent || "", payload.slice(0, 12000), now, session.id || "").run();
+    if (!result.meta?.changes && session.id) {
+      const fallbackId = orderId || crypto.randomUUID();
+      await env.DB.prepare("INSERT OR IGNORE INTO orders (id,stripe_session_id,product_id,product_slug,product_name,sku,quantity,amount_total,currency,payment_status,fulfillment_status,customer_email,customer_name,customer_phone,shipping_name,shipping_address,shipping_country,stripe_payment_intent,raw_event,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
+        .bind(fallbackId, session.id, session.metadata?.product_id || "", session.metadata?.product_slug || "", session.metadata?.product_slug || "Stripe order", session.metadata?.sku || "", 1, session.amount_total || 0, String(session.currency || "JPY").toUpperCase(), session.payment_status || "paid", "new", customer.email || "", customer.name || "", customer.phone || "", shipping.name || "", shippingAddress, shipping.address?.country || "", session.payment_intent || "", payload.slice(0, 12000), now, now).run();
+    }
+  }
+  return json({ received: true });
+}
+
+async function quoteRequest(request, env) {
+  const body = await readBody(request);
+  const email = String(body.email || "").trim();
+  if (!email || !email.includes("@")) return json({ error: "Valid email is required" }, { status: 400 });
+  await ensureCommerce(env);
+  const product = body.product_id ? await getProduct(env, body.product_id) : null;
+  const now = Math.floor(Date.now() / 1000);
+  const id = crypto.randomUUID();
+  await env.DB.prepare("INSERT INTO inquiries (id,product_id,product_slug,product_name,name,email,company,country,quantity,specs,message,status,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
+    .bind(id, product?.id || String(body.product_id || ""), product?.slug || "", product?.name || "", String(body.name || ""), email, String(body.company || ""), String(body.country || ""), String(body.quantity || ""), String(body.specs || ""), String(body.message || ""), "new", now, now).run();
+  return json({ ok: true, id });
 }
 
 function checkoutSuccessPage() {
@@ -698,6 +912,8 @@ function checkoutSuccessPage() {
 
 async function handleApi(request, env, pathname) {
   if (pathname === "/api/checkout" && request.method === "POST") return stripeCheckout(request, env);
+  if (pathname === "/api/stripe/webhook" && request.method === "POST") return stripeWebhook(request, env);
+  if (pathname === "/api/quote" && request.method === "POST") return quoteRequest(request, env);
   if (pathname === "/api/admin/login" && request.method === "POST") {
     const body = await request.json().catch(() => ({}));
     if (!env.ADMIN_PASSWORD || body.password !== env.ADMIN_PASSWORD) return json({ error: "Invalid password" }, { status: 401 });
@@ -708,14 +924,16 @@ async function handleApi(request, env, pathname) {
   if (!(await isAuthed(request, env))) return json({ error: "Unauthorized" }, { status: 401 });
   if (pathname === "/api/admin/posts" && request.method === "GET") return json(await listAll(env));
   if (pathname === "/api/admin/products" && request.method === "GET") return json(await listProducts(env, { admin: true }));
+  if (pathname === "/api/admin/orders" && request.method === "GET") return json(await listOrders(env));
+  if (pathname === "/api/admin/inquiries" && request.method === "GET") return json(await listInquiries(env));
   if (pathname === "/api/admin/products" && request.method === "POST") {
     const raw = await request.json();
     const now = Math.floor(Date.now() / 1000);
     const id = crypto.randomUUID();
     const p = normalizeProduct(raw, id);
     await ensureCommerce(env);
-    await env.DB.prepare("INSERT INTO products (id,slug,name,sku,excerpt,description,category,material,size,image_url,image_urls,price_cents,currency,inventory,status,allow_checkout,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
-      .bind(id, p.slug, p.name, p.sku, p.excerpt, p.description, p.category, p.material, p.size, p.image_url, p.image_urls, p.price_cents, p.currency, p.inventory, p.status, p.allow_checkout, now, now).run();
+    await env.DB.prepare("INSERT INTO products (id,slug,name,sku,excerpt,description,category,material,size,image_url,image_urls,specs,moq,weight_grams,price_cents,currency,inventory,status,allow_checkout,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
+      .bind(id, p.slug, p.name, p.sku, p.excerpt, p.description, p.category, p.material, p.size, p.image_url, p.image_urls, p.specs, p.moq, p.weight_grams, p.price_cents, p.currency, p.inventory, p.status, p.allow_checkout, now, now).run();
     return json({ ok: true, id, slug: p.slug });
   }
   const productMatch = pathname.match(/^\/api\/admin\/products\/([^/]+)$/);
@@ -724,13 +942,34 @@ async function handleApi(request, env, pathname) {
     if (!existing) return json({ error: "Product not found" }, { status: 404 });
     const p = normalizeProduct(await request.json(), existing.id);
     const now = Math.floor(Date.now() / 1000);
-    await env.DB.prepare("UPDATE products SET slug=?,name=?,sku=?,excerpt=?,description=?,category=?,material=?,size=?,image_url=?,image_urls=?,price_cents=?,currency=?,inventory=?,status=?,allow_checkout=?,updated_at=? WHERE id=?")
-      .bind(p.slug, p.name, p.sku, p.excerpt, p.description, p.category, p.material, p.size, p.image_url, p.image_urls, p.price_cents, p.currency, p.inventory, p.status, p.allow_checkout, now, existing.id).run();
+    await env.DB.prepare("UPDATE products SET slug=?,name=?,sku=?,excerpt=?,description=?,category=?,material=?,size=?,image_url=?,image_urls=?,specs=?,moq=?,weight_grams=?,price_cents=?,currency=?,inventory=?,status=?,allow_checkout=?,updated_at=? WHERE id=?")
+      .bind(p.slug, p.name, p.sku, p.excerpt, p.description, p.category, p.material, p.size, p.image_url, p.image_urls, p.specs, p.moq, p.weight_grams, p.price_cents, p.currency, p.inventory, p.status, p.allow_checkout, now, existing.id).run();
     return json({ ok: true, slug: p.slug });
   }
   if (productMatch && request.method === "DELETE") {
     await ensureCommerce(env);
     await env.DB.prepare("DELETE FROM products WHERE id=?").bind(productMatch[1]).run();
+    return json({ ok: true });
+  }
+  const orderMatch = pathname.match(/^\/api\/admin\/orders\/([^/]+)$/);
+  if (orderMatch && (request.method === "PATCH" || request.method === "PUT")) {
+    await ensureCommerce(env);
+    const body = await request.json().catch(() => ({}));
+    const now = Math.floor(Date.now() / 1000);
+    const status = String(body.fulfillment_status || "new").trim().slice(0, 40) || "new";
+    const notes = String(body.notes || "").slice(0, 4000);
+    await env.DB.prepare("UPDATE orders SET fulfillment_status=?,notes=?,updated_at=? WHERE id=?")
+      .bind(status, notes, now, decodeURIComponent(orderMatch[1])).run();
+    return json({ ok: true });
+  }
+  const inquiryMatch = pathname.match(/^\/api\/admin\/inquiries\/([^/]+)$/);
+  if (inquiryMatch && (request.method === "PATCH" || request.method === "PUT")) {
+    await ensureCommerce(env);
+    const body = await request.json().catch(() => ({}));
+    const now = Math.floor(Date.now() / 1000);
+    const status = String(body.status || "new").trim().slice(0, 40) || "new";
+    await env.DB.prepare("UPDATE inquiries SET status=?,updated_at=? WHERE id=?")
+      .bind(status, now, decodeURIComponent(inquiryMatch[1])).run();
     return json({ ok: true });
   }
   if (pathname === "/api/admin/posts" && request.method === "POST") {
@@ -782,6 +1021,7 @@ export default {
     if (url.pathname.startsWith("/articles/")) return article(env, decodeURIComponent(url.pathname.split("/").pop()));
     if (url.pathname === "/admin") return adminPage();
     if (url.pathname === "/admin/products") return adminProductsPage();
+    if (url.pathname === "/admin/orders") return adminOrdersPage();
     return html(shell({ title: "Not found | Toumyou", description: "Page not found.", content: "<main><h1>Page not found</h1></main>" }), { status: 404 });
   },
 };
