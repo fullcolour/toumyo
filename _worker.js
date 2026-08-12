@@ -147,7 +147,7 @@ async function ensureCommerce(env) {
     image_url TEXT,
     image_urls TEXT,
     price_cents INTEGER DEFAULT 0,
-    currency TEXT DEFAULT 'USD',
+    currency TEXT DEFAULT 'JPY',
     inventory INTEGER DEFAULT 0,
     status TEXT DEFAULT 'draft',
     allow_checkout INTEGER DEFAULT 0,
@@ -175,19 +175,31 @@ function normalizeProduct(p = {}, id = crypto.randomUUID()) {
     image_url: String(p.image_url || p.imageUrl || "").trim(),
     image_urls: String(p.image_urls || p.imageUrls || "").trim(),
     price_cents: priceCents,
-    currency: String(p.currency || "USD").trim().toUpperCase().slice(0, 3) || "USD",
+    currency: String(p.currency || "JPY").trim().toUpperCase().slice(0, 3) || "JPY",
     inventory,
     status: p.status === "published" ? "published" : "draft",
     allow_checkout: p.allow_checkout || p.allowCheckout ? 1 : 0,
   };
 }
 
-function money(cents = 0, currency = "USD") {
-  const value = (Number(cents) || 0) / 100;
+const ZERO_DECIMAL_CURRENCIES = new Set([
+  "BIF", "CLP", "DJF", "GNF", "JPY", "KMF", "KRW", "MGA", "PYG", "RWF", "UGX", "VND", "VUV", "XAF", "XOF", "XPF",
+]);
+
+function currencyScale(currency = "USD") {
+  return ZERO_DECIMAL_CURRENCIES.has(String(currency || "USD").toUpperCase()) ? 1 : 100;
+}
+
+function minorToDisplay(amount = 0, currency = "USD") {
+  return (Number(amount) || 0) / currencyScale(currency);
+}
+
+function money(amount = 0, currency = "USD") {
+  const value = minorToDisplay(amount, currency);
   try {
     return new Intl.NumberFormat("en", { style: "currency", currency: currency || "USD" }).format(value);
   } catch {
-    return `${currency || "USD"} ${value.toFixed(2)}`;
+    return `${currency || "USD"} ${value.toFixed(currencyScale(currency) === 1 ? 0 : 2)}`;
   }
 }
 
@@ -433,28 +445,25 @@ async function shopPage(env) {
       <p class="eyebrow">Product direction</p>
       <h2>A practical catalog<br>for global hardware buyers.</h2>
       <div class="intro-strip">
-        <p>Browse listed fasteners and industrial accessories, or send a specification for sourcing. Products can be managed in the admin backend and connected to Stripe Checkout when payment keys are configured.</p>
+        <p>Browse listed fasteners and industrial accessories, or send a specification for sourcing. Paid items use Stripe Checkout with destination-based shipping choices; quote-only items are handled by email so we can confirm specifications and freight before invoicing.</p>
         <ul>
           <li>Metric and inch fastener categories</li>
           <li>Small-batch procurement and distributor supply</li>
-          <li>Stripe Checkout route after merchant setup</li>
+          <li>Standard or express international delivery at checkout</li>
         </ul>
       </div>
       <div class="article-grid">${products.length ? products.map((p) => productCard(p, env)).join("") : categoryCards}</div>
       ${products.length ? "" : '<div class="notice" style="margin-top:24px">No live products have been published yet. Use <a class="text-link" href="/admin/products">Product Admin</a> to publish the first SKUs.</div>'}
     </section>
     <section class="section">
-      <p class="eyebrow">Commerce system</p>
-      <h2>Built to connect<br>with Medusa.</h2>
+      <p class="eyebrow">Ordering & delivery</p>
+      <h2>Clear steps from<br>specification to shipment.</h2>
       <div class="service-grid">
-        <article><span>Product admin</span><h3>D1-backed product listing is ready.</h3><p>Add products from /admin/products. A full Medusa backend can still be connected later for larger order operations.</p></article>
-        <article><span>Storefront</span><h3>Cloudflare stays fast.</h3><p>Products render directly at the edge, with SEO-friendly product pages and checkout actions.</p></article>
-        <article><span>Payments</span><h3>${escapeHtml(checkoutStatus)}</h3><p>Use Stripe Checkout first for safer cross-border card payment rollout, then add PayPal or bank-transfer flows if needed.</p></article>
+        <article><span>Product details</span><h3>Every paid SKU shows price, stock and specifications.</h3><p>For custom sizes, materials or large quantities, use Request quote and we will confirm availability before payment.</p></article>
+        <article><span>Shipping</span><h3>Choose Standard or Express delivery.</h3><p>Checkout collects the destination address and adds the selected freight charge. Import duties, VAT and local customs fees are paid by the recipient unless your quotation states otherwise.</p></article>
+        <article><span>Payment</span><h3>${escapeHtml(checkoutStatus)}</h3><p>Stripe Checkout may show cards and any wallet methods enabled for this account, including Alipay or WeChat Pay where Stripe has approved them for your business and the buyer’s location.</p></article>
       </div>
-      <div class="notice" style="margin-top:34px">
-        <strong>Current integration status:</strong>
-        ${medusaUrl ? `Backend URL configured: ${escapeHtml(medusaUrl)}` : "Backend URL not configured yet. After Medusa is deployed, add MEDUSA_BACKEND_URL in Cloudflare Pages environment variables."}
-      </div>
+      <div class="notice" style="margin-top:34px"><strong>Shipping note:</strong> Standard delivery is normally 7–14 business days; Express is normally 3–7 business days. The exact charge and delivery estimate are shown by Stripe Checkout before payment.</div>
     </section>
     <section class="contact">
       <div class="contact-grid">
@@ -482,7 +491,7 @@ async function shopPage(env) {
       parentOrganization: { "@type": "Organization", name: "Toumyou LLC" },
       makesOffer: (products.length ? products : SHOP.categories).map((item) => ({
         "@type": "Offer",
-        price: item.price_cents ? (item.price_cents / 100).toFixed(2) : undefined,
+        price: item.price_cents ? String(minorToDisplay(item.price_cents, item.currency)) : undefined,
         priceCurrency: item.currency || undefined,
         itemOffered: { "@type": "Product", name: item.name, description: item.summary || item.excerpt },
         availability: item.inventory ? "https://schema.org/InStock" : "https://schema.org/PreOrder",
@@ -522,6 +531,7 @@ async function productPage(env, slug) {
       <p><strong>Material:</strong> ${escapeHtml(product.material || "Confirm by order")}</p>
       <p><strong>Size:</strong> ${escapeHtml(product.size || "Confirm by order")}</p>
       <p><strong>Inventory:</strong> ${escapeHtml(product.inventory || "Confirm availability")}</p>
+      <p><strong>Delivery:</strong> Standard 7–14 business days or Express 3–7 business days. Freight is calculated in Stripe Checkout; duties and import taxes are normally payable by the recipient.</p>
     </div>
   </article>
   <div class="toolbar">
@@ -546,7 +556,7 @@ async function productPage(env, slug) {
       image: images.length ? images : undefined,
       offers: {
         "@type": "Offer",
-        price: product.price_cents ? (product.price_cents / 100).toFixed(2) : undefined,
+        price: product.price_cents ? String(minorToDisplay(product.price_cents, product.currency)) : undefined,
         priceCurrency: product.currency,
         availability: product.inventory ? "https://schema.org/InStock" : "https://schema.org/PreOrder",
         url: `${SITE.url}/shop/products/${product.slug}`,
@@ -579,11 +589,13 @@ function adminProductsPage() {
       const esc = (v='') => String(v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
       async function api(url, options={}){const r=await fetch(url,{cache:'no-store',headers:{'content-type':'application/json'},...options}); if(!r.ok) throw new Error(await r.text()); return r.json();}
       function login(){app.className='notice';app.innerHTML='<label>Password</label><input id="pw" type="password" autocomplete="current-password"><div class="toolbar"><button class="btn" id="go">Log in</button></div>';document.getElementById('go').onclick=async()=>{try{await api('/api/admin/login',{method:'POST',body:JSON.stringify({password:document.getElementById('pw').value})});load()}catch(e){alert('Login failed')}}}
-      function centsFromPrice(v){const n=Number(String(v||'').replace(/[^0-9.]/g,'')); return Math.round((Number.isFinite(n)?n:0)*100)}
-      function priceFromCents(v){return ((Number(v)||0)/100).toFixed(2)}
-      function form(p={}){const status=p.status||'draft'; const checkout=Number(p.allow_checkout||0)===1; return '<label>Name</label><input id="name" value="'+esc(p.name||'')+'"><label>Slug</label><input id="slug" value="'+esc(p.slug||'')+'"><label>SKU</label><input id="sku" value="'+esc(p.sku||'')+'"><label>Short excerpt</label><textarea id="excerpt">'+esc(p.excerpt||'')+'</textarea><label>Description</label><textarea id="description">'+esc(p.description||'')+'</textarea><label>Category</label><input id="category" value="'+esc(p.category||'Fasteners')+'"><label>Material</label><input id="material" value="'+esc(p.material||'')+'"><label>Size</label><input id="size" value="'+esc(p.size||'')+'"><label>Main image URL</label><input id="image_url" value="'+esc(p.image_url||'')+'"><label>Gallery image URLs</label><textarea id="image_urls" placeholder="One image URL per line. Upload images to Cloudflare Images, R2, or another CDN first.">'+esc(p.image_urls||'')+'</textarea><label>Price</label><input id="price" inputmode="decimal" value="'+esc(priceFromCents(p.price_cents))+'"><label>Currency</label><input id="currency" value="'+esc(p.currency||'USD')+'"><label>Inventory</label><input id="inventory" type="number" min="0" value="'+esc(p.inventory||0)+'"><label>Status</label><select id="status"><option value="draft" '+(status==='draft'?'selected':'')+'>draft</option><option value="published" '+(status==='published'?'selected':'')+'>published</option></select><label><input id="allow_checkout" type="checkbox" style="width:auto" '+(checkout?'checked':'')+'> Enable Stripe Checkout for this product</label><div class="editor-actions"><button class="btn" id="save">Save product</button>'+(p.id?'<button class="btn danger" id="delete">Delete</button>':'')+'<a class="btn secondary" href="/shop" target="_blank">Open shop</a><a class="btn secondary" href="/admin">Articles</a></div><p id="saved" class="status"></p>'}
-      async function load(){try{const s=await api('/api/admin/session'); if(!s.authenticated)return login(); const products=await api('/api/admin/products'); app.className='editor'; app.innerHTML='<aside><button class="btn" id="new">New product</button><div class="articles">'+products.map(p=>'<a class="article-link" data-id="'+esc(p.id)+'"><div class="meta">'+esc(p.status)+' / '+esc(p.category||'Fasteners')+'</div><h3>'+esc(p.name)+'</h3><p>'+esc(p.sku||p.slug)+' · '+esc(priceFromCents(p.price_cents))+' '+esc(p.currency||'USD')+'</p></a>').join('')+'</div></aside><section id="edit">'+form()+'</section>'; const edit=document.getElementById('edit'); document.getElementById('new').onclick=()=>{edit.innerHTML=form(); wireSave()}; document.querySelectorAll('[data-id]').forEach(a=>a.onclick=()=>{const p=products.find(x=>x.id===a.dataset.id); edit.innerHTML=form(p); wireSave(p.id)}); wireSave()}catch(e){app.className='notice';app.textContent=e.message}}
-      function payload(){return {name:document.getElementById('name').value,slug:document.getElementById('slug').value,sku:document.getElementById('sku').value,excerpt:document.getElementById('excerpt').value,description:document.getElementById('description').value,category:document.getElementById('category').value,material:document.getElementById('material').value,size:document.getElementById('size').value,image_url:document.getElementById('image_url').value,image_urls:document.getElementById('image_urls').value,price_cents:centsFromPrice(document.getElementById('price').value),currency:document.getElementById('currency').value,inventory:Number(document.getElementById('inventory').value||0),status:document.getElementById('status').value,allow_checkout:document.getElementById('allow_checkout').checked?1:0}}
+      const zeroDecimalCurrencies = new Set(['BIF','CLP','DJF','GNF','JPY','KMF','KRW','MGA','PYG','RWF','UGX','VND','VUV','XAF','XOF','XPF']);
+      function currencyScale(currency){return zeroDecimalCurrencies.has(String(currency||'USD').toUpperCase())?1:100}
+      function amountFromPrice(v,currency){const n=Number(String(v||'').replace(/[^0-9.]/g,'')); return Math.round((Number.isFinite(n)?n:0)*currencyScale(currency))}
+      function priceFromAmount(v,currency){const scale=currencyScale(currency); return ((Number(v)||0)/scale).toFixed(scale===1?0:2)}
+      function form(p={}){const status=p.status||'draft'; const checkout=Number(p.allow_checkout||0)===1; const currency=p.currency||'JPY'; return '<label>Name</label><input id="name" value="'+esc(p.name||'')+'"><label>Slug</label><input id="slug" value="'+esc(p.slug||'')+'"><label>SKU</label><input id="sku" value="'+esc(p.sku||'')+'"><label>Short excerpt</label><textarea id="excerpt">'+esc(p.excerpt||'')+'</textarea><label>Description</label><textarea id="description">'+esc(p.description||'')+'</textarea><label>Category</label><input id="category" value="'+esc(p.category||'Fasteners')+'"><label>Material</label><input id="material" value="'+esc(p.material||'')+'"><label>Size</label><input id="size" value="'+esc(p.size||'')+'"><label>Main image URL</label><input id="image_url" value="'+esc(p.image_url||'')+'"><label>Gallery image URLs</label><textarea id="image_urls" placeholder="One image URL per line. Upload images to Cloudflare Images, R2, or another CDN first.">'+esc(p.image_urls||'')+'</textarea><label>Price</label><input id="price" inputmode="decimal" value="'+esc(priceFromAmount(p.price_cents,currency))+'"><label>Currency</label><input id="currency" value="'+esc(currency)+'"><label>Inventory</label><input id="inventory" type="number" min="0" value="'+esc(p.inventory||0)+'"><label>Status</label><select id="status"><option value="draft" '+(status==='draft'?'selected':'')+'>draft</option><option value="published" '+(status==='published'?'selected':'')+'>published</option></select><label><input id="allow_checkout" type="checkbox" style="width:auto" '+(checkout?'checked':'')+'> Enable Stripe Checkout for this product</label><div class="editor-actions"><button class="btn" id="save">Save product</button>'+(p.id?'<button class="btn danger" id="delete">Delete</button>':'')+'<a class="btn secondary" href="/shop" target="_blank">Open shop</a><a class="btn secondary" href="/admin">Articles</a></div><p id="saved" class="status"></p>'}
+      async function load(){try{const s=await api('/api/admin/session'); if(!s.authenticated)return login(); const products=await api('/api/admin/products'); app.className='editor'; app.innerHTML='<aside><button class="btn" id="new">New product</button><div class="articles">'+products.map(p=>'<a class="article-link" data-id="'+esc(p.id)+'"><div class="meta">'+esc(p.status)+' / '+esc(p.category||'Fasteners')+'</div><h3>'+esc(p.name)+'</h3><p>'+esc(p.sku||p.slug)+' · '+esc(priceFromAmount(p.price_cents,p.currency))+' '+esc(p.currency||'JPY')+'</p></a>').join('')+'</div></aside><section id="edit">'+form()+'</section>'; const edit=document.getElementById('edit'); document.getElementById('new').onclick=()=>{edit.innerHTML=form(); wireSave()}; document.querySelectorAll('[data-id]').forEach(a=>a.onclick=()=>{const p=products.find(x=>x.id===a.dataset.id); edit.innerHTML=form(p); wireSave(p.id)}); wireSave()}catch(e){app.className='notice';app.textContent=e.message}}
+      function payload(){const currency=document.getElementById('currency').value; return {name:document.getElementById('name').value,slug:document.getElementById('slug').value,sku:document.getElementById('sku').value,excerpt:document.getElementById('excerpt').value,description:document.getElementById('description').value,category:document.getElementById('category').value,material:document.getElementById('material').value,size:document.getElementById('size').value,image_url:document.getElementById('image_url').value,image_urls:document.getElementById('image_urls').value,price_cents:amountFromPrice(document.getElementById('price').value,currency),currency,inventory:Number(document.getElementById('inventory').value||0),status:document.getElementById('status').value,allow_checkout:document.getElementById('allow_checkout').checked?1:0}}
       function wireSave(id){document.getElementById('save').onclick=async()=>{const p=payload(); const result=await api(id?'/api/admin/products/'+id:'/api/admin/products',{method:id?'PUT':'POST',body:JSON.stringify(p)}); const slug=result.slug||p.slug; document.getElementById('saved').innerHTML='Saved. <a class="text-link" target="_blank" href="/shop/products/'+encodeURIComponent(slug)+'?fresh='+Date.now()+'">Open product</a> or <a class="text-link" target="_blank" href="/shop?fresh='+Date.now()+'">check shop</a>.'; if(!id)setTimeout(load,700)}; const del=document.getElementById('delete'); if(del)del.onclick=async()=>{if(!confirm('Delete this product?'))return; await api('/api/admin/products/'+id,{method:'DELETE'}); load()}}
       load();
     </script></main>`;
@@ -629,6 +641,30 @@ async function stripeCheckout(request, env) {
   params.set("shipping_address_collection[allowed_countries][5]", "DE");
   params.set("shipping_address_collection[allowed_countries][6]", "FR");
   params.set("shipping_address_collection[allowed_countries][7]", "SG");
+  params.set("shipping_address_collection[allowed_countries][8]", "CN");
+  params.set("shipping_address_collection[allowed_countries][9]", "HK");
+  params.set("shipping_address_collection[allowed_countries][10]", "TW");
+  // Keep freight visible and selectable in Stripe Checkout. Values can be
+  // overridden per deployment without changing product prices.
+  const shippingCurrency = String(product.currency || "USD").toLowerCase();
+  const standardShipping = Math.max(0, Number.parseInt(env.SHIPPING_STANDARD_CENTS || "2500", 10) || 2500);
+  const expressShipping = Math.max(0, Number.parseInt(env.SHIPPING_EXPRESS_CENTS || "6500", 10) || 6500);
+  params.set("shipping_options[0][shipping_rate_data][type]", "fixed_amount");
+  params.set("shipping_options[0][shipping_rate_data][display_name]", "Standard international shipping");
+  params.set("shipping_options[0][shipping_rate_data][fixed_amount][amount]", String(standardShipping));
+  params.set("shipping_options[0][shipping_rate_data][fixed_amount][currency]", shippingCurrency);
+  params.set("shipping_options[0][shipping_rate_data][delivery_estimate][minimum][unit]", "business_day");
+  params.set("shipping_options[0][shipping_rate_data][delivery_estimate][minimum][value]", "7");
+  params.set("shipping_options[0][shipping_rate_data][delivery_estimate][maximum][unit]", "business_day");
+  params.set("shipping_options[0][shipping_rate_data][delivery_estimate][maximum][value]", "14");
+  params.set("shipping_options[1][shipping_rate_data][type]", "fixed_amount");
+  params.set("shipping_options[1][shipping_rate_data][display_name]", "Express international shipping");
+  params.set("shipping_options[1][shipping_rate_data][fixed_amount][amount]", String(expressShipping));
+  params.set("shipping_options[1][shipping_rate_data][fixed_amount][currency]", shippingCurrency);
+  params.set("shipping_options[1][shipping_rate_data][delivery_estimate][minimum][unit]", "business_day");
+  params.set("shipping_options[1][shipping_rate_data][delivery_estimate][minimum][value]", "3");
+  params.set("shipping_options[1][shipping_rate_data][delivery_estimate][maximum][unit]", "business_day");
+  params.set("shipping_options[1][shipping_rate_data][delivery_estimate][maximum][value]", "7");
   params.set("line_items[0][quantity]", String(quantity));
   params.set("line_items[0][price_data][currency]", String(product.currency || "USD").toLowerCase());
   params.set("line_items[0][price_data][unit_amount]", String(product.price_cents));
