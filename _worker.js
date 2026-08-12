@@ -132,6 +132,78 @@ async function getPost(env, slug) {
     .first();
 }
 
+async function ensureCommerce(env) {
+  if (!env.DB) return;
+  await env.DB.prepare(`CREATE TABLE IF NOT EXISTS products (
+    id TEXT PRIMARY KEY,
+    slug TEXT NOT NULL UNIQUE,
+    name TEXT NOT NULL,
+    sku TEXT,
+    excerpt TEXT,
+    description TEXT,
+    category TEXT,
+    material TEXT,
+    size TEXT,
+    image_url TEXT,
+    price_cents INTEGER DEFAULT 0,
+    currency TEXT DEFAULT 'USD',
+    inventory INTEGER DEFAULT 0,
+    status TEXT DEFAULT 'draft',
+    allow_checkout INTEGER DEFAULT 0,
+    created_at INTEGER,
+    updated_at INTEGER
+  )`).run();
+}
+
+function normalizeProduct(p = {}, id = crypto.randomUUID()) {
+  const name = String(p.name || "Untitled product").trim();
+  const slug = slugify(p.slug || name || id);
+  const priceCents = Math.max(0, Number.parseInt(p.price_cents ?? p.priceCents ?? 0, 10) || 0);
+  const inventory = Math.max(0, Number.parseInt(p.inventory ?? 0, 10) || 0);
+  return {
+    id,
+    slug,
+    name,
+    sku: String(p.sku || "").trim(),
+    excerpt: String(p.excerpt || "").trim(),
+    description: String(p.description || "").trim(),
+    category: String(p.category || "Fasteners").trim(),
+    material: String(p.material || "").trim(),
+    size: String(p.size || "").trim(),
+    image_url: String(p.image_url || p.imageUrl || "").trim(),
+    price_cents: priceCents,
+    currency: String(p.currency || "USD").trim().toUpperCase().slice(0, 3) || "USD",
+    inventory,
+    status: p.status === "published" ? "published" : "draft",
+    allow_checkout: p.allow_checkout || p.allowCheckout ? 1 : 0,
+  };
+}
+
+function money(cents = 0, currency = "USD") {
+  const value = (Number(cents) || 0) / 100;
+  try {
+    return new Intl.NumberFormat("en", { style: "currency", currency: currency || "USD" }).format(value);
+  } catch {
+    return `${currency || "USD"} ${value.toFixed(2)}`;
+  }
+}
+
+async function listProducts(env, { admin = false } = {}) {
+  await ensureCommerce(env);
+  if (!env.DB) return [];
+  const sql = admin
+    ? "SELECT * FROM products ORDER BY updated_at DESC"
+    : "SELECT * FROM products WHERE lower(trim(status))='published' ORDER BY updated_at DESC";
+  const result = await env.DB.prepare(sql).all();
+  return result.results || [];
+}
+
+async function getProduct(env, slugOrId) {
+  await ensureCommerce(env);
+  if (!env.DB) return null;
+  return await env.DB.prepare("SELECT * FROM products WHERE slug=? OR id=?").bind(slugOrId, slugOrId).first();
+}
+
 function shell({ title, description, path = "/", content, schema }) {
   const canonical = `${SITE.url}${path}`;
   return `<!doctype html>
@@ -302,9 +374,34 @@ async function article(env, slug) {
   }));
 }
 
-function shopPage(env) {
+function productCard(product, env) {
+  const canCheckout = product.allow_checkout && product.price_cents > 0 && (env.STRIPE_SECRET_KEY || env.STRIPE_RESTRICTED_KEY);
+  const price = product.price_cents > 0 ? money(product.price_cents, product.currency) : "Quote";
+  const meta = [product.category, product.material, product.size].filter(Boolean).join(" / ") || "Fastener";
+  const image = product.image_url
+    ? `<img src="${escapeHtml(product.image_url)}" alt="${escapeHtml(product.name)}" loading="lazy" style="width:100%;height:190px;object-fit:cover;border-radius:6px;margin-bottom:18px">`
+    : "";
+  return `<article class="article-card">
+    ${image}
+    <div class="meta">${escapeHtml(meta)}</div>
+    <h3>${escapeHtml(product.name)}</h3>
+    <p>${escapeHtml(product.excerpt || product.description || "Industrial supply item available for cross-border sourcing.")}</p>
+    <p class="muted">SKU: ${escapeHtml(product.sku || product.slug)} · ${escapeHtml(price)}${product.inventory ? ` · Stock ${escapeHtml(product.inventory)}` : ""}</p>
+    <div class="toolbar" style="margin-top:auto">
+      <a class="btn secondary" href="/shop/products/${escapeHtml(product.slug)}">Details</a>
+      ${
+        canCheckout
+          ? `<form method="post" action="/api/checkout"><input type="hidden" name="product_id" value="${escapeHtml(product.id)}"><input type="hidden" name="quantity" value="1"><button class="btn" type="submit">Checkout</button></form>`
+          : `<a class="btn" href="mailto:sunflyerjp@gmail.com?subject=${encodeURIComponent(`Quote request: ${product.name}`)}">Request quote</a>`
+      }
+    </div>
+  </article>`;
+}
+
+async function shopPage(env) {
   const medusaUrl = env.MEDUSA_BACKEND_URL || "";
   const checkoutStatus = env.STRIPE_SECRET_KEY || env.STRIPE_RESTRICTED_KEY ? "Payment gateway ready for Stripe configuration." : "Payment gateway pending merchant configuration.";
+  const products = await listProducts(env);
   const categoryCards = SHOP.categories
     .map(
       (item) => `<article class="article-card"><div class="meta">Catalog / ${escapeHtml(item.slug)}</div><h3>${escapeHtml(item.name)}</h3><p>${escapeHtml(item.summary)}</p><b>Request quote</b></article>`,
@@ -322,21 +419,22 @@ function shopPage(env) {
       <p class="eyebrow">Product direction</p>
       <h2>A practical catalog<br>for global hardware buyers.</h2>
       <div class="intro-strip">
-        <p>The store is being prepared for a mature headless commerce backend, with product management, orders, customers, and payment handled outside the static page layer. This Cloudflare site will remain the fast public storefront.</p>
+        <p>Browse listed fasteners and industrial accessories, or send a specification for sourcing. Products can be managed in the admin backend and connected to Stripe Checkout when payment keys are configured.</p>
         <ul>
           <li>Metric and inch fastener categories</li>
           <li>Small-batch procurement and distributor supply</li>
-          <li>Stripe / PayPal checkout route after merchant setup</li>
+          <li>Stripe Checkout route after merchant setup</li>
         </ul>
       </div>
-      <div class="article-grid">${categoryCards}</div>
+      <div class="article-grid">${products.length ? products.map((p) => productCard(p, env)).join("") : categoryCards}</div>
+      ${products.length ? "" : '<div class="notice" style="margin-top:24px">No live products have been published yet. Use <a class="text-link" href="/admin/products">Product Admin</a> to publish the first SKUs.</div>'}
     </section>
     <section class="section">
       <p class="eyebrow">Commerce system</p>
       <h2>Built to connect<br>with Medusa.</h2>
       <div class="service-grid">
-        <article><span>Backend</span><h3>Medusa commerce admin.</h3><p>Recommended mature GitHub project: medusajs/medusa for catalog, orders, customers, regions, and payment providers.</p></article>
-        <article><span>Storefront</span><h3>Cloudflare stays fast.</h3><p>This site can consume a Medusa Store API when the backend URL is configured as MEDUSA_BACKEND_URL.</p></article>
+        <article><span>Product admin</span><h3>D1-backed product listing is ready.</h3><p>Add products from /admin/products. A full Medusa backend can still be connected later for larger order operations.</p></article>
+        <article><span>Storefront</span><h3>Cloudflare stays fast.</h3><p>Products render directly at the edge, with SEO-friendly product pages and checkout actions.</p></article>
         <article><span>Payments</span><h3>${escapeHtml(checkoutStatus)}</h3><p>Use Stripe Checkout first for safer cross-border card payment rollout, then add PayPal or bank-transfer flows if needed.</p></article>
       </div>
       <div class="notice" style="margin-top:34px">
@@ -350,7 +448,7 @@ function shopPage(env) {
         <ul class="contact-list">
           <li><span>Examples</span><p class="address">M3–M24 screws, stainless bolts, nuts, washers, anchors, pins, rivets, clips, brackets, and custom hardware.</p></li>
           <li><span>Markets</span><p class="address">Japan, Asia, North America, Europe, and cross-border B2B buyers.</p></li>
-          <li><span>Next</span><p class="address">Configure Medusa backend, upload SKU catalog, connect Stripe, then turn quote cards into checkout products.</p></li>
+          <li><span>Next</span><p class="address">Upload SKU catalog, configure Stripe, then enable checkout per product from the product admin.</p></li>
         </ul>
       </div>
     </section>
@@ -368,11 +466,63 @@ function shopPage(env) {
       description: SHOP.description,
       email: "sunflyerjp@gmail.com",
       parentOrganization: { "@type": "Organization", name: "Toumyou LLC" },
-      makesOffer: SHOP.categories.map((item) => ({
+      makesOffer: (products.length ? products : SHOP.categories).map((item) => ({
         "@type": "Offer",
-        itemOffered: { "@type": "Product", name: item.name, description: item.summary },
-        availability: "https://schema.org/PreOrder",
+        price: item.price_cents ? (item.price_cents / 100).toFixed(2) : undefined,
+        priceCurrency: item.currency || undefined,
+        itemOffered: { "@type": "Product", name: item.name, description: item.summary || item.excerpt },
+        availability: item.inventory ? "https://schema.org/InStock" : "https://schema.org/PreOrder",
       })),
+    },
+  }));
+}
+
+async function productPage(env, slug) {
+  const product = await getProduct(env, slug);
+  if (!product || product.status !== "published") {
+    return html(shell({ title: "Product not found | Toumyou", description: "Product not found.", content: "<main><h1>Product not found</h1></main>" }), { status: 404 });
+  }
+  const canCheckout = product.allow_checkout && product.price_cents > 0 && (env.STRIPE_SECRET_KEY || env.STRIPE_RESTRICTED_KEY);
+  const content = `<main class="article-page article"><article>
+    <div class="meta">${escapeHtml(product.category || "Fasteners")} / ${escapeHtml(product.sku || product.slug)}</div>
+    <h1>${escapeHtml(product.name)}</h1>
+    <p class="article-dek">${escapeHtml(product.excerpt || "Cross-border fastener and industrial accessory supply.")}</p>
+    ${product.image_url ? `<img src="${escapeHtml(product.image_url)}" alt="${escapeHtml(product.name)}" style="width:100%;max-height:460px;object-fit:cover;border-radius:10px;margin:10px 0 34px">` : ""}
+    <div class="post-body">${escapeHtml(product.description || "")}</div>
+    <div class="notice" style="margin-top:34px">
+      <p><strong>Price:</strong> ${escapeHtml(product.price_cents > 0 ? money(product.price_cents, product.currency) : "Quote required")}</p>
+      <p><strong>Material:</strong> ${escapeHtml(product.material || "Confirm by order")}</p>
+      <p><strong>Size:</strong> ${escapeHtml(product.size || "Confirm by order")}</p>
+      <p><strong>Inventory:</strong> ${escapeHtml(product.inventory || "Confirm availability")}</p>
+    </div>
+  </article>
+  <div class="toolbar">
+    ${
+      canCheckout
+        ? `<form method="post" action="/api/checkout"><input type="hidden" name="product_id" value="${escapeHtml(product.id)}"><label>Quantity</label><input name="quantity" type="number" min="1" max="999" value="1" style="max-width:130px"><button class="btn" type="submit">Checkout with Stripe</button></form>`
+        : `<a class="btn" href="mailto:sunflyerjp@gmail.com?subject=${encodeURIComponent(`Quote request: ${product.name}`)}">Request quote</a>`
+    }
+    <a class="btn secondary" href="/shop">Back to shop</a>
+  </div></main>`;
+  return html(shell({
+    title: `${product.name} | Toumyou Shop`,
+    description: product.excerpt || product.description || SHOP.description,
+    path: `/shop/products/${product.slug}`,
+    content,
+    schema: {
+      "@context": "https://schema.org",
+      "@type": "Product",
+      name: product.name,
+      sku: product.sku || product.slug,
+      description: product.excerpt || product.description,
+      image: product.image_url || undefined,
+      offers: {
+        "@type": "Offer",
+        price: product.price_cents ? (product.price_cents / 100).toFixed(2) : undefined,
+        priceCurrency: product.currency,
+        availability: product.inventory ? "https://schema.org/InStock" : "https://schema.org/PreOrder",
+        url: `${SITE.url}/shop/products/${product.slug}`,
+      },
     },
   }));
 }
@@ -393,7 +543,97 @@ function adminPage() {
   return html(shell({ title: "Admin | Toumyou", description: "Toumyou admin.", path: "/admin", content }), { cache: "no-store" });
 }
 
+function adminProductsPage() {
+  const content = `<main class="admin-wrap"><h1>Products</h1><p class="lead">Add fastener SKUs, publish product pages, and enable checkout when Stripe is configured.</p>
+    <div id="app" class="notice">Loading...</div>
+    <script>
+      const app = document.getElementById('app');
+      const esc = (v='') => String(v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
+      async function api(url, options={}){const r=await fetch(url,{cache:'no-store',headers:{'content-type':'application/json'},...options}); if(!r.ok) throw new Error(await r.text()); return r.json();}
+      function login(){app.className='notice';app.innerHTML='<label>Password</label><input id="pw" type="password" autocomplete="current-password"><div class="toolbar"><button class="btn" id="go">Log in</button></div>';document.getElementById('go').onclick=async()=>{try{await api('/api/admin/login',{method:'POST',body:JSON.stringify({password:document.getElementById('pw').value})});load()}catch(e){alert('Login failed')}}}
+      function centsFromPrice(v){const n=Number(String(v||'').replace(/[^0-9.]/g,'')); return Math.round((Number.isFinite(n)?n:0)*100)}
+      function priceFromCents(v){return ((Number(v)||0)/100).toFixed(2)}
+      function form(p={}){const status=p.status||'draft'; const checkout=Number(p.allow_checkout||0)===1; return '<label>Name</label><input id="name" value="'+esc(p.name||'')+'"><label>Slug</label><input id="slug" value="'+esc(p.slug||'')+'"><label>SKU</label><input id="sku" value="'+esc(p.sku||'')+'"><label>Short excerpt</label><textarea id="excerpt">'+esc(p.excerpt||'')+'</textarea><label>Description</label><textarea id="description">'+esc(p.description||'')+'</textarea><label>Category</label><input id="category" value="'+esc(p.category||'Fasteners')+'"><label>Material</label><input id="material" value="'+esc(p.material||'')+'"><label>Size</label><input id="size" value="'+esc(p.size||'')+'"><label>Image URL</label><input id="image_url" value="'+esc(p.image_url||'')+'"><label>Price</label><input id="price" inputmode="decimal" value="'+esc(priceFromCents(p.price_cents))+'"><label>Currency</label><input id="currency" value="'+esc(p.currency||'USD')+'"><label>Inventory</label><input id="inventory" type="number" min="0" value="'+esc(p.inventory||0)+'"><label>Status</label><select id="status"><option value="draft" '+(status==='draft'?'selected':'')+'>draft</option><option value="published" '+(status==='published'?'selected':'')+'>published</option></select><label><input id="allow_checkout" type="checkbox" style="width:auto" '+(checkout?'checked':'')+'> Enable Stripe Checkout for this product</label><div class="editor-actions"><button class="btn" id="save">Save product</button>'+(p.id?'<button class="btn danger" id="delete">Delete</button>':'')+'<a class="btn secondary" href="/shop" target="_blank">Open shop</a><a class="btn secondary" href="/admin">Articles</a></div><p id="saved" class="status"></p>'}
+      async function load(){try{const s=await api('/api/admin/session'); if(!s.authenticated)return login(); const products=await api('/api/admin/products'); app.className='editor'; app.innerHTML='<aside><button class="btn" id="new">New product</button><div class="articles">'+products.map(p=>'<a class="article-link" data-id="'+esc(p.id)+'"><div class="meta">'+esc(p.status)+' / '+esc(p.category||'Fasteners')+'</div><h3>'+esc(p.name)+'</h3><p>'+esc(p.sku||p.slug)+' · '+esc(priceFromCents(p.price_cents))+' '+esc(p.currency||'USD')+'</p></a>').join('')+'</div></aside><section id="edit">'+form()+'</section>'; const edit=document.getElementById('edit'); document.getElementById('new').onclick=()=>{edit.innerHTML=form(); wireSave()}; document.querySelectorAll('[data-id]').forEach(a=>a.onclick=()=>{const p=products.find(x=>x.id===a.dataset.id); edit.innerHTML=form(p); wireSave(p.id)}); wireSave()}catch(e){app.className='notice';app.textContent=e.message}}
+      function payload(){return {name:document.getElementById('name').value,slug:document.getElementById('slug').value,sku:document.getElementById('sku').value,excerpt:document.getElementById('excerpt').value,description:document.getElementById('description').value,category:document.getElementById('category').value,material:document.getElementById('material').value,size:document.getElementById('size').value,image_url:document.getElementById('image_url').value,price_cents:centsFromPrice(document.getElementById('price').value),currency:document.getElementById('currency').value,inventory:Number(document.getElementById('inventory').value||0),status:document.getElementById('status').value,allow_checkout:document.getElementById('allow_checkout').checked?1:0}}
+      function wireSave(id){document.getElementById('save').onclick=async()=>{const p=payload(); const result=await api(id?'/api/admin/products/'+id:'/api/admin/products',{method:id?'PUT':'POST',body:JSON.stringify(p)}); const slug=result.slug||p.slug; document.getElementById('saved').innerHTML='Saved. <a class="text-link" target="_blank" href="/shop/products/'+encodeURIComponent(slug)+'?fresh='+Date.now()+'">Open product</a> or <a class="text-link" target="_blank" href="/shop?fresh='+Date.now()+'">check shop</a>.'; if(!id)setTimeout(load,700)}; const del=document.getElementById('delete'); if(del)del.onclick=async()=>{if(!confirm('Delete this product?'))return; await api('/api/admin/products/'+id,{method:'DELETE'}); load()}}
+      load();
+    </script></main>`;
+  return html(shell({ title: "Product Admin | Toumyou", description: "Toumyou product admin.", path: "/admin/products", content }), { cache: "no-store" });
+}
+
+async function readBody(request) {
+  const contentType = request.headers.get("content-type") || "";
+  if (contentType.includes("application/json")) return request.json().catch(() => ({}));
+  if (contentType.includes("application/x-www-form-urlencoded") || contentType.includes("multipart/form-data")) {
+    const form = await request.formData();
+    return Object.fromEntries([...form.entries()].map(([k, v]) => [k, String(v)]));
+  }
+  return {};
+}
+
+async function stripeCheckout(request, env) {
+  const stripeKey = env.STRIPE_RESTRICTED_KEY || env.STRIPE_SECRET_KEY;
+  if (!stripeKey) return html(shell({
+    title: "Checkout not configured | Toumyou",
+    description: "Stripe checkout is not configured yet.",
+    content: '<main class="listing"><h1>Checkout is<br><em>not configured.</em></h1><p class="lead">Please request a quote while payment keys are being configured.</p><a class="btn" href="mailto:sunflyerjp@gmail.com?subject=Fastener%20quote%20request">Request quote</a></main>',
+  }), { status: 503 });
+  const body = await readBody(request);
+  const productId = body.product_id || body.productId;
+  const quantity = Math.min(999, Math.max(1, Number.parseInt(body.quantity || "1", 10) || 1));
+  const product = await getProduct(env, productId);
+  if (!product || product.status !== "published" || !product.allow_checkout || product.price_cents <= 0) {
+    return json({ error: "Product is not available for checkout" }, { status: 400 });
+  }
+  const params = new URLSearchParams();
+  params.set("mode", "payment");
+  params.set("success_url", `${SITE.url}/shop/success?session_id={CHECKOUT_SESSION_ID}`);
+  params.set("cancel_url", `${SITE.url}/shop/products/${encodeURIComponent(product.slug)}`);
+  params.set("client_reference_id", product.id);
+  params.set("integration_identifier", "toumyou_shop_mqzjprla");
+  params.set("phone_number_collection[enabled]", "true");
+  params.set("shipping_address_collection[allowed_countries][0]", "JP");
+  params.set("shipping_address_collection[allowed_countries][1]", "US");
+  params.set("shipping_address_collection[allowed_countries][2]", "CA");
+  params.set("shipping_address_collection[allowed_countries][3]", "GB");
+  params.set("shipping_address_collection[allowed_countries][4]", "AU");
+  params.set("shipping_address_collection[allowed_countries][5]", "DE");
+  params.set("shipping_address_collection[allowed_countries][6]", "FR");
+  params.set("shipping_address_collection[allowed_countries][7]", "SG");
+  params.set("line_items[0][quantity]", String(quantity));
+  params.set("line_items[0][price_data][currency]", String(product.currency || "USD").toLowerCase());
+  params.set("line_items[0][price_data][unit_amount]", String(product.price_cents));
+  params.set("line_items[0][price_data][product_data][name]", product.name);
+  params.set("line_items[0][price_data][product_data][description]", product.excerpt || product.description || product.sku || product.slug);
+  if (product.image_url) params.set("line_items[0][price_data][product_data][images][0]", product.image_url);
+  params.set("metadata[product_id]", product.id);
+  params.set("metadata[product_slug]", product.slug);
+  const response = await fetch("https://api.stripe.com/v1/checkout/sessions", {
+    method: "POST",
+    headers: {
+      authorization: `Bearer ${stripeKey}`,
+      "content-type": "application/x-www-form-urlencoded",
+      "stripe-version": "2026-06-24.dahlia",
+    },
+    body: params,
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok || !data.url) return json({ error: "Stripe checkout failed", details: data.error?.message || "Unknown error" }, { status: 502 });
+  return Response.redirect(data.url, 303);
+}
+
+function checkoutSuccessPage() {
+  return html(shell({
+    title: "Payment received | Toumyou",
+    description: "Thank you for your Toumyou shop order.",
+    path: "/shop/success",
+    content: '<main class="listing"><h1>Payment received,<br><em>thank you.</em></h1><p class="lead">Your Stripe checkout has completed. We will review the order and contact you about shipping, export handling, and delivery details.</p><div class="toolbar"><a class="btn" href="/shop">Back to shop</a><a class="btn secondary" href="mailto:sunflyerjp@gmail.com">Contact us</a></div></main>',
+  }), { cache: "no-store" });
+}
+
 async function handleApi(request, env, pathname) {
+  if (pathname === "/api/checkout" && request.method === "POST") return stripeCheckout(request, env);
   if (pathname === "/api/admin/login" && request.method === "POST") {
     const body = await request.json().catch(() => ({}));
     if (!env.ADMIN_PASSWORD || body.password !== env.ADMIN_PASSWORD) return json({ error: "Invalid password" }, { status: 401 });
@@ -403,6 +643,32 @@ async function handleApi(request, env, pathname) {
   if (pathname === "/api/admin/session") return json({ authenticated: await isAuthed(request, env) });
   if (!(await isAuthed(request, env))) return json({ error: "Unauthorized" }, { status: 401 });
   if (pathname === "/api/admin/posts" && request.method === "GET") return json(await listAll(env));
+  if (pathname === "/api/admin/products" && request.method === "GET") return json(await listProducts(env, { admin: true }));
+  if (pathname === "/api/admin/products" && request.method === "POST") {
+    const raw = await request.json();
+    const now = Math.floor(Date.now() / 1000);
+    const id = crypto.randomUUID();
+    const p = normalizeProduct(raw, id);
+    await ensureCommerce(env);
+    await env.DB.prepare("INSERT INTO products (id,slug,name,sku,excerpt,description,category,material,size,image_url,price_cents,currency,inventory,status,allow_checkout,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
+      .bind(id, p.slug, p.name, p.sku, p.excerpt, p.description, p.category, p.material, p.size, p.image_url, p.price_cents, p.currency, p.inventory, p.status, p.allow_checkout, now, now).run();
+    return json({ ok: true, id, slug: p.slug });
+  }
+  const productMatch = pathname.match(/^\/api\/admin\/products\/([^/]+)$/);
+  if (productMatch && request.method === "PUT") {
+    const existing = await getProduct(env, productMatch[1]);
+    if (!existing) return json({ error: "Product not found" }, { status: 404 });
+    const p = normalizeProduct(await request.json(), existing.id);
+    const now = Math.floor(Date.now() / 1000);
+    await env.DB.prepare("UPDATE products SET slug=?,name=?,sku=?,excerpt=?,description=?,category=?,material=?,size=?,image_url=?,price_cents=?,currency=?,inventory=?,status=?,allow_checkout=?,updated_at=? WHERE id=?")
+      .bind(p.slug, p.name, p.sku, p.excerpt, p.description, p.category, p.material, p.size, p.image_url, p.price_cents, p.currency, p.inventory, p.status, p.allow_checkout, now, existing.id).run();
+    return json({ ok: true, slug: p.slug });
+  }
+  if (productMatch && request.method === "DELETE") {
+    await ensureCommerce(env);
+    await env.DB.prepare("DELETE FROM products WHERE id=?").bind(productMatch[1]).run();
+    return json({ ok: true });
+  }
   if (pathname === "/api/admin/posts" && request.method === "POST") {
     const p = await request.json();
     const now = Math.floor(Date.now() / 1000);
@@ -431,7 +697,8 @@ async function handleApi(request, env, pathname) {
 
 async function sitemap(env) {
   const posts = await listPublished(env);
-  const urls = ["/", "/shop", "/articles", ...posts.map((p) => `/articles/${p.slug}`)];
+  const products = await listProducts(env);
+  const urls = ["/", "/shop", "/articles", ...products.map((p) => `/shop/products/${p.slug}`), ...posts.map((p) => `/articles/${p.slug}`)];
   return new Response(`<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${urls.map((u) => `<url><loc>${SITE.url}${u}</loc></url>`).join("")}</urlset>`, {
     headers: { "content-type": "application/xml; charset=utf-8", "cache-control": "no-store, no-cache, must-revalidate" },
   });
@@ -445,9 +712,12 @@ export default {
     if (url.pathname.startsWith("/api/")) return handleApi(request, env, url.pathname);
     if (url.pathname === "/") return home(env);
     if (url.pathname === "/shop") return shopPage(env);
+    if (url.pathname === "/shop/success") return checkoutSuccessPage();
+    if (url.pathname.startsWith("/shop/products/")) return productPage(env, decodeURIComponent(url.pathname.split("/").pop()));
     if (url.pathname === "/articles") return articles(env);
     if (url.pathname.startsWith("/articles/")) return article(env, decodeURIComponent(url.pathname.split("/").pop()));
     if (url.pathname === "/admin") return adminPage();
+    if (url.pathname === "/admin/products") return adminProductsPage();
     return html(shell({ title: "Not found | Toumyou", description: "Page not found.", content: "<main><h1>Page not found</h1></main>" }), { status: 404 });
   },
 };
