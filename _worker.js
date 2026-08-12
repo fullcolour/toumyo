@@ -1,6 +1,6 @@
 const SITE = {
   name: "Toumyou",
-  url: "https://toumyou-studio.pages.dev",
+  url: "https://toumyou.com",
   description:
     "Toumyou LLC is an independent digital studio in Japan for brand identities, animation, WeChat mini-programs, websites, software, and AI workflows.",
 };
