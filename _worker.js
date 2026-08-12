@@ -314,6 +314,57 @@ function safeJson(value) {
   }
 }
 
+function mediaContentType(key = "") {
+  const lower = String(key).toLowerCase();
+  if (lower.endsWith(".png")) return "image/png";
+  if (lower.endsWith(".jpg") || lower.endsWith(".jpeg")) return "image/jpeg";
+  if (lower.endsWith(".webp")) return "image/webp";
+  if (lower.endsWith(".gif")) return "image/gif";
+  if (lower.endsWith(".svg")) return "image/svg+xml";
+  return "application/octet-stream";
+}
+
+function safeFileName(name = "image") {
+  const ext = (String(name).match(/\.[a-z0-9]{2,8}$/i)?.[0] || "").toLowerCase();
+  const base = String(name).replace(/\.[a-z0-9]{2,8}$/i, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60) || "image";
+  return `${base}${ext}`;
+}
+
+async function mediaFile(request, env, key) {
+  if (!env.ASSETS) return new Response("Media bucket is not configured", { status: 503 });
+  const object = await env.ASSETS.get(key);
+  if (!object) return new Response("Not found", { status: 404 });
+  const headers = new Headers();
+  object.writeHttpMetadata?.(headers);
+  if (!headers.has("content-type")) headers.set("content-type", mediaContentType(key));
+  headers.set("etag", object.httpEtag || object.etag || "");
+  headers.set("cache-control", "public, max-age=31536000, immutable");
+  return new Response(object.body, { headers });
+}
+
+async function uploadMedia(request, env) {
+  if (!env.ASSETS) return json({ error: "R2 bucket binding ASSETS is not configured yet" }, { status: 503 });
+  const form = await request.formData();
+  const files = [...form.getAll("files"), form.get("file")].filter((file) => file && typeof file === "object" && file.name);
+  if (!files.length) return json({ error: "No image file received" }, { status: 400 });
+  const uploaded = [];
+  const now = new Date();
+  const yyyy = now.getUTCFullYear();
+  const mm = String(now.getUTCMonth() + 1).padStart(2, "0");
+  for (const file of files.slice(0, 12)) {
+    const type = String(file.type || "");
+    if (!type.startsWith("image/")) return json({ error: "Only image files are supported" }, { status: 400 });
+    if (file.size > 8 * 1024 * 1024) return json({ error: "Each image must be smaller than 8 MB" }, { status: 400 });
+    const key = `products/${yyyy}/${mm}/${crypto.randomUUID()}-${safeFileName(file.name)}`;
+    await env.ASSETS.put(key, file.stream(), {
+      httpMetadata: { contentType: type || mediaContentType(file.name) },
+      customMetadata: { originalName: String(file.name).slice(0, 180) },
+    });
+    uploaded.push({ key, url: `/media/${key}`, name: file.name, size: file.size, type });
+  }
+  return json({ ok: true, files: uploaded });
+}
+
 function shell({ title, description, path = "/", content, schema }) {
   const canonical = `${SITE.url}${path}`;
   return `<!doctype html>
@@ -347,7 +398,7 @@ function shell({ title, description, path = "/", content, schema }) {
     .portfolio-grid{display:grid;grid-template-columns:1.15fr .85fr 1fr;grid-auto-rows:minmax(330px,auto);gap:16px;margin-top:70px}.work-card{position:relative;overflow:hidden;border-radius:10px;background:var(--panel);min-height:330px;display:flex;align-items:flex-end}.work-card.large{grid-row:span 2}.work-card img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:saturate(.82) contrast(1.02)}.work-card:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(23,24,21,.03),rgba(23,24,21,.78))}.work-copy{position:relative;z-index:1;color:#fff;padding:26px}.work-copy span{font-size:11px;text-transform:uppercase;letter-spacing:.9px;color:#d8dccf}.work-copy h3{margin:16px 0 8px;color:#fff}.work-copy p{margin:0;color:#eceee7;max-width:300px}
     .timeline{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0;margin-top:72px;border-top:1px solid var(--ink)}.timeline article{padding:26px 26px 0 0;min-height:300px;border-right:1px solid var(--line)}.timeline article+article{padding-left:26px}.timeline article:last-child{border-right:0}.timeline img{width:100%;height:135px;object-fit:cover;border-radius:10px;margin-bottom:28px;filter:saturate(.85)}.timeline strong{font-size:13px;text-transform:uppercase;letter-spacing:.8px}.timeline h3{margin:18px 0 12px}.team-panel{margin-top:70px;display:grid;grid-template-columns:.9fr 1.1fr;gap:16px}.team-note{background:var(--ink);color:var(--paper);border-radius:10px;padding:32px;display:flex;flex-direction:column;justify-content:space-between;min-height:420px}.team-note p{font-size:24px;line-height:1.35;margin:0;color:#f2f0e8}.team-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}.person{background:var(--panel);border-radius:10px;overflow:hidden}.person img{width:100%;height:260px;object-fit:cover;display:block;filter:saturate(.85)}.person div{padding:20px}.person h3{margin:0 0 8px;font-size:28px}.person p{margin:0;color:var(--muted)}.logo-row{display:flex;gap:24px;flex-wrap:wrap;align-items:center;margin-top:50px}.logo-row img{max-height:44px;max-width:132px;object-fit:contain;filter:grayscale(1) contrast(.95);opacity:.72}
     .article-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-top:62px}.article-card{min-height:275px;padding:24px;background:var(--panel);display:flex;flex-direction:column;border-radius:6px;transition:transform .2s,background .2s}.article-card:hover{transform:translateY(-3px);background:var(--acid)}
-    .shop-filter{display:grid;grid-template-columns:1.3fr .7fr .7fr;gap:12px;margin:34px 0 0}.product-card[hidden]{display:none}.pill-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.pill{border:1px solid var(--line);border-radius:999px;padding:6px 10px;font-size:12px;background:rgba(250,248,241,.72)}.product-buy{display:flex;gap:12px;align-items:end;flex-wrap:wrap}.product-buy input{max-width:130px}.order-meta{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:14px 0}.order-meta span{display:block;border-top:1px solid var(--line);padding-top:8px;color:var(--muted);font-size:13px}
+    .shop-filter{display:grid;grid-template-columns:1.3fr .7fr .7fr;gap:12px;margin:34px 0 0}.catalog-first{padding-top:58px}.catalog-first h1{font-family:Georgia,"Times New Roman",serif;font-size:clamp(52px,6.6vw,104px);font-weight:500;letter-spacing:-.07em;line-height:.9;margin:0;max-width:940px}.product-card[hidden]{display:none}.pill-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.pill{border:1px solid var(--line);border-radius:999px;padding:6px 10px;font-size:12px;background:rgba(250,248,241,.72)}.product-buy{display:flex;gap:12px;align-items:end;flex-wrap:wrap}.product-buy input{max-width:130px}.order-meta{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:14px 0}.order-meta span{display:block;border-top:1px solid var(--line);padding-top:8px;color:var(--muted);font-size:13px}
     .article-card h3{margin:34px 0 14px}.article-card p{color:var(--muted)}.article-card b{margin-top:auto;font-size:12px}.empty{margin-top:62px;padding:34px;border-top:1px solid var(--ink)}.empty p{font-family:Georgia,"Times New Roman",serif;font-size:32px;margin:0 0 8px}
     .contact{background:var(--ink);color:var(--paper);padding:104px 8vw;min-height:520px}.contact-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:8vw;align-items:end}.contact-mail{display:block;margin-top:48px;font-size:clamp(20px,2.6vw,36px);border-bottom:1px solid #666960;padding-bottom:13px}.contact-list{list-style:none;margin:0;padding:0;border-top:1px solid #666960}.contact-list li{display:grid;grid-template-columns:90px 1fr;gap:24px;padding:18px 0;border-bottom:1px solid #41433d}.contact-list span{font-size:11px;text-transform:uppercase;letter-spacing:.9px;color:#a9ada2}.address{font-size:13px;line-height:1.7;color:#c5c7be;margin:0}
     footer{padding:24px 4vw;background:var(--ink);color:#c5c7be;display:flex;justify-content:space-between;gap:20px;border-top:1px solid #494b44;font-size:11px}.listing{padding:88px 8vw}.listing h1{font-size:clamp(56px,7vw,108px)}.articles{display:grid;gap:14px}.article-link{display:block;border-top:1px solid var(--line);padding:24px 0}.article-link:hover h3{color:#2b3310}
@@ -524,16 +575,9 @@ async function shopPage(env) {
     )
     .join("");
   const content = `<main>
-    <section class="hero">
-      <p class="eyebrow">Cross-border fastener supply</p>
-      <h1>Fasteners,<br><em>without friction.</em></h1>
-      <p class="lead">${escapeHtml(SHOP.description)}</p>
-      <div class="toolbar"><a class="btn" href="mailto:sunflyerjp@gmail.com?subject=Fastener%20quote%20request">Request a quote</a><a class="btn secondary" href="#catalog">View catalog</a></div>
-      <div class="hero-note">Bolts, screws, nuts, washers and sourcing support</div>
-    </section>
-    <section id="catalog" class="section">
-      <p class="eyebrow">Product direction</p>
-      <h2>A practical catalog<br>for global hardware buyers.</h2>
+    <section id="catalog" class="section catalog-first">
+      <p class="eyebrow">Product catalog</p>
+      <h1>Fastener products,<br><em>ready to source.</em></h1>
       <div class="intro-strip">
         <p>Browse listed fasteners and industrial accessories, or send a specification for sourcing. Paid items use Stripe Checkout with destination-based shipping choices; quote-only items are handled by email so we can confirm specifications and freight before invoicing.</p>
         <ul>
@@ -583,6 +627,13 @@ async function shopPage(env) {
             </script>`
           : ""
       }
+    </section>
+    <section class="hero">
+      <p class="eyebrow">Cross-border fastener supply</p>
+      <h1>Fasteners,<br><em>without friction.</em></h1>
+      <p class="lead">${escapeHtml(SHOP.description)}</p>
+      <div class="toolbar"><a class="btn" href="mailto:sunflyerjp@gmail.com?subject=Fastener%20quote%20request">Request a quote</a><a class="btn secondary" href="#catalog">Back to catalog</a></div>
+      <div class="hero-note">Bolts, screws, nuts, washers and sourcing support</div>
     </section>
     <section class="section">
       <p class="eyebrow">Ordering & delivery</p>
@@ -763,10 +814,11 @@ function adminProductsPage() {
       function currencyScale(currency){return zeroDecimalCurrencies.has(String(currency||'USD').toUpperCase())?1:100}
       function amountFromPrice(v,currency){const n=Number(String(v||'').replace(/[^0-9.]/g,'')); return Math.round((Number.isFinite(n)?n:0)*currencyScale(currency))}
       function priceFromAmount(v,currency){const scale=currencyScale(currency); return ((Number(v)||0)/scale).toFixed(scale===1?0:2)}
-      function form(p={}){const status=p.status||'draft'; const checkout=Number(p.allow_checkout||0)===1; const currency=p.currency||'JPY'; return '<label>Name</label><input id="name" value="'+esc(p.name||'')+'"><label>Slug</label><input id="slug" value="'+esc(p.slug||'')+'"><label>SKU</label><input id="sku" value="'+esc(p.sku||'')+'"><label>Short excerpt</label><textarea id="excerpt">'+esc(p.excerpt||'')+'</textarea><label>Description</label><textarea id="description">'+esc(p.description||'')+'</textarea><label>Category</label><input id="category" value="'+esc(p.category||'Fasteners')+'"><label>Material</label><input id="material" value="'+esc(p.material||'')+'"><label>Size</label><input id="size" value="'+esc(p.size||'')+'"><label>Detailed specifications</label><textarea id="specs" placeholder="Standards, finish, thread pitch, packaging, drawing notes...">'+esc(p.specs||'')+'</textarea><label>MOQ</label><input id="moq" type="number" min="1" value="'+esc(p.moq||1)+'"><label>Weight grams / unit</label><input id="weight_grams" type="number" min="0" value="'+esc(p.weight_grams||0)+'"><label>Main image URL</label><input id="image_url" value="'+esc(p.image_url||'')+'"><label>Gallery image URLs</label><textarea id="image_urls" placeholder="One image URL per line. Upload images to Cloudflare Images, R2, or another CDN first.">'+esc(p.image_urls||'')+'</textarea><label>Price</label><input id="price" inputmode="decimal" value="'+esc(priceFromAmount(p.price_cents,currency))+'"><label>Currency</label><input id="currency" value="'+esc(currency)+'"><label>Inventory</label><input id="inventory" type="number" min="0" value="'+esc(p.inventory||0)+'"><label>Status</label><select id="status"><option value="draft" '+(status==='draft'?'selected':'')+'>draft</option><option value="published" '+(status==='published'?'selected':'')+'>published</option></select><label><input id="allow_checkout" type="checkbox" style="width:auto" '+(checkout?'checked':'')+'> Enable Stripe Checkout for this product</label><div class="editor-actions"><button class="btn" id="save">Save product</button>'+(p.id?'<button class="btn danger" id="delete">Delete</button>':'')+'<a class="btn secondary" href="/shop" target="_blank">Open shop</a><a class="btn secondary" href="/admin/orders">Orders</a><a class="btn secondary" href="/admin">Articles</a></div><p id="saved" class="status"></p>'}
+      function form(p={}){const status=p.status||'draft'; const checkout=Number(p.allow_checkout||0)===1; const currency=p.currency||'JPY'; return '<label>Name</label><input id="name" value="'+esc(p.name||'')+'"><label>Slug</label><input id="slug" value="'+esc(p.slug||'')+'"><label>SKU</label><input id="sku" value="'+esc(p.sku||'')+'"><label>Short excerpt</label><textarea id="excerpt">'+esc(p.excerpt||'')+'</textarea><label>Description</label><textarea id="description">'+esc(p.description||'')+'</textarea><label>Category</label><input id="category" value="'+esc(p.category||'Fasteners')+'"><label>Material</label><input id="material" value="'+esc(p.material||'')+'"><label>Size</label><input id="size" value="'+esc(p.size||'')+'"><label>Detailed specifications</label><textarea id="specs" placeholder="Standards, finish, thread pitch, packaging, drawing notes...">'+esc(p.specs||'')+'</textarea><label>MOQ</label><input id="moq" type="number" min="1" value="'+esc(p.moq||1)+'"><label>Weight grams / unit</label><input id="weight_grams" type="number" min="0" value="'+esc(p.weight_grams||0)+'"><label>Main image URL</label><input id="image_url" value="'+esc(p.image_url||'')+'"><label>Gallery image URLs</label><textarea id="image_urls" placeholder="One image URL per line. Upload images below or paste CDN URLs here.">'+esc(p.image_urls||'')+'</textarea><label>Upload product images</label><input id="image_files" type="file" accept="image/*" multiple><div class="toolbar"><button class="btn secondary" id="upload_images" type="button">Upload images</button><span id="upload_status" class="muted">Images are stored in Cloudflare R2.</span></div><label>Price</label><input id="price" inputmode="decimal" value="'+esc(priceFromAmount(p.price_cents,currency))+'"><label>Currency</label><input id="currency" value="'+esc(currency)+'"><label>Inventory</label><input id="inventory" type="number" min="0" value="'+esc(p.inventory||0)+'"><label>Status</label><select id="status"><option value="draft" '+(status==='draft'?'selected':'')+'>draft</option><option value="published" '+(status==='published'?'selected':'')+'>published</option></select><label><input id="allow_checkout" type="checkbox" style="width:auto" '+(checkout?'checked':'')+'> Enable Stripe Checkout for this product</label><div class="editor-actions"><button class="btn" id="save">Save product</button>'+(p.id?'<button class="btn danger" id="delete">Delete</button>':'')+'<a class="btn secondary" href="/shop" target="_blank">Open shop</a><a class="btn secondary" href="/admin/orders">Orders</a><a class="btn secondary" href="/admin">Articles</a></div><p id="saved" class="status"></p>'}
       async function load(){try{const s=await api('/api/admin/session'); if(!s.authenticated)return login(); const products=await api('/api/admin/products'); app.className='editor'; app.innerHTML='<aside><button class="btn" id="new">New product</button><div class="articles">'+products.map(p=>'<a class="article-link" data-id="'+esc(p.id)+'"><div class="meta">'+esc(p.status)+' / '+esc(p.category||'Fasteners')+'</div><h3>'+esc(p.name)+'</h3><p>'+esc(p.sku||p.slug)+' · '+esc(priceFromAmount(p.price_cents,p.currency))+' '+esc(p.currency||'JPY')+'</p></a>').join('')+'</div></aside><section id="edit">'+form()+'</section>'; const edit=document.getElementById('edit'); document.getElementById('new').onclick=()=>{edit.innerHTML=form(); wireSave()}; document.querySelectorAll('[data-id]').forEach(a=>a.onclick=()=>{const p=products.find(x=>x.id===a.dataset.id); edit.innerHTML=form(p); wireSave(p.id)}); wireSave()}catch(e){app.className='notice';app.textContent=e.message}}
+      async function uploadImages(){const input=document.getElementById('image_files'); const status=document.getElementById('upload_status'); if(!input?.files?.length){status.textContent='Choose one or more image files first.';return} const form=new FormData(); [...input.files].forEach(file=>form.append('files',file)); status.textContent='Uploading...'; const r=await fetch('/api/admin/upload',{method:'POST',body:form}); const data=await r.json().catch(()=>({})); if(!r.ok){status.textContent=data.error||'Upload failed';return} const urls=(data.files||[]).map(f=>f.url).filter(Boolean); if(!urls.length){status.textContent='No image URL returned.';return} const main=document.getElementById('image_url'); const gallery=document.getElementById('image_urls'); if(!main.value)main.value=urls[0]; const existing=gallery.value.trim(); gallery.value=[existing,...urls.slice(main.value===urls[0]?1:0)].filter(Boolean).join('\\n'); status.textContent='Uploaded '+urls.length+' image(s). Save product to publish them.'}
       function payload(){const currency=document.getElementById('currency').value; return {name:document.getElementById('name').value,slug:document.getElementById('slug').value,sku:document.getElementById('sku').value,excerpt:document.getElementById('excerpt').value,description:document.getElementById('description').value,category:document.getElementById('category').value,material:document.getElementById('material').value,size:document.getElementById('size').value,specs:document.getElementById('specs').value,moq:Number(document.getElementById('moq').value||1),weight_grams:Number(document.getElementById('weight_grams').value||0),image_url:document.getElementById('image_url').value,image_urls:document.getElementById('image_urls').value,price_cents:amountFromPrice(document.getElementById('price').value,currency),currency,inventory:Number(document.getElementById('inventory').value||0),status:document.getElementById('status').value,allow_checkout:document.getElementById('allow_checkout').checked?1:0}}
-      function wireSave(id){document.getElementById('save').onclick=async()=>{const p=payload(); const result=await api(id?'/api/admin/products/'+id:'/api/admin/products',{method:id?'PUT':'POST',body:JSON.stringify(p)}); const slug=result.slug||p.slug; document.getElementById('saved').innerHTML='Saved. <a class="text-link" target="_blank" href="/shop/products/'+encodeURIComponent(slug)+'?fresh='+Date.now()+'">Open product</a> or <a class="text-link" target="_blank" href="/shop?fresh='+Date.now()+'">check shop</a>.'; if(!id)setTimeout(load,700)}; const del=document.getElementById('delete'); if(del)del.onclick=async()=>{if(!confirm('Delete this product?'))return; await api('/api/admin/products/'+id,{method:'DELETE'}); load()}}
+      function wireSave(id){const uploader=document.getElementById('upload_images'); if(uploader)uploader.onclick=uploadImages; document.getElementById('save').onclick=async()=>{const p=payload(); const result=await api(id?'/api/admin/products/'+id:'/api/admin/products',{method:id?'PUT':'POST',body:JSON.stringify(p)}); const slug=result.slug||p.slug; document.getElementById('saved').innerHTML='Saved. <a class="text-link" target="_blank" href="/shop/products/'+encodeURIComponent(slug)+'?fresh='+Date.now()+'">Open product</a> or <a class="text-link" target="_blank" href="/shop?fresh='+Date.now()+'">check shop</a>.'; if(!id)setTimeout(load,700)}; const del=document.getElementById('delete'); if(del)del.onclick=async()=>{if(!confirm('Delete this product?'))return; await api('/api/admin/products/'+id,{method:'DELETE'}); load()}}
       load();
     </script></main>`;
   return html(shell({ title: "Product Admin | Toumyou", description: "Toumyou product admin.", path: "/admin/products", content }), { cache: "no-store" });
@@ -1004,6 +1056,7 @@ async function handleApi(request, env, pathname) {
   if (pathname === "/api/admin/products" && request.method === "GET") return json(await listProducts(env, { admin: true }));
   if (pathname === "/api/admin/orders" && request.method === "GET") return json(await listOrders(env));
   if (pathname === "/api/admin/inquiries" && request.method === "GET") return json(await listInquiries(env));
+  if (pathname === "/api/admin/upload" && request.method === "POST") return uploadMedia(request, env);
   if (pathname === "/api/admin/products" && request.method === "POST") {
     const raw = await request.json();
     const now = Math.floor(Date.now() / 1000);
@@ -1090,6 +1143,7 @@ export default {
     const url = new URL(request.url);
     if (url.pathname === "/robots.txt") return new Response(`User-agent: *\nAllow: /\nSitemap: ${SITE.url}/sitemap.xml\n`, { headers: { "content-type": "text/plain; charset=utf-8" } });
     if (url.pathname === "/sitemap.xml") return sitemap(env);
+    if (url.pathname.startsWith("/media/")) return mediaFile(request, env, decodeURIComponent(url.pathname.slice("/media/".length)));
     if (url.pathname.startsWith("/api/")) return handleApi(request, env, url.pathname);
     if (url.pathname === "/") return home(env);
     if (url.pathname === "/shop") return shopPage(env);
