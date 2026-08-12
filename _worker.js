@@ -347,6 +347,7 @@ function shell({ title, description, path = "/", content, schema }) {
     .portfolio-grid{display:grid;grid-template-columns:1.15fr .85fr 1fr;grid-auto-rows:minmax(330px,auto);gap:16px;margin-top:70px}.work-card{position:relative;overflow:hidden;border-radius:10px;background:var(--panel);min-height:330px;display:flex;align-items:flex-end}.work-card.large{grid-row:span 2}.work-card img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:saturate(.82) contrast(1.02)}.work-card:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(23,24,21,.03),rgba(23,24,21,.78))}.work-copy{position:relative;z-index:1;color:#fff;padding:26px}.work-copy span{font-size:11px;text-transform:uppercase;letter-spacing:.9px;color:#d8dccf}.work-copy h3{margin:16px 0 8px;color:#fff}.work-copy p{margin:0;color:#eceee7;max-width:300px}
     .timeline{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0;margin-top:72px;border-top:1px solid var(--ink)}.timeline article{padding:26px 26px 0 0;min-height:300px;border-right:1px solid var(--line)}.timeline article+article{padding-left:26px}.timeline article:last-child{border-right:0}.timeline img{width:100%;height:135px;object-fit:cover;border-radius:10px;margin-bottom:28px;filter:saturate(.85)}.timeline strong{font-size:13px;text-transform:uppercase;letter-spacing:.8px}.timeline h3{margin:18px 0 12px}.team-panel{margin-top:70px;display:grid;grid-template-columns:.9fr 1.1fr;gap:16px}.team-note{background:var(--ink);color:var(--paper);border-radius:10px;padding:32px;display:flex;flex-direction:column;justify-content:space-between;min-height:420px}.team-note p{font-size:24px;line-height:1.35;margin:0;color:#f2f0e8}.team-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}.person{background:var(--panel);border-radius:10px;overflow:hidden}.person img{width:100%;height:260px;object-fit:cover;display:block;filter:saturate(.85)}.person div{padding:20px}.person h3{margin:0 0 8px;font-size:28px}.person p{margin:0;color:var(--muted)}.logo-row{display:flex;gap:24px;flex-wrap:wrap;align-items:center;margin-top:50px}.logo-row img{max-height:44px;max-width:132px;object-fit:contain;filter:grayscale(1) contrast(.95);opacity:.72}
     .article-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-top:62px}.article-card{min-height:275px;padding:24px;background:var(--panel);display:flex;flex-direction:column;border-radius:6px;transition:transform .2s,background .2s}.article-card:hover{transform:translateY(-3px);background:var(--acid)}
+    .shop-filter{display:grid;grid-template-columns:1.3fr .7fr .7fr;gap:12px;margin:34px 0 0}.product-card[hidden]{display:none}.pill-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.pill{border:1px solid var(--line);border-radius:999px;padding:6px 10px;font-size:12px;background:rgba(250,248,241,.72)}.product-buy{display:flex;gap:12px;align-items:end;flex-wrap:wrap}.product-buy input{max-width:130px}.order-meta{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:14px 0}.order-meta span{display:block;border-top:1px solid var(--line);padding-top:8px;color:var(--muted);font-size:13px}
     .article-card h3{margin:34px 0 14px}.article-card p{color:var(--muted)}.article-card b{margin-top:auto;font-size:12px}.empty{margin-top:62px;padding:34px;border-top:1px solid var(--ink)}.empty p{font-family:Georgia,"Times New Roman",serif;font-size:32px;margin:0 0 8px}
     .contact{background:var(--ink);color:var(--paper);padding:104px 8vw;min-height:520px}.contact-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:8vw;align-items:end}.contact-mail{display:block;margin-top:48px;font-size:clamp(20px,2.6vw,36px);border-bottom:1px solid #666960;padding-bottom:13px}.contact-list{list-style:none;margin:0;padding:0;border-top:1px solid #666960}.contact-list li{display:grid;grid-template-columns:90px 1fr;gap:24px;padding:18px 0;border-bottom:1px solid #41433d}.contact-list span{font-size:11px;text-transform:uppercase;letter-spacing:.9px;color:#a9ada2}.address{font-size:13px;line-height:1.7;color:#c5c7be;margin:0}
     footer{padding:24px 4vw;background:var(--ink);color:#c5c7be;display:flex;justify-content:space-between;gap:20px;border-top:1px solid #494b44;font-size:11px}.listing{padding:88px 8vw}.listing h1{font-size:clamp(56px,7vw,108px)}.articles{display:grid;gap:14px}.article-link{display:block;border-top:1px solid var(--line);padding:24px 0}.article-link:hover h3{color:#2b3310}
@@ -489,11 +490,13 @@ function productCard(product, env) {
   const price = product.price_cents > 0 ? money(product.price_cents, product.currency) : "Quote";
   const meta = [product.category, product.material, product.size].filter(Boolean).join(" / ") || "Fastener";
   const moq = Number(product.moq || 1) > 1 ? ` · MOQ ${escapeHtml(product.moq)}` : "";
+  const minQty = Math.max(1, Number.parseInt(product.moq || 1, 10) || 1);
+  const searchText = [product.name, product.sku, product.slug, product.category, product.material, product.size, product.excerpt, product.description, product.specs].filter(Boolean).join(" ").toLowerCase();
   const images = productImages(product);
   const image = images[0]
     ? `<img src="${escapeHtml(images[0])}" alt="${escapeHtml(product.name)}" loading="lazy" style="width:100%;height:190px;object-fit:cover;border-radius:6px;margin-bottom:18px">`
     : "";
-  return `<article class="article-card">
+  return `<article class="article-card product-card" data-product-card data-search="${escapeHtml(searchText)}" data-category="${escapeHtml(product.category || "")}">
     ${image}
     <div class="meta">${escapeHtml(meta)}</div>
     <h3>${escapeHtml(product.name)}</h3>
@@ -503,7 +506,7 @@ function productCard(product, env) {
       <a class="btn secondary" href="/shop/products/${escapeHtml(product.slug)}">Details</a>
       ${
         canCheckout
-          ? `<form method="post" action="/api/checkout"><input type="hidden" name="product_id" value="${escapeHtml(product.id)}"><input type="hidden" name="quantity" value="1"><button class="btn" type="submit">Checkout</button></form>`
+          ? `<form method="post" action="/api/checkout"><input type="hidden" name="product_id" value="${escapeHtml(product.id)}"><input type="hidden" name="quantity" value="${escapeHtml(minQty)}"><button class="btn" type="submit">Checkout</button></form>`
           : `<a class="btn" href="mailto:sunflyerjp@gmail.com?subject=${encodeURIComponent(`Quote request: ${product.name}`)}">Request quote</a>`
       }
     </div>
@@ -514,6 +517,7 @@ async function shopPage(env) {
   const medusaUrl = env.MEDUSA_BACKEND_URL || "";
   const checkoutStatus = env.STRIPE_SECRET_KEY || env.STRIPE_RESTRICTED_KEY ? "Payment gateway ready for Stripe configuration." : "Payment gateway pending merchant configuration.";
   const products = await listProducts(env);
+  const categories = [...new Set(products.map((p) => String(p.category || "Fasteners").trim()).filter(Boolean))].sort();
   const categoryCards = SHOP.categories
     .map(
       (item) => `<article class="article-card"><div class="meta">Catalog / ${escapeHtml(item.slug)}</div><h3>${escapeHtml(item.name)}</h3><p>${escapeHtml(item.summary)}</p><b>Request quote</b></article>`,
@@ -538,8 +542,47 @@ async function shopPage(env) {
           <li>Standard or express international delivery at checkout</li>
         </ul>
       </div>
+      ${
+        products.length
+          ? `<div class="shop-filter">
+              <input id="shopSearch" type="search" placeholder="Search by SKU, size, material, standard...">
+              <select id="shopCategory"><option value="">All categories</option>${categories.map((c) => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join("")}</select>
+              <select id="shopAvailability"><option value="">All availability</option><option value="stock">In stock</option><option value="quote">Quote / preorder</option></select>
+            </div>
+            <p id="shopCount" class="muted" style="max-width:none;margin-top:12px">${products.length} products listed</p>`
+          : ""
+      }
       <div class="article-grid">${products.length ? products.map((p) => productCard(p, env)).join("") : categoryCards}</div>
       ${products.length ? "" : '<div class="notice" style="margin-top:24px">No live products have been published yet. Use <a class="text-link" href="/admin/products">Product Admin</a> to publish the first SKUs.</div>'}
+      ${
+        products.length
+          ? `<script>
+              (() => {
+                const search = document.getElementById('shopSearch');
+                const category = document.getElementById('shopCategory');
+                const availability = document.getElementById('shopAvailability');
+                const count = document.getElementById('shopCount');
+                const cards = [...document.querySelectorAll('[data-product-card]')];
+                function applyFilter(){
+                  const q = (search?.value || '').trim().toLowerCase();
+                  const c = category?.value || '';
+                  const a = availability?.value || '';
+                  let shown = 0;
+                  cards.forEach(card => {
+                    const text = card.dataset.search || '';
+                    const cat = card.dataset.category || '';
+                    const stock = card.textContent.includes('Stock ');
+                    const ok = (!q || text.includes(q)) && (!c || cat === c) && (!a || (a === 'stock' ? stock : !stock));
+                    card.hidden = !ok;
+                    if (ok) shown += 1;
+                  });
+                  if (count) count.textContent = shown + ' of ' + cards.length + ' products shown';
+                }
+                [search, category, availability].forEach(el => el && el.addEventListener('input', applyFilter));
+              })();
+            </script>`
+          : ""
+      }
     </section>
     <section class="section">
       <p class="eyebrow">Ordering & delivery</p>
@@ -594,6 +637,8 @@ async function productPage(env, slug) {
   const canCheckout = product.allow_checkout && product.price_cents > 0 && (env.STRIPE_SECRET_KEY || env.STRIPE_RESTRICTED_KEY);
   const images = productImages(product);
   const specs = String(product.specs || "").trim();
+  const minQty = Math.max(1, Number.parseInt(product.moq || 1, 10) || 1);
+  const maxQty = product.inventory ? Math.max(minQty, Math.min(999, Number.parseInt(product.inventory, 10) || 999)) : 999;
   const specRows = [
     ["SKU", product.sku || product.slug],
     ["Category", product.category || "Fasteners"],
@@ -635,7 +680,7 @@ async function productPage(env, slug) {
   <div class="toolbar">
     ${
       canCheckout
-        ? `<form method="post" action="/api/checkout"><input type="hidden" name="product_id" value="${escapeHtml(product.id)}"><label>Quantity</label><input name="quantity" type="number" min="1" max="999" value="1" style="max-width:130px"><button class="btn" type="submit">Checkout with Stripe</button></form>`
+        ? `<form class="product-buy" method="post" action="/api/checkout"><input type="hidden" name="product_id" value="${escapeHtml(product.id)}"><div><label>Quantity</label><input name="quantity" type="number" min="${escapeHtml(minQty)}" max="${escapeHtml(maxQty)}" value="${escapeHtml(minQty)}"></div><button class="btn" type="submit">Checkout with Stripe</button><span class="muted">MOQ ${escapeHtml(minQty)}${product.inventory ? ` · Max ${escapeHtml(maxQty)} now` : ""}</span></form>`
         : `<a class="btn" href="mailto:sunflyerjp@gmail.com?subject=${encodeURIComponent(`Quote request: ${product.name}`)}">Request quote</a>`
     }
     <a class="btn secondary" href="/shop">Back to shop</a>
@@ -673,6 +718,8 @@ async function productPage(env, slug) {
       "@type": "Product",
       name: product.name,
       sku: product.sku || product.slug,
+      mpn: product.sku || product.slug,
+      brand: { "@type": "Brand", name: "Toumyou Fastener Supply" },
       description: product.excerpt || product.description,
       image: images.length ? images : undefined,
       offers: {
@@ -680,6 +727,8 @@ async function productPage(env, slug) {
         price: product.price_cents ? String(minorToDisplay(product.price_cents, product.currency)) : undefined,
         priceCurrency: product.currency,
         availability: product.inventory ? "https://schema.org/InStock" : "https://schema.org/PreOrder",
+        inventoryLevel: product.inventory ? { "@type": "QuantitativeValue", value: Number(product.inventory) || 0 } : undefined,
+        eligibleQuantity: { "@type": "QuantitativeValue", minValue: minQty },
         url: `${SITE.url}/shop/products/${product.slug}`,
       },
     },
@@ -733,7 +782,7 @@ function adminOrdersPage() {
       function login(){app.className='notice';app.innerHTML='<label>Password</label><input id="pw" type="password" autocomplete="current-password"><div class="toolbar"><button class="btn" id="go">Log in</button></div>';document.getElementById('go').onclick=async()=>{try{await api('/api/admin/login',{method:'POST',body:JSON.stringify({password:document.getElementById('pw').value})});load()}catch(e){alert('Login failed')}}}
       function money(amount,currency){try{return new Intl.NumberFormat('en',{style:'currency',currency:currency||'JPY'}).format(Number(amount||0)/(['BIF','CLP','DJF','GNF','JPY','KMF','KRW','MGA','PYG','RWF','UGX','VND','VUV','XAF','XOF','XPF'].includes(String(currency||'JPY').toUpperCase())?1:100))}catch{return (currency||'JPY')+' '+amount}}
       function dt(v){return v?new Date(Number(v)*1000).toLocaleString():'-'}
-      function orderCard(o){return '<article class="article-card"><div class="meta">'+esc(o.payment_status||'pending')+' / '+esc(o.fulfillment_status||'new')+'</div><h3>'+esc(o.product_name||o.product_slug||'Order')+'</h3><p>'+esc(o.sku||'No SKU')+' · Qty '+esc(o.quantity||1)+' · '+esc(money(o.amount_total,o.currency))+'</p><p class="muted">'+esc(o.customer_email||'No email yet')+'<br>'+esc(o.shipping_address||'No shipping address yet')+'</p><label>Fulfillment</label><select data-status="'+esc(o.id)+'"><option value="new">new</option><option value="processing">processing</option><option value="shipped">shipped</option><option value="completed">completed</option><option value="cancelled">cancelled</option></select><label>Notes</label><textarea data-notes="'+esc(o.id)+'">'+esc(o.notes||'')+'</textarea><div class="toolbar"><button class="btn" data-save-order="'+esc(o.id)+'">Save</button><a class="btn secondary" href="https://dashboard.stripe.com/payments/'+esc(o.stripe_payment_intent||'')+'" target="_blank">Stripe</a></div><p class="muted">Created '+esc(dt(o.created_at))+'</p></article>'}
+      function orderCard(o){const stripe=o.stripe_payment_intent?'<a class="btn secondary" href="https://dashboard.stripe.com/payments/'+esc(o.stripe_payment_intent)+'" target="_blank">Stripe payment</a>':'<span class="pill">Waiting for webhook</span>';return '<article class="article-card"><div class="meta">'+esc(o.payment_status||'pending')+' / '+esc(o.fulfillment_status||'new')+'</div><h3>'+esc(o.product_name||o.product_slug||'Order')+'</h3><p>'+esc(o.sku||'No SKU')+' · Qty '+esc(o.quantity||1)+' · '+esc(money(o.amount_total,o.currency))+'</p><div class="order-meta"><span>Email<br>'+esc(o.customer_email||'No email yet')+'</span><span>Name<br>'+esc(o.customer_name||o.shipping_name||'-')+'</span><span>Phone<br>'+esc(o.customer_phone||'-')+'</span><span>Country<br>'+esc(o.shipping_country||'-')+'</span></div><p class="muted">'+esc(o.shipping_address||'No shipping address yet')+'</p><p class="muted">Session: '+esc(o.stripe_session_id||'-')+'</p><label>Fulfillment</label><select data-status="'+esc(o.id)+'"><option value="new">new</option><option value="processing">processing</option><option value="shipped">shipped</option><option value="completed">completed</option><option value="cancelled">cancelled</option></select><label>Notes</label><textarea data-notes="'+esc(o.id)+'">'+esc(o.notes||'')+'</textarea><div class="toolbar"><button class="btn" data-save-order="'+esc(o.id)+'">Save</button>'+stripe+'</div><p class="muted">Created '+esc(dt(o.created_at))+' · Updated '+esc(dt(o.updated_at))+'</p></article>'}
       function inquiryCard(q){return '<article class="article-card"><div class="meta">Quote / '+esc(q.status||'new')+'</div><h3>'+esc(q.product_name||'General inquiry')+'</h3><p>'+esc(q.name||'')+' · '+esc(q.email||'')+' · '+esc(q.company||'')+'</p><p class="muted">Qty '+esc(q.quantity||'-')+' · '+esc(q.country||'')+'</p><p>'+esc(q.specs||q.message||'').replace(/\\n/g,'<br>')+'</p><label>Status</label><select data-inquiry-status="'+esc(q.id)+'"><option value="new">new</option><option value="quoted">quoted</option><option value="won">won</option><option value="lost">lost</option><option value="archived">archived</option></select><div class="toolbar"><button class="btn" data-save-inquiry="'+esc(q.id)+'">Save</button><a class="btn secondary" href="mailto:'+encodeURIComponent(q.email||'')+'?subject='+encodeURIComponent('Quote request: '+(q.product_name||'Toumyou shop'))+'">Reply</a></div><p class="muted">Created '+esc(dt(q.created_at))+'</p></article>'}
       async function load(){try{const s=await api('/api/admin/session'); if(!s.authenticated)return login(); const orders=await api('/api/admin/orders'); const inquiries=await api('/api/admin/inquiries'); app.className=''; app.innerHTML='<div class="toolbar" style="margin-bottom:24px"><a class="btn secondary" href="/admin/products">Products</a><a class="btn secondary" href="/admin">Articles</a><a class="btn secondary" href="/shop" target="_blank">Open shop</a></div><section class="section" style="padding:0"><p class="eyebrow">Paid checkout</p><h2>Orders</h2><div class="article-grid">'+(orders.length?orders.map(orderCard).join(''):'<div class="notice">No orders yet. New checkout attempts will appear here after customers click Pay.</div>')+'</div></section><section class="section" style="padding:40px 0 0"><p class="eyebrow">Quote requests</p><h2>Inquiries</h2><div class="article-grid">'+(inquiries.length?inquiries.map(inquiryCard).join(''):'<div class="notice">No quote requests yet.</div>')+'</div></section>'; orders.forEach(o=>{const s=document.querySelector('[data-status="'+CSS.escape(o.id)+'"]'); if(s)s.value=o.fulfillment_status||'new'}); inquiries.forEach(q=>{const s=document.querySelector('[data-inquiry-status="'+CSS.escape(q.id)+'"]'); if(s)s.value=q.status||'new'}); document.querySelectorAll('[data-save-order]').forEach(b=>b.onclick=async()=>{const id=b.dataset.saveOrder; await api('/api/admin/orders/'+encodeURIComponent(id),{method:'PATCH',body:JSON.stringify({fulfillment_status:document.querySelector('[data-status="'+CSS.escape(id)+'"]').value,notes:document.querySelector('[data-notes="'+CSS.escape(id)+'"]').value})}); b.textContent='Saved'}); document.querySelectorAll('[data-save-inquiry]').forEach(b=>b.onclick=async()=>{const id=b.dataset.saveInquiry; await api('/api/admin/inquiries/'+encodeURIComponent(id),{method:'PATCH',body:JSON.stringify({status:document.querySelector('[data-inquiry-status="'+CSS.escape(id)+'"]').value})}); b.textContent='Saved'})}catch(e){app.className='notice';app.textContent=e.message}}
       load();
@@ -760,11 +809,16 @@ async function stripeCheckout(request, env) {
   }), { status: 503 });
   const body = await readBody(request);
   const productId = body.product_id || body.productId;
-  const quantity = Math.min(999, Math.max(1, Number.parseInt(body.quantity || "1", 10) || 1));
+  const requestedQuantity = Math.min(999, Math.max(1, Number.parseInt(body.quantity || "1", 10) || 1));
   const product = await getProduct(env, productId);
   if (!product || product.status !== "published" || !product.allow_checkout || product.price_cents <= 0) {
     return json({ error: "Product is not available for checkout" }, { status: 400 });
   }
+  const minQty = Math.max(1, Number.parseInt(product.moq || 1, 10) || 1);
+  const inventory = Math.max(0, Number.parseInt(product.inventory || 0, 10) || 0);
+  if (requestedQuantity < minQty) return json({ error: `Minimum order quantity is ${minQty}` }, { status: 400 });
+  if (inventory > 0 && requestedQuantity > inventory) return json({ error: `Only ${inventory} units are available for immediate checkout` }, { status: 400 });
+  const quantity = requestedQuantity;
   await ensureCommerce(env);
   const orderId = crypto.randomUUID();
   const now = Math.floor(Date.now() / 1000);
@@ -884,6 +938,17 @@ async function stripeWebhook(request, env) {
       await env.DB.prepare("INSERT OR IGNORE INTO orders (id,stripe_session_id,product_id,product_slug,product_name,sku,quantity,amount_total,currency,payment_status,fulfillment_status,customer_email,customer_name,customer_phone,shipping_name,shipping_address,shipping_country,stripe_payment_intent,raw_event,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
         .bind(fallbackId, session.id, session.metadata?.product_id || "", session.metadata?.product_slug || "", session.metadata?.product_slug || "Stripe order", session.metadata?.sku || "", 1, session.amount_total || 0, String(session.currency || "JPY").toUpperCase(), session.payment_status || "paid", "new", customer.email || "", customer.name || "", customer.phone || "", shipping.name || "", shippingAddress, shipping.address?.country || "", session.payment_intent || "", payload.slice(0, 12000), now, now).run();
     }
+    if (session.payment_status === "paid") {
+      const paidOrder = orderId
+        ? await env.DB.prepare("SELECT product_id,quantity FROM orders WHERE id=?").bind(orderId).first()
+        : await env.DB.prepare("SELECT product_id,quantity FROM orders WHERE stripe_session_id=?").bind(session.id || "").first();
+      const productId = paidOrder?.product_id || session.metadata?.product_id || "";
+      const paidQuantity = Math.max(1, Number.parseInt(paidOrder?.quantity || "1", 10) || 1);
+      if (productId) {
+        await env.DB.prepare("UPDATE products SET inventory=MAX(inventory-?,0),updated_at=? WHERE id=? AND inventory>0")
+          .bind(paidQuantity, now, productId).run().catch(() => {});
+      }
+    }
   }
   return json({ received: true });
 }
@@ -906,7 +971,20 @@ function checkoutSuccessPage() {
     title: "Payment received | Toumyou",
     description: "Thank you for your Toumyou shop order.",
     path: "/shop/success",
-    content: '<main class="listing"><h1>Payment received,<br><em>thank you.</em></h1><p class="lead">Your Stripe checkout has completed. We will review the order and contact you about shipping, export handling, and delivery details.</p><div class="toolbar"><a class="btn" href="/shop">Back to shop</a><a class="btn secondary" href="mailto:sunflyerjp@gmail.com">Contact us</a></div></main>',
+    content: `<main class="listing"><h1>Payment received,<br><em>thank you.</em></h1><p class="lead">Your Stripe checkout has completed. We will review the order and contact you about shipping, export handling, and delivery details.</p>
+      <div class="notice">
+        <p><strong>What happens next</strong></p>
+        <p>1. Stripe sends the payment confirmation to Toumyou.</p>
+        <p>2. We verify SKU, stock, export handling, and freight details.</p>
+        <p>3. You receive follow-up by email if any information is required before dispatch.</p>
+        <p id="sessionNote" class="muted"></p>
+      </div>
+      <div class="toolbar"><a class="btn" href="/shop">Back to shop</a><a class="btn secondary" href="mailto:sunflyerjp@gmail.com">Contact us</a></div>
+      <script>
+        const sid = new URL(location.href).searchParams.get('session_id');
+        if (sid) document.getElementById('sessionNote').textContent = 'Stripe session: ' + sid;
+      </script>
+    </main>`,
   }), { cache: "no-store" });
 }
 
