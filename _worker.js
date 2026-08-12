@@ -2,13 +2,13 @@ const SITE = {
   name: "Toumyou",
   url: "https://toumyou.com",
   description:
-    "Toumyou LLC is an independent digital studio in Japan for brand identities, animation, WeChat mini-programs, websites, software, and AI workflows.",
+    "Toumyou LLC supplies fasteners and industrial accessories for cross-border buyers, with digital design and software services from Japan.",
 };
 
 const SHOP = {
   name: "Toumyou Fastener Supply",
   description:
-    "Cross-border fastener and industrial accessory sourcing from Japan and Asia, built for small-batch buyers, distributors, and product teams.",
+    "Cross-border fastener and industrial accessory supply from Japan and Asia for distributors, workshops, OEM teams, and small-batch buyers.",
   categories: [
     {
       name: "Hex bolts and socket screws",
@@ -381,110 +381,109 @@ function shell({ title, description, path = "/", content, schema }) {
   <meta property="og:url" content="${canonical}">
   <meta name="twitter:card" content="summary_large_image">
   <style>
-    :root{color-scheme:light;--ink:#171815;--paper:#f4f1e9;--panel:#e7e3da;--acid:#d9ff3f;--line:#c9c5b9;--muted:#696b64;--soft:#faf8f1;--focus:#3842ff}
+    :root{color-scheme:light;--ink:#121417;--paper:#f6f7f8;--panel:#eceff2;--acid:#dce7ff;--accent:#2457ff;--line:#d4d8dd;--muted:#5f6670;--soft:#ffffff;--focus:#2457ff}
     *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.55 Arial,Helvetica,sans-serif}
     a{color:inherit;text-decoration:none}header{height:76px;padding:0 4vw;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line);position:sticky;top:0;background:rgba(244,241,233,.9);backdrop-filter:blur(18px);z-index:2}
     nav{display:flex;gap:26px;align-items:center}.brand{font-size:21px;font-weight:850;letter-spacing:-1.6px}.brand span{font-size:9px;vertical-align:top;margin-left:2px}.nav{font-size:13px;color:#343630}.nav-admin{border:1px solid var(--ink);padding:8px 12px;border-radius:6px}
     main{overflow:hidden}.hero{min-height:calc(100dvh - 76px);padding:92px 8vw 52px;position:relative;border-bottom:1px solid var(--line);display:grid;align-content:center}
-    .hero:after{content:"";position:absolute;right:-10vw;top:72px;width:min(52vw,680px);height:min(52vw,680px);background:var(--acid);border-radius:999px;z-index:-1}
-    .eyebrow{font-size:11px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;margin:0 0 22px}.hero h1,.section h2,.contact h2,.listing h1,.article h1{font-family:Georgia,"Times New Roman",serif;font-weight:500;letter-spacing:-.07em;line-height:.88;margin:0}
-    .hero h1{font-size:clamp(58px,8.6vw,132px);max-width:920px}.lead{font-size:clamp(18px,2vw,22px);line-height:1.45;max-width:520px;margin:36px 0 30px;color:#33352f}
+    .hero:after{content:"";position:absolute;right:8vw;top:118px;width:min(34vw,430px);height:min(34vw,430px);background:linear-gradient(135deg,var(--acid),transparent 70%);border-radius:28px;z-index:-1}
+    .eyebrow{font-size:11px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;margin:0 0 22px}.hero h1,.section h2,.contact h2,.listing h1,.article h1{font-family:Arial,Helvetica,sans-serif;font-weight:850;letter-spacing:-.055em;line-height:.92;margin:0}
+    .hero h1{font-size:clamp(54px,8vw,118px);max-width:920px}.lead{font-size:clamp(18px,2vw,22px);line-height:1.45;max-width:560px;margin:36px 0 30px;color:#303740}
     .btn{display:inline-flex;align-items:center;gap:22px;background:var(--ink);color:#fff;border:0;border-radius:6px;padding:14px 16px;font-weight:760;cursor:pointer}.btn.secondary{background:transparent;color:var(--ink);border:1px solid var(--ink)}
     .toolbar{display:flex;gap:12px;flex-wrap:wrap;margin:18px 0}.hero-note{position:absolute;right:8vw;bottom:38px;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#4d5048}
     .section{padding:104px 8vw;border-bottom:1px solid var(--line)}.section h2,.contact h2{font-size:clamp(44px,6.1vw,92px);max-width:850px}.intro-strip{display:grid;grid-template-columns:1.2fr .8fr;gap:9vw;margin-top:46px;align-items:end}.intro-strip p{font-size:20px;line-height:1.55;color:#343630;margin:0;max-width:620px}.intro-strip ul{list-style:none;padding:0;margin:0;display:grid;gap:12px}.intro-strip li{border-top:1px solid var(--line);padding-top:12px;color:var(--muted)}
     .service-grid{display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:0;margin-top:72px;border-top:1px solid var(--ink)}
     .service-grid article{min-height:268px;padding:24px 26px 24px 0;border-right:1px solid var(--line)}.service-grid article+article{padding-left:26px}.service-grid article:last-child{border-right:0}.service-grid span,.meta{font-size:11px;letter-spacing:.8px;text-transform:uppercase;color:var(--muted)}
-    h3{font-family:Georgia,"Times New Roman",serif;font-size:31px;line-height:1.06;font-weight:400;margin:54px 0 16px}.service-grid p,.muted{color:var(--muted);max-width:300px}.insights-head{display:flex;justify-content:space-between;align-items:end;gap:24px}.text-link{text-decoration:underline;text-underline-offset:4px;font-size:13px}
+    h3{font-family:Arial,Helvetica,sans-serif;font-size:29px;letter-spacing:-.04em;line-height:1.08;font-weight:780;margin:54px 0 16px}.service-grid p,.muted{color:var(--muted);max-width:320px}.insights-head{display:flex;justify-content:space-between;align-items:end;gap:24px}.text-link{text-decoration:underline;text-underline-offset:4px;font-size:13px}
     .portfolio-grid{display:grid;grid-template-columns:1.15fr .85fr 1fr;grid-auto-rows:minmax(330px,auto);gap:16px;margin-top:70px}.work-card{position:relative;overflow:hidden;border-radius:10px;background:var(--panel);min-height:330px;display:flex;align-items:flex-end}.work-card.large{grid-row:span 2}.work-card img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:saturate(.82) contrast(1.02)}.work-card:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(23,24,21,.03),rgba(23,24,21,.78))}.work-copy{position:relative;z-index:1;color:#fff;padding:26px}.work-copy span{font-size:11px;text-transform:uppercase;letter-spacing:.9px;color:#d8dccf}.work-copy h3{margin:16px 0 8px;color:#fff}.work-copy p{margin:0;color:#eceee7;max-width:300px}
     .timeline{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0;margin-top:72px;border-top:1px solid var(--ink)}.timeline article{padding:26px 26px 0 0;min-height:300px;border-right:1px solid var(--line)}.timeline article+article{padding-left:26px}.timeline article:last-child{border-right:0}.timeline img{width:100%;height:135px;object-fit:cover;border-radius:10px;margin-bottom:28px;filter:saturate(.85)}.timeline strong{font-size:13px;text-transform:uppercase;letter-spacing:.8px}.timeline h3{margin:18px 0 12px}.team-panel{margin-top:70px;display:grid;grid-template-columns:.9fr 1.1fr;gap:16px}.team-note{background:var(--ink);color:var(--paper);border-radius:10px;padding:32px;display:flex;flex-direction:column;justify-content:space-between;min-height:420px}.team-note p{font-size:24px;line-height:1.35;margin:0;color:#f2f0e8}.team-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}.person{background:var(--panel);border-radius:10px;overflow:hidden}.person img{width:100%;height:260px;object-fit:cover;display:block;filter:saturate(.85)}.person div{padding:20px}.person h3{margin:0 0 8px;font-size:28px}.person p{margin:0;color:var(--muted)}.logo-row{display:flex;gap:24px;flex-wrap:wrap;align-items:center;margin-top:50px}.logo-row img{max-height:44px;max-width:132px;object-fit:contain;filter:grayscale(1) contrast(.95);opacity:.72}
     .article-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-top:62px}.article-card{min-height:275px;padding:24px;background:var(--panel);display:flex;flex-direction:column;border-radius:6px;transition:transform .2s,background .2s}.article-card:hover{transform:translateY(-3px);background:var(--acid)}
-    .shop-filter{display:grid;grid-template-columns:1.3fr .7fr .7fr;gap:12px;margin:34px 0 0}.catalog-first{padding-top:58px}.catalog-first h1{font-family:Georgia,"Times New Roman",serif;font-size:clamp(52px,6.6vw,104px);font-weight:500;letter-spacing:-.07em;line-height:.9;margin:0;max-width:940px}.product-card{position:relative;overflow:hidden}.product-card[hidden]{display:none}.card-tag{position:absolute;top:16px;right:16px;border:1px solid var(--ink);border-radius:999px;padding:7px 10px;background:rgba(250,248,241,.92);font-size:11px;font-weight:850;letter-spacing:.5px;text-transform:uppercase}.card-tag.pay{background:var(--acid)}.pill-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.pill{border:1px solid var(--line);border-radius:999px;padding:6px 10px;font-size:12px;background:rgba(250,248,241,.72)}.status-badge{display:inline-flex;border:1px solid var(--line);border-radius:999px;padding:6px 10px;font-size:11px;font-weight:850;letter-spacing:.5px;text-transform:uppercase;background:var(--soft)}.status-badge.paid{background:#d9ff3f;border-color:#171815}.status-badge.failed,.status-badge.expired{background:#ffe2dc}.status-badge.open,.status-badge.unpaid,.status-badge.checkout_created{background:#fff4bd}.product-buy{display:flex;gap:12px;align-items:end;flex-wrap:wrap}.product-buy input{max-width:130px}.order-meta{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:14px 0}.order-meta span{display:block;border-top:1px solid var(--line);padding-top:8px;color:var(--muted);font-size:13px}.order-dashboard{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:26px 0}.metric-card{border:1px solid var(--line);border-radius:6px;background:var(--soft);padding:16px}.metric-card strong{display:block;font-family:Georgia,"Times New Roman",serif;font-size:32px;line-height:1}.metric-card span{display:block;margin-top:6px;color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.7px}.order-filter{display:grid;grid-template-columns:1fr 180px;gap:12px;margin:20px 0}.order-card[hidden]{display:none}
+    .commerce-panel{display:grid;grid-template-columns:1.15fr .85fr;gap:18px;margin-top:50px;align-items:stretch}.commerce-card{background:var(--soft);border:1px solid var(--line);border-radius:10px;padding:26px}.commerce-card strong{display:block;font-size:14px;text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px}.commerce-list{list-style:none;margin:0;padding:0;display:grid;gap:12px}.commerce-list li{border-top:1px solid var(--line);padding-top:12px;color:var(--muted)}.metric-strip{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:34px}.metric-strip div{border:1px solid var(--line);border-radius:10px;background:var(--soft);padding:18px}.metric-strip strong{display:block;font-size:28px;line-height:1;letter-spacing:-.04em}.metric-strip span{display:block;margin-top:8px;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px}.shop-filter{display:grid;grid-template-columns:1.3fr .7fr .7fr;gap:12px;margin:34px 0 0}.catalog-first{padding-top:58px}.catalog-first h1{font-family:Arial,Helvetica,sans-serif;font-size:clamp(48px,6.4vw,96px);font-weight:850;letter-spacing:-.055em;line-height:.94;margin:0;max-width:940px}.product-card{position:relative;overflow:hidden;background:var(--soft);border:1px solid var(--line)}.product-card:hover{background:var(--soft);border-color:#aeb6c0}.product-card[hidden]{display:none}.card-tag{position:absolute;top:16px;right:16px;border:1px solid var(--ink);border-radius:999px;padding:7px 10px;background:rgba(255,255,255,.94);font-size:11px;font-weight:850;letter-spacing:.5px;text-transform:uppercase}.card-tag.pay{background:var(--accent);color:#fff;border-color:var(--accent)}.pill-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.pill{border:1px solid var(--line);border-radius:999px;padding:6px 10px;font-size:12px;background:rgba(255,255,255,.82)}.status-badge{display:inline-flex;border:1px solid var(--line);border-radius:999px;padding:6px 10px;font-size:11px;font-weight:850;letter-spacing:.5px;text-transform:uppercase;background:var(--soft)}.status-badge.paid{background:#dff7df;border-color:#3d7d3d}.status-badge.failed,.status-badge.expired{background:#ffe2dc}.status-badge.open,.status-badge.unpaid,.status-badge.checkout_created{background:#fff4bd}.product-buy{display:flex;gap:12px;align-items:end;flex-wrap:wrap}.product-buy input{max-width:130px}.order-meta{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:14px 0}.order-meta span{display:block;border-top:1px solid var(--line);padding-top:8px;color:var(--muted);font-size:13px}.order-dashboard{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:26px 0}.metric-card{border:1px solid var(--line);border-radius:6px;background:var(--soft);padding:16px}.metric-card strong{display:block;font-size:32px;line-height:1;letter-spacing:-.04em}.metric-card span{display:block;margin-top:6px;color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.7px}.order-filter{display:grid;grid-template-columns:1fr 180px;gap:12px;margin:20px 0}.order-card[hidden]{display:none}
     .article-card h3{margin:34px 0 14px}.article-card p{color:var(--muted)}.article-card b{margin-top:auto;font-size:12px}.empty{margin-top:62px;padding:34px;border-top:1px solid var(--ink)}.empty p{font-family:Georgia,"Times New Roman",serif;font-size:32px;margin:0 0 8px}
     .contact{background:var(--ink);color:var(--paper);padding:104px 8vw;min-height:520px}.contact-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:8vw;align-items:end}.contact-mail{display:block;margin-top:48px;font-size:clamp(20px,2.6vw,36px);border-bottom:1px solid #666960;padding-bottom:13px}.contact-list{list-style:none;margin:0;padding:0;border-top:1px solid #666960}.contact-list li{display:grid;grid-template-columns:90px 1fr;gap:24px;padding:18px 0;border-bottom:1px solid #41433d}.contact-list span{font-size:11px;text-transform:uppercase;letter-spacing:.9px;color:#a9ada2}.address{font-size:13px;line-height:1.7;color:#c5c7be;margin:0}
     footer{padding:24px 4vw;background:var(--ink);color:#c5c7be;display:flex;justify-content:space-between;gap:20px;border-top:1px solid #494b44;font-size:11px}.listing{padding:88px 8vw}.listing h1{font-size:clamp(56px,7vw,108px)}.articles{display:grid;gap:14px}.article-link{display:block;border-top:1px solid var(--line);padding:24px 0}.article-link:hover h3{color:#2b3310}
     .article-page{padding:88px 8vw}.article-page article{max-width:860px}.article h1{font-size:clamp(52px,7.4vw,110px)}.article-dek{font-size:23px;line-height:1.42;max-width:700px;margin:36px 0}.post-body{font-family:Georgia,"Times New Roman",serif;font-size:21px;line-height:1.65;white-space:pre-wrap;max-width:680px}
     input,textarea,select{width:100%;border:1px solid #aaa69c;border-radius:6px;padding:11px 12px;background:var(--soft);color:var(--ink);font:15px Arial,Helvetica,sans-serif}textarea{min-height:150px;line-height:1.45;resize:vertical}label{display:block;margin:14px 0 7px;font-size:12px;font-weight:800;letter-spacing:.3px}.notice{border:1px solid var(--line);padding:18px;border-radius:6px;background:var(--soft)}
     .admin-wrap{padding:58px 5vw 90px}.editor{display:grid;grid-template-columns:minmax(240px,360px) minmax(0,740px);gap:7vw}.editor aside{border-right:1px solid var(--line);padding-right:28px}.editor-actions{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:20px}.status{margin:12px 0 0;color:#36510d;font-weight:700}.danger{background:transparent;color:var(--ink);border:1px solid var(--line)}
-    :focus-visible{outline:3px solid var(--focus);outline-offset:3px}@media(max-width:980px){.portfolio-grid,.timeline,.team-panel,.contact-grid,.intro-strip,.order-dashboard{grid-template-columns:1fr 1fr}.portfolio-grid{grid-auto-rows:minmax(310px,auto)}.work-card.large{grid-row:auto}.timeline article,.timeline article+article{border-right:0;border-bottom:1px solid var(--line);padding:26px 0}.team-grid{grid-template-columns:1fr 1fr}.contact-list{margin-top:34px}}@media(max-width:760px){header{height:auto;min-height:68px;align-items:flex-start;gap:14px;flex-direction:column;padding:18px 6vw}nav{gap:16px;flex-wrap:wrap}.hero{min-height:620px;padding:82px 7vw 46px}.hero:after{width:88vw;height:88vw;right:-36vw;top:126px}.hero-note{position:static;margin-top:42px}.section,.contact,.listing,.article-page{padding:72px 7vw}.service-grid,.article-grid,.editor,.team-grid,.shop-filter,.order-filter,.order-dashboard{grid-template-columns:1fr}.service-grid article,.service-grid article+article{border-right:0;border-bottom:1px solid var(--line);min-height:auto;padding:24px 0}.person img{height:310px}.insights-head{display:block}.article-grid{margin-top:40px}.editor aside{border-right:0;border-bottom:1px solid var(--line);padding:0 0 26px}footer{display:block}.contact-mail{word-break:break-word}.contact-list li{grid-template-columns:1fr;gap:6px}}
+    :focus-visible{outline:3px solid var(--focus);outline-offset:3px}@media(max-width:980px){.portfolio-grid,.timeline,.team-panel,.contact-grid,.intro-strip,.commerce-panel,.metric-strip,.order-dashboard{grid-template-columns:1fr 1fr}.portfolio-grid{grid-auto-rows:minmax(310px,auto)}.work-card.large{grid-row:auto}.timeline article,.timeline article+article{border-right:0;border-bottom:1px solid var(--line);padding:26px 0}.team-grid{grid-template-columns:1fr 1fr}.contact-list{margin-top:34px}}@media(max-width:760px){header{height:auto;min-height:68px;align-items:flex-start;gap:14px;flex-direction:column;padding:18px 6vw}nav{gap:16px;flex-wrap:wrap}.hero{min-height:620px;padding:82px 7vw 46px}.hero:after{width:88vw;height:88vw;right:-36vw;top:126px}.hero-note{position:static;margin-top:42px}.section,.contact,.listing,.article-page{padding:72px 7vw}.service-grid,.article-grid,.editor,.team-grid,.shop-filter,.order-filter,.commerce-panel,.metric-strip,.order-dashboard{grid-template-columns:1fr}.service-grid article,.service-grid article+article{border-right:0;border-bottom:1px solid var(--line);min-height:auto;padding:24px 0}.person img{height:310px}.insights-head{display:block}.article-grid{margin-top:40px}.editor aside{border-right:0;border-bottom:1px solid var(--line);padding:0 0 26px}footer{display:block}.contact-mail{word-break:break-word}.contact-list li{grid-template-columns:1fr;gap:6px}}
   </style>
   ${schema ? `<script type="application/ld+json">${JSON.stringify(schema)}</script>` : ""}
 </head>
 <body>
-  <header><a class="brand" href="/">TOUMYOU<span>®</span></a><nav><a class="nav" href="/#portfolio">Portfolio</a><a class="nav" href="/#about">About</a><a class="nav" href="/shop">Shop</a><a class="nav" href="/articles">Insights</a><a class="nav" href="/#contact">Contact</a><a class="nav nav-admin" href="/admin">Editor</a></nav></header>
+  <header><a class="brand" href="/">TOUMYOU<span>®</span></a><nav><a class="nav" href="/#supply">Supply</a><a class="nav" href="/shop">Shop</a><a class="nav" href="/#digital">Digital</a><a class="nav" href="/articles">Insights</a><a class="nav" href="/#contact">Contact</a><a class="nav nav-admin" href="/admin">Admin</a></nav></header>
   ${content}
-  <footer><span>© ${new Date().getFullYear()} Toumyou LLC</span><span>Designed for clarity and useful digital work.</span></footer>
+  <footer><span>© ${new Date().getFullYear()} Toumyou LLC</span><span>Fastener supply, digital systems, and cross-border operations from Japan.</span></footer>
 </body>
 </html>`;
 }
 
 async function home(env) {
   const posts = (await listPublished(env)).slice(0, 3);
+  const products = (await listProducts(env)).slice(0, 3);
   const asset = "https://4f4b3799.toumyou.pages.dev/assets/img";
   const content = `<main>
-    <section class="hero">
-      <p class="eyebrow">Independent digital studio, Japan</p>
-      <h1>Make the next<br><em>clear move.</em></h1>
-      <p class="lead">Toumyou builds brand, web, software, and AI systems for teams that need useful digital work.</p>
-      <div class="toolbar"><a class="btn" href="#contact">Start a conversation</a><a class="btn secondary" href="/shop">Visit fastener shop</a><a class="btn secondary" href="/articles">Read insights</a></div>
-      <div class="hero-note">Design, development and digital business</div>
+    <section id="supply" class="hero">
+      <p class="eyebrow">Cross-border fastener supply</p>
+      <h1>Fasteners for<br>international buyers.</h1>
+      <p class="lead">Toumyou supplies screws, bolts, nuts, washers, anchors, pins, and industrial accessories from Japan and Asia, with Stripe Checkout and quote support for custom orders.</p>
+      <div class="toolbar"><a class="btn" href="/shop">Shop fasteners</a><a class="btn secondary" href="mailto:sunflyerjp@gmail.com?subject=Fastener%20quote%20request">Request a quote</a></div>
     </section>
     <section class="section">
-      <h2>Give people a<br>new experience.</h2>
+      <h2>Built for procurement,<br>not impulse shopping.</h2>
+      <div class="commerce-panel">
+        <div class="commerce-card"><strong>What we supply</strong><p>Metric screws, socket screws, hex bolts, nuts, washers, anchors, rivets, clips, brackets, specialty materials, and hard-to-source industrial parts.</p></div>
+        <div class="commerce-card"><strong>How orders work</strong><ul class="commerce-list">
+          <li>Buy listed products directly with Stripe Checkout where available.</li>
+          <li>Send drawings, standards, sizes, and quantities for quote-only items.</li>
+          <li>Choose standard or express freight during checkout for supported SKUs.</li>
+          <li>Alipay and other local methods appear when Stripe approves them for the buyer and order.</li>
+        </ul>
+        </div>
+      </div>
+      <div class="metric-strip"><div><strong>JP</strong><span>Japan base</span></div><div><strong>B2B</strong><span>Procurement focus</span></div><div><strong>Stripe</strong><span>Secure checkout</span></div><div><strong>Quote</strong><span>Custom sourcing</span></div></div>
+    </section>
+    <section class="section">
+      <div class="insights-head"><div><p class="eyebrow">Featured catalog</p><h2>Ready-to-order<br>and quote-ready SKUs.</h2></div><a class="text-link" href="/shop">Open full shop</a></div>
+      <div class="article-grid">${products.length ? products.map((p) => productCard(p, env)).join("") : SHOP.categories.map((item) => `<article class="article-card"><div class="meta">${escapeHtml(item.slug)}</div><h3>${escapeHtml(item.name)}</h3><p>${escapeHtml(item.summary)}</p><b>Request quote</b></article>`).join("")}</div>
+    </section>
+    <section id="digital" class="section">
+      <p class="eyebrow">Digital services</p>
+      <h2>Design and software<br>support the operation.</h2>
       <div class="intro-strip">
-        <p>From cultural communication to full-service software development, Toumyou LLC combines visual thinking, practical technology, and a Japan-based operating base.</p>
+        <p>Toumyou also keeps its original design and development work: brand identity, websites, animation, WeChat mini-programs, software tools, and AI workflow support.</p>
         <ul>
-          <li>Brand identities and graphic systems</li>
-          <li>Animation, websites, and responsive interfaces</li>
-          <li>WeChat mini-programs, custom software, and AI workflows</li>
+          <li>Brand systems and graphic design</li>
+          <li>Responsive websites and commerce interfaces</li>
+          <li>Mini-programs, internal tools, and AI workflows</li>
         </ul>
       </div>
     </section>
-    <section id="services" class="section">
-      <p class="eyebrow">What we do</p>
-      <h2>Digital work with<br>a point of view.</h2>
-      <div class="service-grid">
-        <article><span>Web platforms</span><h3>First impressions that keep earning attention.</h3><p>Fast, expressive websites for teams that need clarity, performance, and a strong public presence.</p></article>
-        <article><span>Cross-border shop</span><h3>Fasteners and industrial accessories for global buyers.</h3><p>A new commerce channel for metric screws, bolts, nuts, washers, and sourcing support.</p></article>
-        <article><span>Product design</span><h3>Interfaces people can move through with confidence.</h3><p>Design systems, flows, and product surfaces shaped around the actual decision in front of the user.</p></article>
-      </div>
-    </section>
     <section id="portfolio" class="section">
-      <h2>Selected work,<br>reshaped for now.</h2>
+      <h2>Previous work,<br>cleanly organized.</h2>
       <div class="portfolio-grid">
-        <article class="work-card large"><img src="${asset}/portfolio/2.jpg" alt="Graphic design work by Toumyou" loading="lazy"><div class="work-copy"><span>Graphic Design</span><h3>Brand identities with a clearer voice.</h3><p>Visual systems for teams that need to be remembered and understood.</p></div></article>
-        <article class="work-card"><img src="${asset}/portfolio/3.jpg" alt="Animation design work by Toumyou" loading="lazy"><div class="work-copy"><span>Animation Design</span><h3>Spark imagination.</h3><p>Motion and narrative assets that make ideas easier to feel.</p></div></article>
-        <article class="work-card"><img src="${asset}/portfolio/4.jpg" alt="WeChat mini-program development by Toumyou" loading="lazy"><div class="work-copy"><span>WeChat Mini-Program</span><h3>Bespoke digital services.</h3><p>Focused mini-program experiences built around real user flows.</p></div></article>
-        <article class="work-card"><img src="${asset}/portfolio/5.jpg" alt="Responsive website design by Toumyou" loading="lazy"><div class="work-copy"><span>Website Design</span><h3>Responsive by default.</h3><p>Public-facing websites that work across screens and search surfaces.</p></div></article>
-        <article class="work-card"><img src="${asset}/portfolio/6.jpg" alt="Software development by Toumyou" loading="lazy"><div class="work-copy"><span>Software Development</span><h3>Scalable software solutions.</h3><p>Custom tools and business systems made to support everyday operations.</p></div></article>
+        <article class="work-card large"><img src="${asset}/portfolio/2.jpg" alt="Graphic design work by Toumyou" loading="lazy"><div class="work-copy"><span>Graphic design</span><h3>Identity systems for business communication.</h3><p>Logos, visual rules, printed material, and presentation assets.</p></div></article>
+        <article class="work-card"><img src="${asset}/portfolio/3.jpg" alt="Animation work by Toumyou" loading="lazy"><div class="work-copy"><span>Animation</span><h3>Motion assets for product and brand stories.</h3><p>Short-form animation, visual explainers, and campaign material.</p></div></article>
+        <article class="work-card"><img src="${asset}/portfolio/4.jpg" alt="WeChat mini-program development by Toumyou" loading="lazy"><div class="work-copy"><span>Mini-programs</span><h3>Focused services inside WeChat.</h3><p>Simple flows for ordering, information, membership, and service access.</p></div></article>
+        <article class="work-card"><img src="${asset}/portfolio/5.jpg" alt="Website design by Toumyou" loading="lazy"><div class="work-copy"><span>Websites</span><h3>Clear pages for search and conversion.</h3><p>Responsive web design with fast loading and clean structure.</p></div></article>
+        <article class="work-card"><img src="${asset}/portfolio/6.jpg" alt="Software development by Toumyou" loading="lazy"><div class="work-copy"><span>Software</span><h3>Tools for daily operations.</h3><p>Internal systems, lightweight apps, automation, and AI-assisted workflows.</p></div></article>
       </div>
     </section>
     <section id="about" class="section">
-      <h2>Our history is<br>still moving.</h2>
+      <h2>From design studio<br>to trading operation.</h2>
       <div class="timeline">
-        <article><img src="${asset}/about/1.jpg" alt="Toumyou early company history" loading="lazy"><strong>2011</strong><h3>Our humble beginnings</h3><p>We established our first cultural communication company.</p></article>
-        <article><img src="${asset}/about/2.jpg" alt="Toumyou digital business beginning" loading="lazy"><strong>March 2017</strong><h3>A creative digital business is born</h3><p>We developed the company's first digital business and began expanding the service direction.</p></article>
-        <article><img src="${asset}/about/3.jpg" alt="Toumyou software development transition" loading="lazy"><strong>December 2023</strong><h3>Transition to full service</h3><p>We officially started the software development business.</p></article>
-        <article><img src="${asset}/about/4.jpg" alt="Toumyou overseas business in Japan" loading="lazy"><strong>2025</strong><h3>Phase two expansion</h3><p>We started overseas business in Japan and continue building from Osaka.</p></article>
-      </div>
-    </section>
-    <section id="team" class="section">
-      <h2>Professionalism and<br>innovative thinking.</h2>
-      <div class="team-panel">
-        <div class="team-note"><p>Our design team is a passionate and creative collective dedicated to transforming your vision into captivating visual experiences.</p><div class="logo-row"><img src="${asset}/logos/ld.png" alt="Partner logo" loading="lazy"><img src="${asset}/logos/hc.jpg" alt="Partner logo" loading="lazy"><img src="${asset}/logos/gn.png" alt="Partner logo" loading="lazy"><img src="${asset}/logos/dongchuan.png" alt="Partner logo" loading="lazy"></div></div>
-        <div class="team-grid">
-          <article class="person"><img src="${asset}/team/1.jpg" alt="Jenny, Lead Designer" loading="lazy"><div><h3>Jenny</h3><p>Lead Designer</p></div></article>
-          <article class="person"><img src="${asset}/team/2.jpg" alt="Sunflyer, Lead Marketer" loading="lazy"><div><h3>Sunflyer</h3><p>Lead Marketer</p></div></article>
-          <article class="person"><img src="${asset}/team/3.jpg" alt="Lucy, Lead Developer" loading="lazy"><div><h3>Lucy</h3><p>Lead Developer</p></div></article>
-        </div>
+        <article><img src="${asset}/about/1.jpg" alt="Toumyou early company history" loading="lazy"><strong>2011</strong><h3>Cultural communication work begins.</h3><p>The team started with brand, design, and communication projects.</p></article>
+        <article><img src="${asset}/about/2.jpg" alt="Toumyou digital business development" loading="lazy"><strong>2017</strong><h3>Digital services expand.</h3><p>Web, visual, and online service projects became a core part of the business.</p></article>
+        <article><img src="${asset}/about/3.jpg" alt="Toumyou software development transition" loading="lazy"><strong>2023</strong><h3>Software work becomes formal.</h3><p>Custom systems, websites, and workflow tools were added to the service base.</p></article>
+        <article><img src="${asset}/about/4.jpg" alt="Toumyou Japan operation" loading="lazy"><strong>2025</strong><h3>Japan-based cross-border work grows.</h3><p>The company now combines supply, commerce, and digital operations from Osaka.</p></article>
       </div>
     </section>
     <section id="insights" class="section">
-      <div class="insights-head"><div><p class="eyebrow">Notes from Toumyou</p><h2>Useful perspectives,<br><em>not noise.</em></h2></div><a class="text-link" href="/articles">All insights</a></div>
+      <div class="insights-head"><div><p class="eyebrow">Articles</p><h2>Updates and<br>procurement notes.</h2></div><a class="text-link" href="/articles">All articles</a></div>
       ${posts.length ? `<div class="article-grid">${posts.map(articleLink).join("")}</div>` : '<div class="empty"><p>Our first notes are in progress.</p><span class="muted">Published articles will appear here immediately after you save them.</span></div>'}
     </section>
     <section id="contact" class="contact">
       <div class="contact-grid">
-        <div><p class="eyebrow">Contact us</p><h2>Let us make<br>something <em>useful.</em></h2><a href="mailto:sunflyerjp@gmail.com" class="contact-mail">sunflyerjp@gmail.com</a></div>
+        <div><p class="eyebrow">Contact</p><h2>Send your drawing,<br>SKU, or quantity.</h2><a href="mailto:sunflyerjp@gmail.com" class="contact-mail">sunflyerjp@gmail.com</a></div>
         <ul class="contact-list">
           <li><span>Tel</span><a href="tel:+8107018461357">+81 070 1846 1357</a></li>
           <li><span>Email</span><a href="mailto:sunflyerjp@gmail.com">sunflyerjp@gmail.com</a></li>
@@ -494,7 +493,7 @@ async function home(env) {
     </section>
   </main>`;
   return html(shell({
-    title: "Toumyou | Digital products, built with clarity",
+    title: "Toumyou | Fastener supply and digital operations from Japan",
     description: SITE.description,
     content,
     schema: { "@context": "https://schema.org", "@type": "Organization", name: "Toumyou LLC", url: SITE.url, email: "sunflyerjp@gmail.com", telephone: "+8107018461357", address: { "@type": "PostalAddress", streetAddress: "2-1-35 Sugimoto, Sumiyoshi-ku", addressLocality: "Osaka City", addressCountry: "JP" }, description: SITE.description, sameAs: ["https://toumyou.com"] },
@@ -510,9 +509,9 @@ async function articles(env) {
   const posts = await listPublished(env);
   return html(shell({
     title: "Insights | Toumyou",
-    description: "Useful perspectives on digital products, AI, software, and web platforms from Toumyou.",
+    description: "Toumyou updates on fastener supply, cross-border commerce, digital operations, and web systems.",
     path: "/articles",
-    content: `<main class="listing"><h1>Useful perspectives,<br><em>not noise.</em></h1><p class="lead">Notes on product work, digital systems, AI workflows, and the craft of making things clearer.</p><div class="article-grid">${posts.map(articleLink).join("") || '<div class="empty"><p>No published articles yet.</p><span class="muted">Use the editor to publish the first note.</span></div>'}</div></main>`,
+    content: `<main class="listing"><h1>Supply notes<br>and company updates.</h1><p class="lead">Articles on fastener procurement, cross-border commerce, digital systems, and practical operations from Toumyou.</p><div class="article-grid">${posts.map(articleLink).join("") || '<div class="empty"><p>No published articles yet.</p><span class="muted">Use the editor to publish the first note.</span></div>'}</div></main>`,
   }));
 }
 
@@ -540,7 +539,7 @@ function productCard(product, env) {
   const canCheckout = product.allow_checkout && product.price_cents > 0 && (env.STRIPE_SECRET_KEY || env.STRIPE_RESTRICTED_KEY);
   const price = product.price_cents > 0 ? money(product.price_cents, product.currency) : "Quote";
   const meta = [product.category, product.material, product.size].filter(Boolean).join(" / ") || "Fastener";
-  const moq = Number(product.moq || 1) > 1 ? ` · MOQ ${escapeHtml(product.moq)}` : "";
+  const moq = Number(product.moq || 1) > 1 ? `, MOQ ${escapeHtml(product.moq)}` : "";
   const minQty = Math.max(1, Number.parseInt(product.moq || 1, 10) || 1);
   const searchText = [product.name, product.sku, product.slug, product.category, product.material, product.size, product.excerpt, product.description, product.specs].filter(Boolean).join(" ").toLowerCase();
   const images = productImages(product);
@@ -553,7 +552,7 @@ function productCard(product, env) {
     <div class="meta">${escapeHtml(meta)}</div>
     <h3>${escapeHtml(product.name)}</h3>
     <p>${escapeHtml(product.excerpt || product.description || "Industrial supply item available for cross-border sourcing.")}</p>
-    <p class="muted">SKU: ${escapeHtml(product.sku || product.slug)} · ${escapeHtml(price)}${moq}${product.inventory ? ` · Stock ${escapeHtml(product.inventory)}` : ""}</p>
+    <p class="muted">SKU: ${escapeHtml(product.sku || product.slug)}<br>${escapeHtml(price)}${moq}${product.inventory ? `, stock ${escapeHtml(product.inventory)}` : ""}</p>
     <div class="toolbar" style="margin-top:auto">
       <a class="btn secondary" href="/shop/products/${escapeHtml(product.slug)}">Details</a>
       ${
@@ -567,7 +566,7 @@ function productCard(product, env) {
 
 async function shopPage(env) {
   const medusaUrl = env.MEDUSA_BACKEND_URL || "";
-  const checkoutStatus = env.STRIPE_SECRET_KEY || env.STRIPE_RESTRICTED_KEY ? "Payment gateway ready for Stripe configuration." : "Payment gateway pending merchant configuration.";
+  const checkoutStatus = env.STRIPE_SECRET_KEY || env.STRIPE_RESTRICTED_KEY ? "Secure checkout is available for listed paid products." : "Checkout is pending merchant configuration.";
   const products = await listProducts(env);
   const categories = [...new Set(products.map((p) => String(p.category || "Fasteners").trim()).filter(Boolean))].sort();
   const categoryCards = SHOP.categories
@@ -577,22 +576,22 @@ async function shopPage(env) {
     .join("");
   const content = `<main>
     <section id="catalog" class="section catalog-first">
-      <p class="eyebrow">Product catalog</p>
-      <h1>Fastener products,<br><em>ready to source.</em></h1>
+      <p class="eyebrow">International fastener shop</p>
+      <h1>Fasteners, hardware,<br>and sourcing support.</h1>
       <div class="intro-strip">
-        <p>Browse listed fasteners and industrial accessories, or send a specification for sourcing. Paid items use Stripe Checkout with destination-based shipping choices; quote-only items are handled by email so we can confirm specifications and freight before invoicing.</p>
+        <p>Browse live SKUs, pay online when checkout is enabled, or request a quotation for special materials, drawings, bulk quantities, and mixed procurement lists.</p>
         <ul>
-          <li>Metric and inch fastener categories</li>
-          <li>Small-batch procurement and distributor supply</li>
-          <li>Standard or express international delivery at checkout</li>
+          <li>Metric screws, bolts, nuts, washers, anchors, and accessory parts</li>
+          <li>Small-batch supply for repair, prototype, distributor, and OEM needs</li>
+          <li>Stripe Checkout with address collection, freight options, and local payment methods where eligible</li>
         </ul>
       </div>
       ${
         products.length
           ? `<div class="shop-filter">
-              <input id="shopSearch" type="search" placeholder="Search by SKU, size, material, standard...">
+              <input id="shopSearch" type="search" placeholder="Search by SKU, size, material, standard, or finish...">
               <select id="shopCategory"><option value="">All categories</option>${categories.map((c) => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join("")}</select>
-              <select id="shopAvailability"><option value="">All availability</option><option value="stock">In stock</option><option value="quote">Quote / preorder</option></select>
+              <select id="shopAvailability"><option value="">All ordering types</option><option value="stock">Online checkout</option><option value="quote">Quote required</option></select>
             </div>
             <p id="shopCount" class="muted" style="max-width:none;margin-top:12px">${products.length} products listed</p>`
           : ""
@@ -629,30 +628,23 @@ async function shopPage(env) {
           : ""
       }
     </section>
-    <section class="hero">
-      <p class="eyebrow">Cross-border fastener supply</p>
-      <h1>Fasteners,<br><em>without friction.</em></h1>
-      <p class="lead">${escapeHtml(SHOP.description)}</p>
-      <div class="toolbar"><a class="btn" href="mailto:sunflyerjp@gmail.com?subject=Fastener%20quote%20request">Request a quote</a><a class="btn secondary" href="#catalog">Back to catalog</a></div>
-      <div class="hero-note">Bolts, screws, nuts, washers and sourcing support</div>
-    </section>
     <section class="section">
-      <p class="eyebrow">Ordering & delivery</p>
-      <h2>Clear steps from<br>specification to shipment.</h2>
+      <p class="eyebrow">Ordering and delivery</p>
+      <h2>Clear terms before<br>you place the order.</h2>
       <div class="service-grid">
-        <article><span>Product details</span><h3>Every paid SKU shows price, stock and specifications.</h3><p>For custom sizes, materials or large quantities, use Request quote and we will confirm availability before payment.</p></article>
-        <article><span>Shipping</span><h3>Choose Standard or Express delivery.</h3><p>Checkout collects the destination address and adds the selected freight charge. Import duties, VAT and local customs fees are paid by the recipient unless your quotation states otherwise.</p></article>
-        <article><span>Payment</span><h3>${escapeHtml(checkoutStatus)}</h3><p>Stripe Checkout may show cards and any wallet methods enabled for this account, including Alipay or WeChat Pay where Stripe has approved them for your business and the buyer’s location.</p></article>
+        <article><span>Product details</span><h3>Each paid SKU shows price, MOQ, stock, and specifications.</h3><p>For special sizes, materials, coatings, or drawings, send a quote request before payment.</p></article>
+        <article><span>Shipping</span><h3>Standard and express freight are shown at checkout.</h3><p>Checkout collects the destination address. Import duties, VAT, and local customs fees are normally paid by the recipient.</p></article>
+        <article><span>Payment</span><h3>${escapeHtml(checkoutStatus)}</h3><p>Stripe may show cards, Alipay, WeChat Pay, Apple Pay, or other methods depending on buyer location, currency, and Stripe eligibility.</p></article>
       </div>
-      <div class="notice" style="margin-top:34px"><strong>Shipping note:</strong> Standard delivery is normally 7–14 business days; Express is normally 3–7 business days. The exact charge and delivery estimate are shown by Stripe Checkout before payment.</div>
+      <div class="notice" style="margin-top:34px"><strong>Shipping note:</strong> Standard delivery is normally 7 to 14 business days. Express delivery is normally 3 to 7 business days. The exact charge and estimate are shown by Stripe Checkout before payment.</div>
     </section>
     <section class="contact">
       <div class="contact-grid">
         <div><p class="eyebrow">Start procurement</p><h2>Send the size,<br>material and quantity.</h2><a href="mailto:sunflyerjp@gmail.com?subject=Fastener%20quote%20request" class="contact-mail">sunflyerjp@gmail.com</a></div>
         <ul class="contact-list">
-          <li><span>Examples</span><p class="address">M3–M24 screws, stainless bolts, nuts, washers, anchors, pins, rivets, clips, brackets, and custom hardware.</p></li>
+          <li><span>Examples</span><p class="address">M3 to M24 screws, stainless bolts, nuts, washers, anchors, pins, rivets, clips, brackets, and custom hardware.</p></li>
           <li><span>Markets</span><p class="address">Japan, Asia, North America, Europe, and cross-border B2B buyers.</p></li>
-          <li><span>Next</span><p class="address">Upload SKU catalog, configure Stripe, then enable checkout per product from the product admin.</p></li>
+          <li><span>Quote details</span><p class="address">Send standard, size, material, finish, quantity, destination country, and any drawing or reference photo.</p></li>
         </ul>
       </div>
     </section>
@@ -721,7 +713,7 @@ async function productPage(env, slug) {
     <div class="notice" style="margin-top:34px">
       <p><strong>Price:</strong> ${escapeHtml(product.price_cents > 0 ? money(product.price_cents, product.currency) : "Quote required")}</p>
       <p><strong>Inventory:</strong> ${escapeHtml(product.inventory || "Confirm availability")}</p>
-      <p><strong>Delivery:</strong> Standard 7–14 business days or Express 3–7 business days. Freight is calculated in Stripe Checkout; duties and import taxes are normally payable by the recipient.</p>
+      <p><strong>Delivery:</strong> Standard 7 to 14 business days or Express 3 to 7 business days. Freight is calculated in Stripe Checkout; duties and import taxes are normally payable by the recipient.</p>
     </div>
     <div class="notice" style="margin-top:18px">
       <h3>Specifications</h3>
@@ -732,7 +724,7 @@ async function productPage(env, slug) {
   <div class="toolbar">
     ${
       canCheckout
-        ? `<form class="product-buy" method="post" action="/api/checkout"><input type="hidden" name="product_id" value="${escapeHtml(product.id)}"><div><label>Quantity</label><input name="quantity" type="number" min="${escapeHtml(minQty)}" max="${escapeHtml(maxQty)}" value="${escapeHtml(minQty)}"></div><button class="btn" type="submit">Checkout with Stripe</button><span class="muted">MOQ ${escapeHtml(minQty)}${product.inventory ? ` · Max ${escapeHtml(maxQty)} now` : ""}</span></form>`
+        ? `<form class="product-buy" method="post" action="/api/checkout"><input type="hidden" name="product_id" value="${escapeHtml(product.id)}"><div><label>Quantity</label><input name="quantity" type="number" min="${escapeHtml(minQty)}" max="${escapeHtml(maxQty)}" value="${escapeHtml(minQty)}"></div><button class="btn" type="submit">Checkout with Stripe</button><span class="muted">MOQ ${escapeHtml(minQty)}${product.inventory ? `, max ${escapeHtml(maxQty)} now` : ""}</span></form>`
         : `<a class="btn" href="mailto:sunflyerjp@gmail.com?subject=${encodeURIComponent(`Quote request: ${product.name}`)}">Request quote</a>`
     }
     <a class="btn secondary" href="/shop">Back to shop</a>
