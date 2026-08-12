@@ -59,6 +59,12 @@ function json(data, init = {}) {
   });
 }
 
+function redirect(location, status = 302, headers = {}) {
+  const h = new Headers(headers);
+  h.set("location", location);
+  return new Response(null, { status, headers: h });
+}
+
 function escapeHtml(value = "") {
   return String(value)
     .replaceAll("&", "&amp;")
@@ -107,6 +113,38 @@ async function isAuthed(request, env) {
 async function issueSession(env) {
   const stamp = String(Date.now());
   return `${stamp}.${await hmac(env.ADMIN_SESSION_SECRET, stamp)}`;
+}
+
+function randomToken(bytes = 24) {
+  const array = new Uint8Array(bytes);
+  crypto.getRandomValues(array);
+  return [...array].map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+function customerSecret(env) {
+  return env.CUSTOMER_SESSION_SECRET || env.ADMIN_SESSION_SECRET || "";
+}
+
+async function issueCustomerSession(env, customerId) {
+  const stamp = String(Date.now());
+  const value = `${customerId}.${stamp}`;
+  return `${value}.${await hmac(customerSecret(env), value)}`;
+}
+
+async function currentCustomer(request, env) {
+  const token = cookieValue(request, "toumyou_customer");
+  const secret = customerSecret(env);
+  if (!token || !secret || !env.DB) return null;
+  const [customerId, stamp, sig] = token.split(".");
+  if (!customerId || !stamp || !sig) return null;
+  if (Date.now() - Number(stamp) > 1000 * 60 * 60 * 24 * 30) return null;
+  if ((await hmac(secret, `${customerId}.${stamp}`)) !== sig) return null;
+  await ensureCommerce(env);
+  return await env.DB.prepare("SELECT id,email,name,picture,created_at,updated_at FROM customers WHERE id=?").bind(customerId).first();
+}
+
+function customerCookie(token) {
+  return `toumyou_customer=${encodeURIComponent(token)}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=2592000`;
 }
 
 async function listPublished(env) {
@@ -180,11 +218,13 @@ async function ensureCommerce(env) {
     shipping_address TEXT,
     shipping_country TEXT,
     stripe_payment_intent TEXT,
+    customer_id TEXT,
     raw_event TEXT,
     notes TEXT,
     created_at INTEGER,
     updated_at INTEGER
   )`).run();
+  await env.DB.prepare("ALTER TABLE orders ADD COLUMN customer_id TEXT").run().catch(() => {});
   await env.DB.prepare(`CREATE TABLE IF NOT EXISTS inquiries (
     id TEXT PRIMARY KEY,
     product_id TEXT,
@@ -200,6 +240,24 @@ async function ensureCommerce(env) {
     status TEXT DEFAULT 'new',
     created_at INTEGER,
     updated_at INTEGER
+  )`).run();
+  await env.DB.prepare(`CREATE TABLE IF NOT EXISTS customers (
+    id TEXT PRIMARY KEY,
+    google_sub TEXT UNIQUE,
+    email TEXT UNIQUE,
+    name TEXT,
+    picture TEXT,
+    created_at INTEGER,
+    updated_at INTEGER
+  )`).run();
+  await env.DB.prepare(`CREATE TABLE IF NOT EXISTS cart_items (
+    id TEXT PRIMARY KEY,
+    customer_id TEXT NOT NULL,
+    product_id TEXT NOT NULL,
+    quantity INTEGER DEFAULT 1,
+    created_at INTEGER,
+    updated_at INTEGER,
+    UNIQUE(customer_id, product_id)
   )`).run();
 }
 
@@ -291,6 +349,43 @@ async function listInquiries(env) {
   await ensureCommerce(env);
   if (!env.DB) return [];
   const result = await env.DB.prepare("SELECT * FROM inquiries ORDER BY created_at DESC").all();
+  return result.results || [];
+}
+
+async function upsertCustomer(env, profile = {}) {
+  await ensureCommerce(env);
+  const now = Math.floor(Date.now() / 1000);
+  const sub = String(profile.sub || "").trim();
+  const email = String(profile.email || "").trim().toLowerCase();
+  const name = String(profile.name || email || "Customer").trim();
+  const picture = String(profile.picture || "").trim();
+  if (!sub || !email) throw new Error("Google profile missing sub or email");
+  const existing = await env.DB.prepare("SELECT * FROM customers WHERE google_sub=? OR email=?").bind(sub, email).first();
+  if (existing) {
+    await env.DB.prepare("UPDATE customers SET google_sub=?,email=?,name=?,picture=?,updated_at=? WHERE id=?")
+      .bind(sub, email, name, picture, now, existing.id).run();
+    return await env.DB.prepare("SELECT * FROM customers WHERE id=?").bind(existing.id).first();
+  }
+  const id = crypto.randomUUID();
+  await env.DB.prepare("INSERT INTO customers (id,google_sub,email,name,picture,created_at,updated_at) VALUES (?,?,?,?,?,?,?)")
+    .bind(id, sub, email, name, picture, now, now).run();
+  return await env.DB.prepare("SELECT * FROM customers WHERE id=?").bind(id).first();
+}
+
+async function listCart(env, customerId) {
+  await ensureCommerce(env);
+  const result = await env.DB.prepare(`SELECT cart_items.id AS cart_id,cart_items.quantity,products.*
+    FROM cart_items JOIN products ON products.id=cart_items.product_id
+    WHERE cart_items.customer_id=?
+    ORDER BY cart_items.updated_at DESC`).bind(customerId).all();
+  return result.results || [];
+}
+
+async function listCustomerOrders(env, customer) {
+  await ensureCommerce(env);
+  if (!customer) return [];
+  const result = await env.DB.prepare("SELECT * FROM orders WHERE customer_id=? OR lower(customer_email)=? ORDER BY created_at DESC, updated_at DESC")
+    .bind(customer.id, String(customer.email || "").toLowerCase()).all();
   return result.results || [];
 }
 
@@ -410,7 +505,7 @@ function shell({ title, description, path = "/", content, schema }) {
   ${schema ? `<script type="application/ld+json">${JSON.stringify(schema)}</script>` : ""}
 </head>
 <body>
-  <header><a class="brand" href="/">TOUMYOU<span>®</span></a><nav><a class="nav" href="/#supply">Supply</a><a class="nav" href="/shop">Shop</a><a class="nav" href="/#digital">Digital</a><a class="nav" href="/articles">Insights</a><a class="nav" href="/#contact">Contact</a><a class="nav nav-admin" href="/admin">Admin</a></nav></header>
+  <header><a class="brand" href="/">TOUMYOU<span>®</span></a><nav><a class="nav" href="/#supply">Supply</a><a class="nav" href="/shop">Shop</a><a class="nav" href="/cart">Cart</a><a class="nav" href="/account">Account</a><a class="nav" href="/#digital">Digital</a><a class="nav" href="/articles">Insights</a><a class="nav nav-admin" href="/admin">Admin</a></nav></header>
   ${content}
   <footer><span>© ${new Date().getFullYear()} Toumyou LLC</span><span>Fastener supply, digital systems, and cross-border operations from Japan.</span></footer>
 </body>
@@ -557,7 +652,7 @@ function productCard(product, env) {
       <a class="btn secondary" href="/shop/products/${escapeHtml(product.slug)}">Details</a>
       ${
         canCheckout
-          ? `<form method="post" action="/api/checkout"><input type="hidden" name="product_id" value="${escapeHtml(product.id)}"><input type="hidden" name="quantity" value="${escapeHtml(minQty)}"><button class="btn" type="submit">Checkout</button></form>`
+          ? `<form method="post" action="/api/cart/add"><input type="hidden" name="product_id" value="${escapeHtml(product.id)}"><input type="hidden" name="quantity" value="${escapeHtml(minQty)}"><button class="btn secondary" type="submit">Add to cart</button></form><form method="post" action="/api/checkout"><input type="hidden" name="product_id" value="${escapeHtml(product.id)}"><input type="hidden" name="quantity" value="${escapeHtml(minQty)}"><button class="btn" type="submit">Checkout</button></form>`
           : `<a class="btn" href="mailto:sunflyerjp@gmail.com?subject=${encodeURIComponent(`Quote request: ${product.name}`)}">Request quote</a>`
       }
     </div>
@@ -724,7 +819,7 @@ async function productPage(env, slug) {
   <div class="toolbar">
     ${
       canCheckout
-        ? `<form class="product-buy" method="post" action="/api/checkout"><input type="hidden" name="product_id" value="${escapeHtml(product.id)}"><div><label>Quantity</label><input name="quantity" type="number" min="${escapeHtml(minQty)}" max="${escapeHtml(maxQty)}" value="${escapeHtml(minQty)}"></div><button class="btn" type="submit">Checkout with Stripe</button><span class="muted">MOQ ${escapeHtml(minQty)}${product.inventory ? `, max ${escapeHtml(maxQty)} now` : ""}</span></form>`
+        ? `<form class="product-buy" method="post" action="/api/cart/add"><input type="hidden" name="product_id" value="${escapeHtml(product.id)}"><div><label>Quantity</label><input name="quantity" type="number" min="${escapeHtml(minQty)}" max="${escapeHtml(maxQty)}" value="${escapeHtml(minQty)}"></div><button class="btn secondary" type="submit">Add to cart</button><span class="muted">MOQ ${escapeHtml(minQty)}${product.inventory ? `, max ${escapeHtml(maxQty)} now` : ""}</span></form><form class="product-buy" method="post" action="/api/checkout"><input type="hidden" name="product_id" value="${escapeHtml(product.id)}"><input name="quantity" type="hidden" value="${escapeHtml(minQty)}"><button class="btn" type="submit">Checkout with Stripe</button></form>`
         : `<a class="btn" href="mailto:sunflyerjp@gmail.com?subject=${encodeURIComponent(`Quote request: ${product.name}`)}">Request quote</a>`
     }
     <a class="btn secondary" href="/shop">Back to shop</a>
@@ -857,6 +952,7 @@ async function stripeCheckout(request, env) {
     content: '<main class="listing"><h1>Checkout is<br><em>not configured.</em></h1><p class="lead">Please request a quote while payment keys are being configured.</p><a class="btn" href="mailto:sunflyerjp@gmail.com?subject=Fastener%20quote%20request">Request quote</a></main>',
   }), { status: 503 });
   const body = await readBody(request);
+  const customer = await currentCustomer(request, env);
   const productId = body.product_id || body.productId;
   const requestedQuantity = Math.min(999, Math.max(1, Number.parseInt(body.quantity || "1", 10) || 1));
   const product = await getProduct(env, productId);
@@ -920,6 +1016,9 @@ async function stripeCheckout(request, env) {
   params.set("metadata[product_slug]", product.slug);
   params.set("metadata[order_id]", orderId);
   params.set("metadata[sku]", product.sku || "");
+  params.set("metadata[order_type]", "single");
+  if (customer?.id) params.set("metadata[customer_id]", customer.id);
+  if (customer?.email) params.set("customer_email", customer.email);
   const response = await fetch("https://api.stripe.com/v1/checkout/sessions", {
     method: "POST",
     headers: {
@@ -932,10 +1031,67 @@ async function stripeCheckout(request, env) {
   const data = await response.json().catch(() => ({}));
   if (!response.ok || !data.url) return json({ error: "Stripe checkout failed", details: data.error?.message || "Unknown error" }, { status: 502 });
   if (env.DB) {
-    await env.DB.prepare("INSERT INTO orders (id,stripe_session_id,product_id,product_slug,product_name,sku,quantity,amount_total,currency,payment_status,fulfillment_status,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)")
-      .bind(orderId, data.id || "", product.id, product.slug, product.name, product.sku || "", quantity, product.price_cents * quantity, product.currency, "checkout_created", "new", now, now).run()
+    await env.DB.prepare("INSERT INTO orders (id,stripe_session_id,product_id,product_slug,product_name,sku,quantity,amount_total,currency,payment_status,fulfillment_status,customer_id,customer_email,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
+      .bind(orderId, data.id || "", product.id, product.slug, product.name, product.sku || "", quantity, product.price_cents * quantity, product.currency, "checkout_created", "new", customer?.id || "", customer?.email || "", now, now).run()
       .catch(() => {});
   }
+  return Response.redirect(data.url, 303);
+}
+
+async function stripeCartCheckout(request, env) {
+  const stripeKey = env.STRIPE_RESTRICTED_KEY || env.STRIPE_SECRET_KEY;
+  if (!stripeKey) return html(shell({ title: "Checkout not configured | Toumyou", description: "Stripe checkout is not configured yet.", content: '<main class="listing"><h1>Checkout is not configured.</h1><p class="lead">Please request a quote while payment keys are being configured.</p></main>' }), { status: 503 });
+  const customer = await currentCustomer(request, env);
+  if (!customer) return Response.redirect(`${SITE.url}/login?next=/cart`, 303);
+  const items = (await listCart(env, customer.id)).filter((item) => item.status === "published" && item.allow_checkout && item.price_cents > 0);
+  if (!items.length) return Response.redirect(`${SITE.url}/cart`, 303);
+  const orderId = crypto.randomUUID();
+  const now = Math.floor(Date.now() / 1000);
+  const currency = String(items[0].currency || "JPY").toUpperCase();
+  if (items.some((item) => String(item.currency || "JPY").toUpperCase() !== currency)) return json({ error: "Cart checkout requires one currency per order" }, { status: 400 });
+  const subtotal = items.reduce((sum, item) => sum + Number(item.price_cents || 0) * Number(item.quantity || 1), 0);
+  const totalQty = items.reduce((sum, item) => sum + Number(item.quantity || 1), 0);
+  const params = new URLSearchParams();
+  params.set("mode", "payment");
+  params.set("success_url", `${SITE.url}/shop/success?session_id={CHECKOUT_SESSION_ID}`);
+  params.set("cancel_url", `${SITE.url}/cart`);
+  params.set("client_reference_id", customer.id);
+  params.set("customer_email", customer.email || "");
+  params.set("integration_identifier", "toumyou_cart_mqzjprla");
+  params.set("phone_number_collection[enabled]", "true");
+  ["JP", "US", "CA", "GB", "AU", "DE", "FR", "SG", "CN", "HK", "TW"].forEach((country, index) => params.set(`shipping_address_collection[allowed_countries][${index}]`, country));
+  const shippingCurrency = currency.toLowerCase();
+  const standardShipping = Math.max(0, Number.parseInt(env.SHIPPING_STANDARD_CENTS || "2500", 10) || 2500);
+  const expressShipping = Math.max(0, Number.parseInt(env.SHIPPING_EXPRESS_CENTS || "6500", 10) || 6500);
+  params.set("shipping_options[0][shipping_rate_data][type]", "fixed_amount");
+  params.set("shipping_options[0][shipping_rate_data][display_name]", "Standard international shipping");
+  params.set("shipping_options[0][shipping_rate_data][fixed_amount][amount]", String(standardShipping));
+  params.set("shipping_options[0][shipping_rate_data][fixed_amount][currency]", shippingCurrency);
+  params.set("shipping_options[1][shipping_rate_data][type]", "fixed_amount");
+  params.set("shipping_options[1][shipping_rate_data][display_name]", "Express international shipping");
+  params.set("shipping_options[1][shipping_rate_data][fixed_amount][amount]", String(expressShipping));
+  params.set("shipping_options[1][shipping_rate_data][fixed_amount][currency]", shippingCurrency);
+  items.forEach((item, index) => {
+    params.set(`line_items[${index}][quantity]`, String(Math.max(1, Number(item.quantity || 1))));
+    params.set(`line_items[${index}][price_data][currency]`, String(item.currency || "JPY").toLowerCase());
+    params.set(`line_items[${index}][price_data][unit_amount]`, String(item.price_cents));
+    params.set(`line_items[${index}][price_data][product_data][name]`, item.name);
+    params.set(`line_items[${index}][price_data][product_data][description]`, item.sku || item.slug);
+    if (item.image_url) params.set(`line_items[${index}][price_data][product_data][images][0]`, item.image_url);
+  });
+  params.set("metadata[order_id]", orderId);
+  params.set("metadata[order_type]", "cart");
+  params.set("metadata[customer_id]", customer.id);
+  params.set("metadata[item_count]", String(items.length));
+  const response = await fetch("https://api.stripe.com/v1/checkout/sessions", {
+    method: "POST",
+    headers: { authorization: `Bearer ${stripeKey}`, "content-type": "application/x-www-form-urlencoded", "stripe-version": "2026-06-24.dahlia" },
+    body: params,
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok || !data.url) return json({ error: "Stripe checkout failed", details: data.error?.message || "Unknown error" }, { status: 502 });
+  await env.DB.prepare("INSERT INTO orders (id,stripe_session_id,product_id,product_slug,product_name,sku,quantity,amount_total,currency,payment_status,fulfillment_status,customer_id,customer_email,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
+    .bind(orderId, data.id || "", "cart", "cart", `Cart checkout (${items.length} items)`, "Multiple SKUs", totalQty, subtotal, currency, "checkout_created", "new", customer.id, customer.email || "", now, now).run();
   return Response.redirect(data.url, 303);
 }
 
@@ -997,6 +1153,9 @@ async function stripeWebhook(request, env) {
         await env.DB.prepare("UPDATE products SET inventory=MAX(inventory-?,0),updated_at=? WHERE id=? AND inventory>0")
           .bind(paidQuantity, now, productId).run().catch(() => {});
       }
+      if (session.metadata?.order_type === "cart" && session.metadata?.customer_id) {
+        await env.DB.prepare("DELETE FROM cart_items WHERE customer_id=?").bind(session.metadata.customer_id).run().catch(() => {});
+      }
     }
   }
   if (event.type === "checkout.session.async_payment_failed" || event.type === "checkout.session.expired") {
@@ -1053,7 +1212,160 @@ function checkoutSuccessPage() {
   }), { cache: "no-store" });
 }
 
+function loginPage(request, env) {
+  const configured = Boolean(env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET);
+  const next = new URL(request.url).searchParams.get("next") || "/account";
+  return html(shell({
+    title: "Customer login | Toumyou",
+    description: "Sign in to Toumyou to manage cart, orders, and payment records.",
+    path: "/login",
+    content: `<main class="listing"><h1>Customer login.</h1><p class="lead">Sign in to save your cart and view your Toumyou orders, payment status, shipping address, and Stripe records.</p>
+      <div class="notice">
+        ${configured
+          ? `<a class="btn" href="/api/auth/google/start?next=${encodeURIComponent(next)}">Continue with Google</a>`
+          : `<p><strong>Google login is not configured yet.</strong></p><p>Add GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in Cloudflare Pages, then set the Google OAuth redirect URI to ${SITE.url}/api/auth/google/callback.</p>`}
+      </div>
+    </main>`,
+  }), { cache: "no-store" });
+}
+
+async function accountPage(request, env) {
+  const customer = await currentCustomer(request, env);
+  if (!customer) return loginPage(new Request(`${SITE.url}/login?next=/account`), env);
+  const orders = await listCustomerOrders(env, customer);
+  const cards = orders.map((o) => `<article class="article-card">
+    <div class="meta">${escapeHtml(o.payment_status || "pending")} / ${escapeHtml(o.fulfillment_status || "new")}</div>
+    <h3>${escapeHtml(o.product_name || o.product_slug || "Toumyou order")}</h3>
+    <p>${escapeHtml(o.sku || "Order")}<br>${escapeHtml(money(o.amount_total, o.currency))}</p>
+    <p class="muted">Quantity ${escapeHtml(o.quantity || 1)}. Created ${escapeHtml(o.created_at ? new Date(Number(o.created_at) * 1000).toLocaleString() : "-")}.</p>
+    <p class="muted">Stripe session: ${escapeHtml(o.stripe_session_id || "-")}</p>
+    ${o.stripe_payment_intent ? `<a class="btn secondary" href="https://dashboard.stripe.com/payments/${escapeHtml(o.stripe_payment_intent)}" target="_blank">Payment record</a>` : ""}
+  </article>`).join("");
+  return html(shell({
+    title: "My account | Toumyou",
+    description: "Toumyou customer account and order history.",
+    path: "/account",
+    content: `<main class="listing"><h1>My account.</h1><p class="lead">${escapeHtml(customer.name || customer.email)}<br>${escapeHtml(customer.email || "")}</p>
+      <div class="toolbar"><a class="btn" href="/cart">Open cart</a><a class="btn secondary" href="/shop">Continue shopping</a><a class="btn secondary" href="/api/auth/logout">Log out</a></div>
+      <section class="section" style="padding:40px 0 0"><p class="eyebrow">Orders and payments</p><h2>Your order history.</h2><div class="article-grid">${cards || '<div class="notice">No orders yet. Paid and attempted Stripe checkouts will appear here after you use this account.</div>'}</div></section>
+    </main>`,
+  }), { cache: "no-store" });
+}
+
+async function cartPage(request, env) {
+  const customer = await currentCustomer(request, env);
+  if (!customer) return loginPage(new Request(`${SITE.url}/login?next=/cart`), env);
+  const items = await listCart(env, customer.id);
+  const subtotal = items.reduce((sum, item) => sum + (Number(item.price_cents || 0) * Number(item.quantity || 1)), 0);
+  const currency = items[0]?.currency || "JPY";
+  const cards = items.map((item) => `<article class="article-card">
+    <div class="meta">${escapeHtml(item.category || "Fasteners")} / ${escapeHtml(item.sku || item.slug)}</div>
+    <h3>${escapeHtml(item.name)}</h3>
+    <p>${escapeHtml(money(item.price_cents, item.currency))}<br>Quantity ${escapeHtml(item.quantity || 1)}</p>
+    <div class="toolbar">
+      <form method="post" action="/api/cart/update"><input type="hidden" name="cart_id" value="${escapeHtml(item.cart_id)}"><input name="quantity" type="number" min="1" value="${escapeHtml(item.quantity || 1)}"><button class="btn secondary" type="submit">Update</button></form>
+      <form method="post" action="/api/cart/remove"><input type="hidden" name="cart_id" value="${escapeHtml(item.cart_id)}"><button class="btn secondary" type="submit">Remove</button></form>
+    </div>
+  </article>`).join("");
+  return html(shell({
+    title: "Cart | Toumyou",
+    description: "Toumyou shopping cart.",
+    path: "/cart",
+    content: `<main class="listing"><h1>Shopping cart.</h1><p class="lead">${items.length} item(s). Estimated subtotal ${escapeHtml(money(subtotal, currency))}. Freight is shown in Stripe Checkout.</p>
+      <div class="toolbar">${items.length ? '<form method="post" action="/api/checkout/cart"><button class="btn" type="submit">Checkout cart</button></form>' : ""}<a class="btn secondary" href="/shop">Continue shopping</a><a class="btn secondary" href="/account">My account</a></div>
+      <div class="article-grid">${cards || '<div class="notice">Your cart is empty. Add products from the shop after signing in.</div>'}</div>
+    </main>`,
+  }), { cache: "no-store" });
+}
+
 async function handleApi(request, env, pathname) {
+  if (pathname === "/api/auth/google/start") {
+    if (!env.GOOGLE_CLIENT_ID || !env.GOOGLE_CLIENT_SECRET) return json({ error: "Google login is not configured" }, { status: 503 });
+    const url = new URL(request.url);
+    const state = randomToken(24);
+    const next = url.searchParams.get("next") || "/account";
+    const auth = new URL("https://accounts.google.com/o/oauth2/v2/auth");
+    auth.searchParams.set("client_id", env.GOOGLE_CLIENT_ID);
+    auth.searchParams.set("redirect_uri", `${SITE.url}/api/auth/google/callback`);
+    auth.searchParams.set("response_type", "code");
+    auth.searchParams.set("scope", "openid profile email");
+    auth.searchParams.set("state", `${state}:${next}`);
+    auth.searchParams.set("prompt", "select_account");
+    return redirect(auth.toString(), 302, { "set-cookie": `toumyou_oauth_state=${encodeURIComponent(state)}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=600` });
+  }
+  if (pathname === "/api/auth/google/callback") {
+    const url = new URL(request.url);
+    const stateParam = url.searchParams.get("state") || "";
+    const [state, next = "/account"] = stateParam.split(":");
+    if (!state || state !== cookieValue(request, "toumyou_oauth_state")) return html(shell({ title: "Login failed | Toumyou", description: "Google login failed.", content: '<main class="listing"><h1>Login failed.</h1><p class="lead">The login state expired. Please try again.</p><a class="btn" href="/login">Back to login</a></main>' }), { status: 400 });
+    const code = url.searchParams.get("code") || "";
+    if (!code) return json({ error: "Missing Google authorization code" }, { status: 400 });
+    const body = new URLSearchParams();
+    body.set("code", code);
+    body.set("client_id", env.GOOGLE_CLIENT_ID || "");
+    body.set("client_secret", env.GOOGLE_CLIENT_SECRET || "");
+    body.set("redirect_uri", `${SITE.url}/api/auth/google/callback`);
+    body.set("grant_type", "authorization_code");
+    const tokenRes = await fetch("https://oauth2.googleapis.com/token", { method: "POST", headers: { "content-type": "application/x-www-form-urlencoded" }, body });
+    const token = await tokenRes.json().catch(() => ({}));
+    if (!tokenRes.ok || !token.access_token) return json({ error: "Google token exchange failed" }, { status: 502 });
+    const profileRes = await fetch("https://openidconnect.googleapis.com/v1/userinfo", { headers: { authorization: `Bearer ${token.access_token}` } });
+    const profile = await profileRes.json().catch(() => ({}));
+    if (!profileRes.ok || !profile.email || profile.email_verified === false) return json({ error: "Google profile verification failed" }, { status: 502 });
+    const customer = await upsertCustomer(env, profile);
+    const session = await issueCustomerSession(env, customer.id);
+    const safeNext = String(next || "/account").startsWith("/") ? String(next || "/account") : "/account";
+    const headers = new Headers({ location: `${SITE.url}${safeNext}` });
+    headers.append("set-cookie", customerCookie(session));
+    headers.append("set-cookie", "toumyou_oauth_state=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0");
+    return new Response(null, { status: 302, headers });
+  }
+  if (pathname === "/api/auth/logout") {
+    return redirect(`${SITE.url}/`, 302, { "set-cookie": "toumyou_customer=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0" });
+  }
+  if (pathname === "/api/customer/session") {
+    const customer = await currentCustomer(request, env);
+    return json({ authenticated: Boolean(customer), customer: customer ? { email: customer.email, name: customer.name, picture: customer.picture } : null });
+  }
+  if (pathname === "/api/cart" && request.method === "GET") {
+    const customer = await currentCustomer(request, env);
+    if (!customer) return json({ error: "Login required" }, { status: 401 });
+    return json(await listCart(env, customer.id));
+  }
+  if (pathname === "/api/cart/add" && request.method === "POST") {
+    const customer = await currentCustomer(request, env);
+    if (!customer) return Response.redirect(`${SITE.url}/login?next=/cart`, 303);
+    const body = await readBody(request);
+    const product = await getProduct(env, body.product_id || body.productId);
+    if (!product || product.status !== "published" || !product.allow_checkout || product.price_cents <= 0) return json({ error: "Product is not available for cart checkout" }, { status: 400 });
+    const qty = Math.max(Math.max(1, Number(product.moq || 1)), Math.min(999, Number.parseInt(body.quantity || "1", 10) || 1));
+    const now = Math.floor(Date.now() / 1000);
+    await ensureCommerce(env);
+    await env.DB.prepare("INSERT INTO cart_items (id,customer_id,product_id,quantity,created_at,updated_at) VALUES (?,?,?,?,?,?) ON CONFLICT(customer_id,product_id) DO UPDATE SET quantity=quantity+excluded.quantity,updated_at=excluded.updated_at")
+      .bind(crypto.randomUUID(), customer.id, product.id, qty, now, now).run();
+    return Response.redirect(`${SITE.url}/cart`, 303);
+  }
+  if (pathname === "/api/cart/update" && request.method === "POST") {
+    const customer = await currentCustomer(request, env);
+    if (!customer) return Response.redirect(`${SITE.url}/login?next=/cart`, 303);
+    const body = await readBody(request);
+    const qty = Math.max(1, Math.min(999, Number.parseInt(body.quantity || "1", 10) || 1));
+    await env.DB.prepare("UPDATE cart_items SET quantity=?,updated_at=? WHERE id=? AND customer_id=?").bind(qty, Math.floor(Date.now() / 1000), body.cart_id || "", customer.id).run();
+    return Response.redirect(`${SITE.url}/cart`, 303);
+  }
+  if (pathname === "/api/cart/remove" && request.method === "POST") {
+    const customer = await currentCustomer(request, env);
+    if (!customer) return Response.redirect(`${SITE.url}/login?next=/cart`, 303);
+    const body = await readBody(request);
+    await env.DB.prepare("DELETE FROM cart_items WHERE id=? AND customer_id=?").bind(body.cart_id || "", customer.id).run();
+    return Response.redirect(`${SITE.url}/cart`, 303);
+  }
+  if (pathname === "/api/account/orders") {
+    const customer = await currentCustomer(request, env);
+    if (!customer) return json({ error: "Login required" }, { status: 401 });
+    return json(await listCustomerOrders(env, customer));
+  }
+  if (pathname === "/api/checkout/cart" && request.method === "POST") return stripeCartCheckout(request, env);
   if (pathname === "/api/checkout" && request.method === "POST") return stripeCheckout(request, env);
   if (pathname === "/api/stripe/webhook" && request.method === "POST") return stripeWebhook(request, env);
   if (pathname === "/api/quote" && request.method === "POST") return quoteRequest(request, env);
@@ -1159,6 +1471,9 @@ export default {
     if (url.pathname.startsWith("/media/")) return mediaFile(request, env, decodeURIComponent(url.pathname.slice("/media/".length)));
     if (url.pathname.startsWith("/api/")) return handleApi(request, env, url.pathname);
     if (url.pathname === "/") return home(env);
+    if (url.pathname === "/login") return loginPage(request, env);
+    if (url.pathname === "/cart") return cartPage(request, env);
+    if (url.pathname === "/account") return accountPage(request, env);
     if (url.pathname === "/shop") return shopPage(env);
     if (url.pathname === "/shop/success") return checkoutSuccessPage();
     if (url.pathname.startsWith("/shop/products/")) return productPage(env, decodeURIComponent(url.pathname.split("/").pop()));
