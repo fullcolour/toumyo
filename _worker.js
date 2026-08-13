@@ -33,6 +33,44 @@ const SHOP = {
   ],
 };
 
+const TENANTS = {
+  toumyou: {
+    key: "toumyou",
+    lang: "en",
+    name: "Toumyou",
+    legalName: "Toumyou LLC",
+    brand: "TOUMYOU",
+    url: "https://toumyou.com",
+    email: "sunflyerjp@gmail.com",
+    phone: "+81 070 1846 1357",
+    telHref: "+8107018461357",
+    addressHtml: "2-1-35 Sugimoto, Sumiyoshi-ku<br>Osaka City, Japan",
+    footer: "Cross-border fastener supply and practical procurement support from Japan.",
+    showDigital: true,
+    tawkSrc: "https://embed.tawk.to/6a7deb5d9b88671d449028d5/1jvttupc1",
+  },
+  ximiaokeji: {
+    key: "ximiaokeji",
+    lang: "zh-CN",
+    name: "西缈科技",
+    legalName: "上海西缈科技有限公司",
+    brand: "西缈科技",
+    url: "https://ximiaokeji.com",
+    email: "hello@ximiaokeji.com",
+    phone: "18616626832",
+    telHref: "+8618616626832",
+    addressHtml: "上海西缈科技有限公司",
+    footer: "专注紧固件销售、工业配件供应与企业采购支持。",
+    showDigital: false,
+    tawkSrc: "https://embed.tawk.to/6a7deb5d9b88671d449028d5/1jvttupc1",
+  },
+};
+
+function tenantFromRequest(request) {
+  const host = new URL(request.url).hostname.toLowerCase();
+  return host === "ximiaokeji.com" || host.endsWith(".ximiaokeji.com") ? TENANTS.ximiaokeji : TENANTS.toumyou;
+}
+
 const encoder = new TextEncoder();
 
 function html(body, init = {}) {
@@ -80,13 +118,14 @@ function truncate(value = "", max = 1200) {
 }
 
 function supportPageUrl(request, value = "") {
-  const fallback = request?.headers ? request.headers.get("referer") || SITE.url : SITE.url;
+  const tenant = request?.url ? tenantFromRequest(request) : TENANTS.toumyou;
+  const fallback = request?.headers ? request.headers.get("referer") || tenant.url : tenant.url;
   try {
-    const url = new URL(String(value || fallback || SITE.url), SITE.url);
-    if (url.protocol !== "https:" && url.protocol !== "http:") return SITE.url;
+    const url = new URL(String(value || fallback || tenant.url), tenant.url);
+    if (url.protocol !== "https:" && url.protocol !== "http:") return tenant.url;
     return url.toString();
   } catch {
-    return fallback || SITE.url;
+    return fallback || tenant.url;
   }
 }
 
@@ -597,10 +636,13 @@ async function uploadMedia(request, env) {
   return json({ ok: true, files: uploaded });
 }
 
-function shell({ title, description, path = "/", content, schema }) {
-  const canonical = `${SITE.url}${path}`;
+function shell({ title, description, path = "/", content, schema, tenant = TENANTS.toumyou }) {
+  const canonical = `${tenant.url}${path}`;
+  const nav = tenant.lang === "zh-CN"
+    ? `<a class="nav" href="/#supply">供应</a><a class="nav" href="/shop">产品</a><a class="nav" href="/cart">购物车</a><a class="nav" href="/account">账户</a><a class="nav" href="/articles">文章</a><a class="nav nav-admin" href="/admin">后台</a>`
+    : `<a class="nav" href="/#supply">Supply</a><a class="nav" href="/shop">Shop</a><a class="nav" href="/cart">Cart</a><a class="nav" href="/account">Account</a>${tenant.showDigital ? '<a class="nav" href="/digital">Digital</a>' : ""}<a class="nav" href="/articles">Insights</a><a class="nav nav-admin" href="/admin">Admin</a>`;
   return `<!doctype html>
-<html lang="en">
+<html lang="${escapeHtml(tenant.lang)}">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -642,7 +684,7 @@ function shell({ title, description, path = "/", content, schema }) {
   ${schema ? `<script type="application/ld+json">${JSON.stringify(schema)}</script>` : ""}
 </head>
 <body>
-  <header><a class="brand" href="/">TOUMYOU<span>®</span></a><nav><a class="nav" href="/#supply">Supply</a><a class="nav" href="/shop">Shop</a><a class="nav" href="/cart">Cart</a><a class="nav" href="/account">Account</a><a class="nav" href="/digital">Digital</a><a class="nav" href="/articles">Insights</a><a class="nav nav-admin" href="/admin">Admin</a></nav></header>
+  <header><a class="brand" href="/">${escapeHtml(tenant.brand)}${tenant.key === "toumyou" ? "<span>®</span>" : ""}</a><nav>${nav}</nav></header>
   ${content}
   <!--Start of Tawk.to Script-->
   <script type="text/javascript">
@@ -650,21 +692,70 @@ function shell({ title, description, path = "/", content, schema }) {
     (function(){
       var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
       s1.async=true;
-      s1.src='https://embed.tawk.to/6a7deb5d9b88671d449028d5/1jvttupc1';
+      s1.src='${escapeHtml(tenant.tawkSrc)}';
       s1.charset='UTF-8';
       s1.setAttribute('crossorigin','*');
       s0.parentNode.insertBefore(s1,s0);
     })();
   </script>
   <!--End of Tawk.to Script-->
-  <footer><span>© ${new Date().getFullYear()} Toumyou LLC</span><span>Cross-border fastener supply and practical procurement support from Japan.</span></footer>
+  <footer><span>© ${new Date().getFullYear()} ${escapeHtml(tenant.legalName)}</span><span>${escapeHtml(tenant.footer)}</span></footer>
 </body>
 </html>`;
 }
 
-async function home(env) {
+async function home(env, tenant = TENANTS.toumyou) {
   const posts = (await listPublished(env)).slice(0, 3);
   const products = (await listProducts(env)).slice(0, 3);
+  if (tenant.key === "ximiaokeji") {
+    const categoryCards = SHOP.categories.map((item) => `<article class="article-card"><div class="meta">产品目录 / ${escapeHtml(item.slug)}</div><h3>${escapeHtml(zhCategoryName(item.name))}</h3><p>${escapeHtml(zhCategorySummary(item.summary))}</p><b>询价采购</b></article>`).join("");
+    const content = `<main>
+      <section id="supply" class="hero">
+        <p class="eyebrow">紧固件销售与工业配件供应</p>
+        <h1>面向企业采购的<br>紧固件供应服务。</h1>
+        <p class="lead">上海西缈科技有限公司经营螺丝、螺栓、螺母、垫圈、锚固件、销钉、铆钉及相关工业配件，支持在线下单、批量询价和非标规格采购沟通。</p>
+        <div class="toolbar"><a class="btn" href="/shop">查看产品</a><a class="btn secondary" href="mailto:${escapeHtml(tenant.email)}?subject=${encodeURIComponent("紧固件询价")}">发送询价</a></div>
+      </section>
+      <section class="section">
+        <h2>为采购流程设计，<br>不只是展示产品。</h2>
+        <div class="commerce-panel">
+          <div class="commerce-card"><strong>主营产品</strong><p>公制螺丝、内六角螺钉、六角螺栓、螺母、平垫、弹垫、锚栓、铆钉、卡扣、支架、特殊材质紧固件及工业配件。</p></div>
+          <div class="commerce-card"><strong>采购方式</strong><ul class="commerce-list">
+            <li>已上架产品可直接加入购物车或在线购买。</li>
+            <li>特殊尺寸、材质、表面处理、图纸件和批量采购可发送询价。</li>
+            <li>支持按 SKU、规格、数量和交付要求整理采购清单。</li>
+            <li>支付与配送信息会在下单流程中进一步确认。</li>
+          </ul></div>
+        </div>
+        <div class="metric-strip"><div><strong>上海</strong><span>公司主体</span></div><div><strong>B2B</strong><span>企业采购</span></div><div><strong>在线</strong><span>购物车下单</span></div><div><strong>询价</strong><span>批量与非标</span></div></div>
+      </section>
+      <section class="section">
+        <div class="insights-head"><div><p class="eyebrow">产品目录</p><h2>现货产品与<br>可询价规格。</h2></div><a class="text-link" href="/shop">进入产品页</a></div>
+        <div class="article-grid">${products.length ? products.map((p) => productCard(p, env, tenant)).join("") : categoryCards}</div>
+      </section>
+      <section id="insights" class="section">
+        <div class="insights-head"><div><p class="eyebrow">文章</p><h2>紧固件知识<br>与采购说明。</h2></div><a class="text-link" href="/articles">查看全部文章</a></div>
+        ${posts.length ? `<div class="article-grid">${posts.map((post) => articleLink(post, tenant)).join("")}</div>` : '<div class="empty"><p>文章正在整理中。</p><span class="muted">后台发布后会自动显示在这里。</span></div>'}
+      </section>
+      <section id="contact" class="contact">
+        <div class="contact-grid">
+          <div><p class="eyebrow">联系采购</p><h2>发送规格、数量<br>或图纸要求。</h2><a href="mailto:${escapeHtml(tenant.email)}" class="contact-mail">${escapeHtml(tenant.email)}</a></div>
+          <ul class="contact-list">
+            <li><span>电话</span><a href="tel:${escapeHtml(tenant.telHref)}">${escapeHtml(tenant.phone)}</a></li>
+            <li><span>邮箱</span><a href="mailto:${escapeHtml(tenant.email)}">${escapeHtml(tenant.email)}</a></li>
+            <li><span>公司</span><p class="address">${escapeHtml(tenant.legalName)}</p></li>
+          </ul>
+        </div>
+      </section>
+    </main>`;
+    return html(shell({
+      title: "上海西缈科技有限公司 | 紧固件销售",
+      description: "上海西缈科技有限公司主营紧固件销售和工业配件供应，支持螺丝、螺栓、螺母、垫圈及非标件询价采购。",
+      content,
+      tenant,
+      schema: { "@context": "https://schema.org", "@type": "Organization", name: tenant.legalName, url: tenant.url, email: tenant.email, telephone: tenant.phone, description: "紧固件销售、工业配件供应与企业采购支持。" },
+    }));
+  }
   const content = `<main>
     <section id="supply" class="hero">
       <p class="eyebrow">Cross-border fastener supply</p>
@@ -688,11 +779,11 @@ async function home(env) {
     </section>
     <section class="section">
       <div class="insights-head"><div><p class="eyebrow">Featured catalog</p><h2>Ready-to-order<br>and quote-ready SKUs.</h2></div><a class="text-link" href="/shop">Open full shop</a></div>
-      <div class="article-grid">${products.length ? products.map((p) => productCard(p, env)).join("") : SHOP.categories.map((item) => `<article class="article-card"><div class="meta">${escapeHtml(item.slug)}</div><h3>${escapeHtml(item.name)}</h3><p>${escapeHtml(item.summary)}</p><b>Request quote</b></article>`).join("")}</div>
+      <div class="article-grid">${products.length ? products.map((p) => productCard(p, env, tenant)).join("") : SHOP.categories.map((item) => `<article class="article-card"><div class="meta">${escapeHtml(item.slug)}</div><h3>${escapeHtml(item.name)}</h3><p>${escapeHtml(item.summary)}</p><b>Request quote</b></article>`).join("")}</div>
     </section>
     <section id="insights" class="section">
       <div class="insights-head"><div><p class="eyebrow">Articles</p><h2>Updates and<br>procurement notes.</h2></div><a class="text-link" href="/articles">All articles</a></div>
-      ${posts.length ? `<div class="article-grid">${posts.map(articleLink).join("")}</div>` : '<div class="empty"><p>Our first notes are in progress.</p><span class="muted">Published articles will appear here immediately after you save them.</span></div>'}
+      ${posts.length ? `<div class="article-grid">${posts.map((post) => articleLink(post, tenant)).join("")}</div>` : '<div class="empty"><p>Our first notes are in progress.</p><span class="muted">Published articles will appear here immediately after you save them.</span></div>'}
     </section>
     <section id="contact" class="contact">
       <div class="contact-grid">
@@ -710,6 +801,7 @@ async function home(env) {
     description: SITE.description,
     content,
     schema: { "@context": "https://schema.org", "@type": "Organization", name: "Toumyou LLC", url: SITE.url, email: "sunflyerjp@gmail.com", telephone: "+8107018461357", address: { "@type": "PostalAddress", streetAddress: "2-1-35 Sugimoto, Sumiyoshi-ku", addressLocality: "Osaka City", addressCountry: "JP" }, description: SITE.description, sameAs: ["https://toumyou.com"] },
+    tenant,
   }));
 }
 
@@ -774,29 +866,54 @@ function digitalPage() {
   }));
 }
 
-function articleLink(post) {
-  const date = post.published_at ? new Date(post.published_at * 1000).toISOString().slice(0, 10) : "Draft";
-  return `<a class="article-card" href="/articles/${escapeHtml(post.slug)}"><div class="meta">${escapeHtml(post.category || "Insights")} / ${date}</div><h3>${escapeHtml(post.title)}</h3><p>${escapeHtml(post.excerpt)}</p><b>Read article</b></a>`;
+function zhCategoryName(name = "") {
+  const text = String(name);
+  if (/hex|socket/i.test(text)) return "六角螺栓与内六角螺钉";
+  if (/nuts|washers|insert/i.test(text)) return "螺母、垫圈与螺纹嵌件";
+  if (/stainless|alloy|specialty/i.test(text)) return "不锈钢、合金与特殊规格件";
+  if (/industrial/i.test(text)) return "工业配件与五金附件";
+  return text || "紧固件产品";
 }
 
-async function articles(env) {
+function zhCategorySummary(summary = "") {
+  const text = String(summary);
+  if (/Metric bolts|socket head/i.test(text)) return "公制螺栓、内六角螺钉、紧定螺钉和机螺钉，适用于装配、维修与 OEM 项目。";
+  if (/Hex nuts|lock nuts/i.test(text)) return "六角螺母、防松螺母、平垫、弹垫、嵌件及相关螺纹连接件。";
+  if (/Corrosion-resistant|stainless/i.test(text)) return "耐腐蚀不锈钢件、高强度合金紧固件、定制表面处理与难找规格。";
+  if (/Brackets|clips|anchors/i.test(text)) return "支架、卡扣、锚固件、销钉、铆钉、工具及可合并采购的配套五金。";
+  return text || "支持常规规格采购与特殊需求询价。";
+}
+
+function articleLink(post, tenant = TENANTS.toumyou) {
+  const date = post.published_at ? new Date(post.published_at * 1000).toISOString().slice(0, 10) : "Draft";
+  const fallbackCategory = tenant.lang === "zh-CN" ? "文章" : "Insights";
+  const cta = tenant.lang === "zh-CN" ? "阅读文章" : "Read article";
+  return `<a class="article-card" href="/articles/${escapeHtml(post.slug)}"><div class="meta">${escapeHtml(post.category || fallbackCategory)} / ${date}</div><h3>${escapeHtml(post.title)}</h3><p>${escapeHtml(post.excerpt)}</p><b>${cta}</b></a>`;
+}
+
+async function articles(env, tenant = TENANTS.toumyou) {
   const posts = await listPublished(env);
+  const zh = tenant.lang === "zh-CN";
   return html(shell({
-    title: "Insights | Toumyou",
-    description: "Toumyou updates on fastener supply, cross-border commerce, digital operations, and web systems.",
+    title: zh ? "紧固件文章 | 上海西缈科技有限公司" : "Insights | Toumyou",
+    description: zh ? "上海西缈科技有限公司发布紧固件产品知识、采购说明和企业采购相关信息。" : "Toumyou updates on fastener supply, cross-border commerce, digital operations, and web systems.",
     path: "/articles",
-    content: `<main class="listing"><h1>Supply notes<br>and company updates.</h1><p class="lead">Articles on fastener procurement, cross-border commerce, digital systems, and practical operations from Toumyou.</p><div class="article-grid">${posts.map(articleLink).join("") || '<div class="empty"><p>No published articles yet.</p><span class="muted">Use the editor to publish the first note.</span></div>'}</div></main>`,
+    content: zh
+      ? `<main class="listing"><h1>紧固件知识<br>与采购文章。</h1><p class="lead">这里发布产品规格、材料选择、采购流程、下单说明和工业配件供应相关内容。</p><div class="article-grid">${posts.map((post) => articleLink(post, tenant)).join("") || '<div class="empty"><p>暂无已发布文章。</p><span class="muted">在后台保存发布后，文章会自动显示。</span></div>'}</div></main>`
+      : `<main class="listing"><h1>Supply notes<br>and company updates.</h1><p class="lead">Articles on fastener procurement, cross-border commerce, digital systems, and practical operations from Toumyou.</p><div class="article-grid">${posts.map((post) => articleLink(post, tenant)).join("") || '<div class="empty"><p>No published articles yet.</p><span class="muted">Use the editor to publish the first note.</span></div>'}</div></main>`,
+    tenant,
   }));
 }
 
-async function article(env, slug) {
+async function article(env, slug, tenant = TENANTS.toumyou) {
   const post = await getPost(env, slug);
-  if (!post || post.status !== "published") return html(shell({ title: "Not found | Toumyou", description: "Article not found.", content: "<main><h1>Article not found</h1></main>" }), { status: 404 });
+  const zh = tenant.lang === "zh-CN";
+  if (!post || post.status !== "published") return html(shell({ title: zh ? "未找到文章 | 西缈科技" : "Not found | Toumyou", description: zh ? "未找到文章。" : "Article not found.", content: zh ? "<main><h1>未找到文章</h1></main>" : "<main><h1>Article not found</h1></main>", tenant }), { status: 404 });
   return html(shell({
-    title: `${post.title} | Toumyou`,
+    title: `${post.title} | ${tenant.name}`,
     description: post.excerpt,
     path: `/articles/${post.slug}`,
-    content: `<main class="article-page article"><article><div class="meta">${escapeHtml(post.category || "Insights")}</div><h1>${escapeHtml(post.title)}</h1><p class="article-dek">${escapeHtml(post.excerpt)}</p><div class="post-body">${escapeHtml(post.body)}</div></article><div class="toolbar"><a class="btn secondary" href="/articles">All insights</a><a class="btn" href="/#contact">Talk to Toumyou</a></div></main>`,
+    content: `<main class="article-page article"><article><div class="meta">${escapeHtml(post.category || (zh ? "文章" : "Insights"))}</div><h1>${escapeHtml(post.title)}</h1><p class="article-dek">${escapeHtml(post.excerpt)}</p><div class="post-body">${escapeHtml(post.body)}</div></article><div class="toolbar"><a class="btn secondary" href="/articles">${zh ? "全部文章" : "All insights"}</a><a class="btn" href="/#contact">${zh ? "联系西缈科技" : "Talk to Toumyou"}</a></div></main>`,
     schema: {
       "@context": "https://schema.org",
       "@type": "Article",
@@ -804,16 +921,18 @@ async function article(env, slug) {
       description: post.excerpt,
       datePublished: post.published_at ? new Date(post.published_at * 1000).toISOString() : undefined,
       dateModified: post.updated_at ? new Date(post.updated_at * 1000).toISOString() : undefined,
-      author: { "@type": "Organization", name: SITE.name },
+      author: { "@type": "Organization", name: tenant.legalName },
     },
+    tenant,
   }));
 }
 
-function productCard(product, env) {
+function productCard(product, env, tenant = TENANTS.toumyou) {
+  const zh = tenant.lang === "zh-CN";
   const canCheckout = product.allow_checkout && product.price_cents > 0 && (env.STRIPE_SECRET_KEY || env.STRIPE_RESTRICTED_KEY);
-  const price = product.price_cents > 0 ? money(product.price_cents, product.currency) : "Quote";
-  const meta = [product.category, product.material, product.size].filter(Boolean).join(" / ") || "Fastener";
-  const moq = Number(product.moq || 1) > 1 ? `, MOQ ${escapeHtml(product.moq)}` : "";
+  const price = product.price_cents > 0 ? money(product.price_cents, product.currency) : (zh ? "询价" : "Quote");
+  const meta = [product.category, product.material, product.size].filter(Boolean).join(" / ") || (zh ? "紧固件" : "Fastener");
+  const moq = Number(product.moq || 1) > 1 ? `, ${zh ? "起订量" : "MOQ"} ${escapeHtml(product.moq)}` : "";
   const minQty = Math.max(1, Number.parseInt(product.moq || 1, 10) || 1);
   const searchText = [product.name, product.sku, product.slug, product.category, product.material, product.size, product.excerpt, product.description, product.specs].filter(Boolean).join(" ").toLowerCase();
   const images = productImages(product);
@@ -821,57 +940,58 @@ function productCard(product, env) {
     ? `<img src="${escapeHtml(images[0])}" alt="${escapeHtml(product.name)}" loading="lazy" style="width:100%;height:190px;object-fit:cover;border-radius:6px;margin-bottom:18px">`
     : "";
   return `<article class="article-card product-card" data-product-card data-search="${escapeHtml(searchText)}" data-category="${escapeHtml(product.category || "")}" data-availability="${canCheckout ? "stock" : "quote"}">
-    <span class="card-tag ${canCheckout ? "pay" : ""}">${canCheckout ? "Ready to buy" : "Quote"}</span>
+    <span class="card-tag ${canCheckout ? "pay" : ""}">${canCheckout ? (zh ? "可购买" : "Ready to buy") : (zh ? "询价" : "Quote")}</span>
     ${image}
     <div class="meta">${escapeHtml(meta)}</div>
     <h3>${escapeHtml(product.name)}</h3>
-    <p>${escapeHtml(product.excerpt || product.description || "Industrial supply item available for cross-border sourcing.")}</p>
-    <p class="muted">SKU: ${escapeHtml(product.sku || product.slug)}<br>${escapeHtml(price)}${moq}${product.inventory ? `, stock ${escapeHtml(product.inventory)}` : ""}</p>
+    <p>${escapeHtml(product.excerpt || product.description || (zh ? "适用于企业采购的紧固件及工业配件产品。" : "Industrial supply item available for cross-border sourcing."))}</p>
+    <p class="muted">SKU: ${escapeHtml(product.sku || product.slug)}<br>${escapeHtml(price)}${moq}${product.inventory ? `, ${zh ? "库存" : "stock"} ${escapeHtml(product.inventory)}` : ""}</p>
     <div class="toolbar" style="margin-top:auto">
-      <a class="btn secondary" href="/shop/products/${escapeHtml(product.slug)}">Details</a>
+      <a class="btn secondary" href="/shop/products/${escapeHtml(product.slug)}">${zh ? "查看详情" : "Details"}</a>
       ${
         canCheckout
-          ? `<form method="post" action="/api/cart/add"><input type="hidden" name="product_id" value="${escapeHtml(product.id)}"><input type="hidden" name="quantity" value="${escapeHtml(minQty)}"><button class="btn secondary" type="submit">Add to cart</button></form><form method="post" action="/api/checkout"><input type="hidden" name="product_id" value="${escapeHtml(product.id)}"><input type="hidden" name="quantity" value="${escapeHtml(minQty)}"><button class="btn buy" type="submit">Buy now</button></form>`
-          : `<a class="btn" href="mailto:sunflyerjp@gmail.com?subject=${encodeURIComponent(`Quote request: ${product.name}`)}">Request quote</a>`
+          ? `<form method="post" action="/api/cart/add"><input type="hidden" name="product_id" value="${escapeHtml(product.id)}"><input type="hidden" name="quantity" value="${escapeHtml(minQty)}"><button class="btn secondary" type="submit">${zh ? "加入购物车" : "Add to cart"}</button></form><form method="post" action="/api/checkout"><input type="hidden" name="product_id" value="${escapeHtml(product.id)}"><input type="hidden" name="quantity" value="${escapeHtml(minQty)}"><button class="btn buy" type="submit">${zh ? "立即购买" : "Buy now"}</button></form>`
+          : `<a class="btn" href="mailto:${escapeHtml(tenant.email)}?subject=${encodeURIComponent(`${zh ? "紧固件询价" : "Quote request"}: ${product.name}`)}">${zh ? "发送询价" : "Request quote"}</a>`
       }
     </div>
   </article>`;
 }
 
-async function shopPage(env) {
+async function shopPage(env, tenant = TENANTS.toumyou) {
+  const zh = tenant.lang === "zh-CN";
   const medusaUrl = env.MEDUSA_BACKEND_URL || "";
-  const checkoutStatus = env.STRIPE_SECRET_KEY || env.STRIPE_RESTRICTED_KEY ? "Secure checkout is available for listed paid products." : "Checkout is pending merchant configuration.";
+  const checkoutStatus = env.STRIPE_SECRET_KEY || env.STRIPE_RESTRICTED_KEY ? (zh ? "已配置在线支付，可用于支持购买的产品。" : "Secure checkout is available for listed paid products.") : (zh ? "在线支付正在配置中，可先提交询价。" : "Checkout is pending merchant configuration.");
   const products = await listProducts(env);
-  const categories = [...new Set(products.map((p) => String(p.category || "Fasteners").trim()).filter(Boolean))].sort();
+  const categories = [...new Set(products.map((p) => String(p.category || (zh ? "紧固件" : "Fasteners")).trim()).filter(Boolean))].sort();
   const categoryCards = SHOP.categories
     .map(
-      (item) => `<article class="article-card"><div class="meta">Catalog / ${escapeHtml(item.slug)}</div><h3>${escapeHtml(item.name)}</h3><p>${escapeHtml(item.summary)}</p><b>Request quote</b></article>`,
+      (item) => `<article class="article-card"><div class="meta">${zh ? "产品目录" : "Catalog"} / ${escapeHtml(item.slug)}</div><h3>${escapeHtml(zh ? zhCategoryName(item.name) : item.name)}</h3><p>${escapeHtml(zh ? zhCategorySummary(item.summary) : item.summary)}</p><b>${zh ? "询价采购" : "Request quote"}</b></article>`,
     )
     .join("");
   const content = `<main>
     <section id="catalog" class="section catalog-first">
-      <p class="eyebrow">International fastener shop</p>
-      <h1>Fasteners, hardware,<br>and sourcing support.</h1>
+      <p class="eyebrow">${zh ? "紧固件产品中心" : "International fastener shop"}</p>
+      <h1>${zh ? "紧固件、五金件<br>与工业配件供应。" : "Fasteners, hardware,<br>and sourcing support."}</h1>
       <div class="intro-strip">
-        <p>Browse live SKUs, pay online when checkout is enabled, or request a quotation for special materials, drawings, bulk quantities, and mixed procurement lists.</p>
+        <p>${zh ? "浏览已上架 SKU，支持购物车和在线购买；特殊材质、图纸件、批量采购和组合清单可提交询价。" : "Browse live SKUs, pay online when checkout is enabled, or request a quotation for special materials, drawings, bulk quantities, and mixed procurement lists."}</p>
         <ul>
-          <li>Metric screws, bolts, nuts, washers, anchors, and accessory parts</li>
-          <li>Small-batch supply for repair, prototype, distributor, and OEM needs</li>
-          <li>Stripe Checkout with address collection, freight options, and local payment methods where eligible</li>
+          <li>${zh ? "螺丝、螺栓、螺母、垫圈、锚固件和配套工业五金" : "Metric screws, bolts, nuts, washers, anchors, and accessory parts"}</li>
+          <li>${zh ? "适合维修、样品、经销、工程项目和 OEM 采购需求" : "Small-batch supply for repair, prototype, distributor, and OEM needs"}</li>
+          <li>${zh ? "支持账户、购物车、订单记录和支付状态查询" : "Stripe Checkout with address collection, freight options, and local payment methods where eligible"}</li>
         </ul>
       </div>
       ${
         products.length
           ? `<div class="shop-filter">
-              <input id="shopSearch" type="search" placeholder="Search by SKU, size, material, standard, or finish...">
-              <select id="shopCategory"><option value="">All categories</option>${categories.map((c) => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join("")}</select>
-              <select id="shopAvailability"><option value="">All ordering types</option><option value="stock">Online checkout</option><option value="quote">Quote required</option></select>
+              <input id="shopSearch" type="search" placeholder="${zh ? "按 SKU、规格、材质、标准或表面处理搜索..." : "Search by SKU, size, material, standard, or finish..."}">
+              <select id="shopCategory"><option value="">${zh ? "全部分类" : "All categories"}</option>${categories.map((c) => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join("")}</select>
+              <select id="shopAvailability"><option value="">${zh ? "全部采购方式" : "All ordering types"}</option><option value="stock">${zh ? "可在线购买" : "Online checkout"}</option><option value="quote">${zh ? "需要询价" : "Quote required"}</option></select>
             </div>
-            <p id="shopCount" class="muted" style="max-width:none;margin-top:12px">${products.length} products listed</p>`
+            <p id="shopCount" class="muted" style="max-width:none;margin-top:12px">${products.length} ${zh ? "个产品已上架" : "products listed"}</p>`
           : ""
       }
-      <div class="article-grid">${products.length ? products.map((p) => productCard(p, env)).join("") : categoryCards}</div>
-      ${products.length ? "" : '<div class="notice" style="margin-top:24px">No live products have been published yet. Use <a class="text-link" href="/admin/products">Product Admin</a> to publish the first SKUs.</div>'}
+      <div class="article-grid">${products.length ? products.map((p) => productCard(p, env, tenant)).join("") : categoryCards}</div>
+      ${products.length ? "" : `<div class="notice" style="margin-top:24px">${zh ? '暂无已发布产品。可在 <a class="text-link" href="/admin/products">产品后台</a> 发布第一个 SKU。' : 'No live products have been published yet. Use <a class="text-link" href="/admin/products">Product Admin</a> to publish the first SKUs.'}</div>`}
       ${
         products.length
           ? `<script>
@@ -894,7 +1014,7 @@ async function shopPage(env) {
                     card.hidden = !ok;
                     if (ok) shown += 1;
                   });
-                  if (count) count.textContent = shown + ' of ' + cards.length + ' products shown';
+                  if (count) count.textContent = ${JSON.stringify(zh)} ? (shown + ' / ' + cards.length + ' 个产品') : (shown + ' of ' + cards.length + ' products shown');
                 }
                 [search, category, availability].forEach(el => el && el.addEventListener('input', applyFilter));
               })();
@@ -903,39 +1023,39 @@ async function shopPage(env) {
       }
     </section>
     <section class="section">
-      <p class="eyebrow">Ordering and delivery</p>
-      <h2>Clear terms before<br>you place the order.</h2>
+      <p class="eyebrow">${zh ? "下单与交付" : "Ordering and delivery"}</p>
+      <h2>${zh ? "下单前清楚确认<br>规格、数量和交付。" : "Clear terms before<br>you place the order."}</h2>
       <div class="service-grid">
-        <article><span>Product details</span><h3>Each paid SKU shows price, MOQ, stock, and specifications.</h3><p>For special sizes, materials, coatings, or drawings, send a quote request before payment.</p></article>
-        <article><span>Shipping</span><h3>Standard and express freight are shown at checkout.</h3><p>Checkout collects the destination address. Import duties, VAT, and local customs fees are normally paid by the recipient.</p></article>
-        <article><span>Payment</span><h3>${escapeHtml(checkoutStatus)}</h3><p>Stripe may show cards, Alipay, WeChat Pay, Apple Pay, or other methods depending on buyer location, currency, and Stripe eligibility.</p></article>
+        <article><span>${zh ? "产品信息" : "Product details"}</span><h3>${zh ? "每个可购买 SKU 会显示价格、起订量、库存和规格。" : "Each paid SKU shows price, MOQ, stock, and specifications."}</h3><p>${zh ? "特殊尺寸、材料、表面处理或图纸件，建议先提交询价再确认。" : "For special sizes, materials, coatings, or drawings, send a quote request before payment."}</p></article>
+        <article><span>${zh ? "配送" : "Shipping"}</span><h3>${zh ? "订单配送和交付方式会根据地址与产品确认。" : "Standard and express freight are shown at checkout."}</h3><p>${zh ? "如需批量采购或指定物流，可在询价时备注目的地和交期要求。" : "Checkout collects the destination address. Import duties, VAT, and local customs fees are normally paid by the recipient."}</p></article>
+        <article><span>${zh ? "支付" : "Payment"}</span><h3>${escapeHtml(checkoutStatus)}</h3><p>${zh ? "支持的支付方式会根据账户配置、币种和订单条件显示；批量采购也可先沟通确认。" : "Stripe may show cards, Alipay, WeChat Pay, Apple Pay, or other methods depending on buyer location, currency, and Stripe eligibility."}</p></article>
       </div>
-      <div class="notice" style="margin-top:34px"><strong>Shipping note:</strong> Standard delivery is normally 7 to 14 business days. Express delivery is normally 3 to 7 business days. The exact charge and estimate are shown by Stripe Checkout before payment.</div>
+      <div class="notice" style="margin-top:34px"><strong>${zh ? "采购提示：" : "Shipping note:"}</strong> ${zh ? "请尽量提供规格、材质、表面处理、数量、用途、交付城市和图纸/照片，便于更快确认报价。" : "Standard delivery is normally 7 to 14 business days. Express delivery is normally 3 to 7 business days. The exact charge and estimate are shown by Stripe Checkout before payment."}</div>
     </section>
     <section class="contact">
       <div class="contact-grid">
-        <div><p class="eyebrow">Start procurement</p><h2>Send the size,<br>material and quantity.</h2><a href="mailto:sunflyerjp@gmail.com?subject=Fastener%20quote%20request" class="contact-mail">sunflyerjp@gmail.com</a></div>
+        <div><p class="eyebrow">${zh ? "开始采购" : "Start procurement"}</p><h2>${zh ? "发送规格、材质<br>和采购数量。" : "Send the size,<br>material and quantity."}</h2><a href="mailto:${escapeHtml(tenant.email)}?subject=${encodeURIComponent(zh ? "紧固件询价" : "Fastener quote request")}" class="contact-mail">${escapeHtml(tenant.email)}</a></div>
         <ul class="contact-list">
-          <li><span>Examples</span><p class="address">M3 to M24 screws, stainless bolts, nuts, washers, anchors, pins, rivets, clips, brackets, and custom hardware.</p></li>
-          <li><span>Markets</span><p class="address">Japan, Asia, North America, Europe, and cross-border B2B buyers.</p></li>
-          <li><span>Quote details</span><p class="address">Send standard, size, material, finish, quantity, destination country, and any drawing or reference photo.</p></li>
+          <li><span>${zh ? "范围" : "Examples"}</span><p class="address">${zh ? "螺丝、螺栓、螺母、垫圈、锚固件、销钉、铆钉、卡扣、支架及非标五金件。" : "M3 to M24 screws, stainless bolts, nuts, washers, anchors, pins, rivets, clips, brackets, and custom hardware."}</p></li>
+          <li><span>${zh ? "电话" : "Markets"}</span><p class="address">${zh ? `<a href="tel:${escapeHtml(tenant.telHref)}">${escapeHtml(tenant.phone)}</a>` : "Japan, Asia, North America, Europe, and cross-border B2B buyers."}</p></li>
+          <li><span>${zh ? "询价信息" : "Quote details"}</span><p class="address">${zh ? "请发送标准、尺寸、材质、表面处理、数量、交付地，以及图纸或参考照片。" : "Send standard, size, material, finish, quantity, destination country, and any drawing or reference photo."}</p></li>
         </ul>
       </div>
     </section>
   </main>`;
   return html(shell({
-    title: "Fastener Shop | Toumyou",
-    description: SHOP.description,
+    title: zh ? "紧固件产品 | 上海西缈科技有限公司" : "Fastener Shop | Toumyou",
+    description: zh ? "上海西缈科技有限公司紧固件产品中心，提供螺丝、螺栓、螺母、垫圈和工业配件销售与询价。" : SHOP.description,
     path: "/shop",
     content,
     schema: {
       "@context": "https://schema.org",
       "@type": "Store",
-      name: SHOP.name,
-      url: `${SITE.url}/shop`,
-      description: SHOP.description,
-      email: "sunflyerjp@gmail.com",
-      parentOrganization: { "@type": "Organization", name: "Toumyou LLC" },
+      name: zh ? "上海西缈科技紧固件产品中心" : SHOP.name,
+      url: `${tenant.url}/shop`,
+      description: zh ? "紧固件、工业五金和配件销售。" : SHOP.description,
+      email: tenant.email,
+      parentOrganization: { "@type": "Organization", name: tenant.legalName },
       makesOffer: (products.length ? products : SHOP.categories).map((item) => ({
         "@type": "Offer",
         price: item.price_cents ? String(minorToDisplay(item.price_cents, item.currency)) : undefined,
@@ -944,13 +1064,15 @@ async function shopPage(env) {
         availability: item.inventory ? "https://schema.org/InStock" : "https://schema.org/PreOrder",
       })),
     },
+    tenant,
   }));
 }
 
-async function productPage(env, slug) {
+async function productPage(env, slug, tenant = TENANTS.toumyou) {
+  const zh = tenant.lang === "zh-CN";
   const product = await getProduct(env, slug);
   if (!product || product.status !== "published") {
-    return html(shell({ title: "Product not found | Toumyou", description: "Product not found.", content: "<main><h1>Product not found</h1></main>" }), { status: 404 });
+    return html(shell({ title: zh ? "产品未找到 | 西缈科技" : "Product not found | Toumyou", description: zh ? "产品未找到。" : "Product not found.", content: zh ? "<main><h1>产品未找到</h1></main>" : "<main><h1>Product not found</h1></main>", tenant }), { status: 404 });
   }
   const canCheckout = product.allow_checkout && product.price_cents > 0 && (env.STRIPE_SECRET_KEY || env.STRIPE_RESTRICTED_KEY);
   const images = productImages(product);
@@ -959,11 +1081,11 @@ async function productPage(env, slug) {
   const maxQty = product.inventory ? Math.max(minQty, Math.min(999, Number.parseInt(product.inventory, 10) || 999)) : 999;
   const specRows = [
     ["SKU", product.sku || product.slug],
-    ["Category", product.category || "Fasteners"],
-    ["Material", product.material || "Confirm by order"],
-    ["Size", product.size || "Confirm by order"],
-    ["MOQ", product.moq || 1],
-    ["Weight", product.weight_grams ? `${product.weight_grams} g / unit` : "Confirm by order"],
+    [zh ? "分类" : "Category", product.category || (zh ? "紧固件" : "Fasteners")],
+    [zh ? "材质" : "Material", product.material || (zh ? "按订单确认" : "Confirm by order")],
+    [zh ? "规格" : "Size", product.size || (zh ? "按订单确认" : "Confirm by order")],
+    [zh ? "起订量" : "MOQ", product.moq || 1],
+    [zh ? "重量" : "Weight", product.weight_grams ? `${product.weight_grams} g / ${zh ? "件" : "unit"}` : (zh ? "按订单确认" : "Confirm by order")],
   ];
   const gallery = images.length
     ? `<div class="product-gallery" data-gallery>
@@ -979,57 +1101,57 @@ async function productPage(env, slug) {
       </script>`
     : "";
   const content = `<main class="article-page article"><article>
-    <div class="meta">${escapeHtml(product.category || "Fasteners")} / ${escapeHtml(product.sku || product.slug)}</div>
+    <div class="meta">${escapeHtml(product.category || (zh ? "紧固件" : "Fasteners"))} / ${escapeHtml(product.sku || product.slug)}</div>
     <h1>${escapeHtml(product.name)}</h1>
-    <p class="article-dek">${escapeHtml(product.excerpt || "Cross-border fastener and industrial accessory supply.")}</p>
+    <p class="article-dek">${escapeHtml(product.excerpt || (zh ? "紧固件与工业配件供应产品。" : "Cross-border fastener and industrial accessory supply."))}</p>
     ${gallery}
     <div class="post-body">${escapeHtml(product.description || "")}</div>
     <div class="notice" style="margin-top:34px">
-      <p><strong>Price:</strong> ${escapeHtml(product.price_cents > 0 ? money(product.price_cents, product.currency) : "Quote required")}</p>
-      <p><strong>Inventory:</strong> ${escapeHtml(product.inventory || "Confirm availability")}</p>
-      <p><strong>Delivery:</strong> Standard 7 to 14 business days or Express 3 to 7 business days. Freight is calculated in Stripe Checkout; duties and import taxes are normally payable by the recipient.</p>
+      <p><strong>${zh ? "价格" : "Price"}:</strong> ${escapeHtml(product.price_cents > 0 ? money(product.price_cents, product.currency) : (zh ? "需要询价" : "Quote required"))}</p>
+      <p><strong>${zh ? "库存" : "Inventory"}:</strong> ${escapeHtml(product.inventory || (zh ? "请确认库存" : "Confirm availability"))}</p>
+      <p><strong>${zh ? "交付" : "Delivery"}:</strong> ${zh ? "交付方式、周期和运费会根据产品、数量和地址确认；批量采购建议先提交询价。" : "Standard 7 to 14 business days or Express 3 to 7 business days. Freight is calculated in Stripe Checkout; duties and import taxes are normally payable by the recipient."}</p>
     </div>
     <div class="notice" style="margin-top:18px">
-      <h3>Specifications</h3>
+      <h3>${zh ? "规格参数" : "Specifications"}</h3>
       ${specRows.map(([k, v]) => `<p><strong>${escapeHtml(k)}:</strong> ${escapeHtml(v)}</p>`).join("")}
-      ${specs ? `<p><strong>Detailed specs:</strong><br>${escapeHtml(specs).replaceAll("\n", "<br>")}</p>` : ""}
+      ${specs ? `<p><strong>${zh ? "详细规格" : "Detailed specs"}:</strong><br>${escapeHtml(specs).replaceAll("\n", "<br>")}</p>` : ""}
     </div>
   </article>
   <div class="toolbar">
     ${
       canCheckout
-        ? `<form class="product-buy" method="post" action="/api/cart/add"><input type="hidden" name="product_id" value="${escapeHtml(product.id)}"><div><label>Quantity</label><input name="quantity" type="number" min="${escapeHtml(minQty)}" max="${escapeHtml(maxQty)}" value="${escapeHtml(minQty)}"></div><button class="btn secondary" type="submit">Add to cart</button><span class="muted">MOQ ${escapeHtml(minQty)}${product.inventory ? `, max ${escapeHtml(maxQty)} now` : ""}</span></form><form class="product-buy" method="post" action="/api/checkout"><input type="hidden" name="product_id" value="${escapeHtml(product.id)}"><input name="quantity" type="hidden" value="${escapeHtml(minQty)}"><button class="btn buy" type="submit">Buy now</button></form>`
-        : `<a class="btn" href="mailto:sunflyerjp@gmail.com?subject=${encodeURIComponent(`Quote request: ${product.name}`)}">Request quote</a>`
+        ? `<form class="product-buy" method="post" action="/api/cart/add"><input type="hidden" name="product_id" value="${escapeHtml(product.id)}"><div><label>${zh ? "数量" : "Quantity"}</label><input name="quantity" type="number" min="${escapeHtml(minQty)}" max="${escapeHtml(maxQty)}" value="${escapeHtml(minQty)}"></div><button class="btn secondary" type="submit">${zh ? "加入购物车" : "Add to cart"}</button><span class="muted">${zh ? "起订量" : "MOQ"} ${escapeHtml(minQty)}${product.inventory ? `, ${zh ? "当前最多" : "max"} ${escapeHtml(maxQty)}` : ""}</span></form><form class="product-buy" method="post" action="/api/checkout"><input type="hidden" name="product_id" value="${escapeHtml(product.id)}"><input name="quantity" type="hidden" value="${escapeHtml(minQty)}"><button class="btn buy" type="submit">${zh ? "立即购买" : "Buy now"}</button></form>`
+        : `<a class="btn" href="mailto:${escapeHtml(tenant.email)}?subject=${encodeURIComponent(`${zh ? "紧固件询价" : "Quote request"}: ${product.name}`)}">${zh ? "发送询价" : "Request quote"}</a>`
     }
-    <a class="btn secondary" href="/shop">Back to shop</a>
+    <a class="btn secondary" href="/shop">${zh ? "返回产品页" : "Back to shop"}</a>
   </div></main>`;
-  const quoteForm = `<section class="section" style="padding-top:40px"><p class="eyebrow">Need a custom quote?</p><h2>Send quantity,<br>drawing or specs.</h2><div class="notice"><form id="quoteForm" class="quote-form">
+  const quoteForm = `<section class="section" style="padding-top:40px"><p class="eyebrow">${zh ? "需要定制询价？" : "Need a custom quote?"}</p><h2>${zh ? "发送数量、图纸<br>或详细规格。" : "Send quantity,<br>drawing or specs."}</h2><div class="notice"><form id="quoteForm" class="quote-form">
     <input type="hidden" name="product_id" value="${escapeHtml(product.id)}">
-    <label>Name</label><input name="name" required>
-    <label>Email</label><input name="email" type="email" required>
-    <label>Company</label><input name="company">
-    <label>Country / region</label><input name="country">
-    <label>Quantity</label><input name="quantity" placeholder="Example: 500 pcs / 20 boxes">
-    <label>Specifications</label><textarea name="specs" placeholder="Material, size, standard, finish, drawing link, packaging..."></textarea>
-    <label>Message</label><textarea name="message" placeholder="Tell us delivery country, target date, or anything special."></textarea>
-    <div class="toolbar"><button class="btn" type="submit">Submit quote request</button><a class="btn secondary" href="mailto:sunflyerjp@gmail.com?subject=${encodeURIComponent(`Quote request: ${product.name}`)}">Email instead</a></div>
+    <label>${zh ? "姓名" : "Name"}</label><input name="name" required>
+    <label>${zh ? "邮箱" : "Email"}</label><input name="email" type="email" required>
+    <label>${zh ? "公司" : "Company"}</label><input name="company">
+    <label>${zh ? "地区" : "Country / region"}</label><input name="country">
+    <label>${zh ? "数量" : "Quantity"}</label><input name="quantity" placeholder="${zh ? "例如：500 件 / 20 箱" : "Example: 500 pcs / 20 boxes"}">
+    <label>${zh ? "规格" : "Specifications"}</label><textarea name="specs" placeholder="${zh ? "材质、尺寸、标准、表面处理、图纸链接、包装要求..." : "Material, size, standard, finish, drawing link, packaging..."}"></textarea>
+    <label>${zh ? "备注" : "Message"}</label><textarea name="message" placeholder="${zh ? "交付城市、目标日期或其他特殊要求。" : "Tell us delivery country, target date, or anything special."}"></textarea>
+    <div class="toolbar"><button class="btn" type="submit">${zh ? "提交询价" : "Submit quote request"}</button><a class="btn secondary" href="mailto:${escapeHtml(tenant.email)}?subject=${encodeURIComponent(`${zh ? "紧固件询价" : "Quote request"}: ${product.name}`)}">${zh ? "改用邮件发送" : "Email instead"}</a></div>
     <p id="quoteStatus" class="status"></p>
   </form></div>
   <script>
     document.getElementById('quoteForm')?.addEventListener('submit', async (event) => {
       event.preventDefault();
       const status = document.getElementById('quoteStatus');
-      status.textContent = 'Sending...';
+      status.textContent = ${JSON.stringify(zh ? "正在发送..." : "Sending...")};
       const payload = Object.fromEntries(new FormData(event.target).entries());
       payload.page_url = location.href;
       const res = await fetch('/api/quote', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(payload) });
-      status.textContent = res.ok ? 'Quote request saved. We will contact you by email.' : 'Could not save request. Please email us directly.';
+      status.textContent = res.ok ? ${JSON.stringify(zh ? "询价已提交，我们会通过邮箱联系你。" : "Quote request saved. We will contact you by email.")} : ${JSON.stringify(zh ? "提交失败，请直接发送邮件联系我们。" : "Could not save request. Please email us directly.")};
       if (res.ok) event.target.reset();
     });
   </script></section>`;
   return html(shell({
-    title: `${product.name} | Toumyou Shop`,
-    description: product.excerpt || product.description || SHOP.description,
+    title: `${product.name} | ${zh ? "上海西缈科技有限公司" : "Toumyou Shop"}`,
+    description: product.excerpt || product.description || (zh ? "紧固件与工业配件产品详情。" : SHOP.description),
     path: `/shop/products/${product.slug}`,
     content: content.replace("</main>", `${quoteForm}</main>`),
     schema: {
@@ -1038,7 +1160,7 @@ async function productPage(env, slug) {
       name: product.name,
       sku: product.sku || product.slug,
       mpn: product.sku || product.slug,
-      brand: { "@type": "Brand", name: "Toumyou Fastener Supply" },
+      brand: { "@type": "Brand", name: zh ? "上海西缈科技有限公司" : "Toumyou Fastener Supply" },
       description: product.excerpt || product.description,
       image: images.length ? images : undefined,
       offers: {
@@ -1048,13 +1170,14 @@ async function productPage(env, slug) {
         availability: product.inventory ? "https://schema.org/InStock" : "https://schema.org/PreOrder",
         inventoryLevel: product.inventory ? { "@type": "QuantitativeValue", value: Number(product.inventory) || 0 } : undefined,
         eligibleQuantity: { "@type": "QuantitativeValue", minValue: minQty },
-        url: `${SITE.url}/shop/products/${product.slug}`,
+        url: `${tenant.url}/shop/products/${product.slug}`,
       },
     },
+    tenant,
   }));
 }
 
-function adminPage() {
+function adminPage(tenant = TENANTS.toumyou) {
   const content = `<main class="admin-wrap"><h1>Editor</h1><p class="lead">Create, publish, and update Toumyou articles.</p>
     <div id="app" class="notice">Loading...</div>
     <script>
@@ -1067,10 +1190,10 @@ function adminPage() {
       function wireSave(id){document.getElementById('save').onclick=async()=>{const payload={title:document.getElementById('title').value,slug:document.getElementById('slug').value,excerpt:document.getElementById('excerpt').value,body:document.getElementById('body').value,category:document.getElementById('category').value,status:document.getElementById('status').value}; const result=await api(id?'/api/admin/posts/'+id:'/api/admin/posts',{method:id?'PUT':'POST',body:JSON.stringify(payload)}); const slug=result.slug||payload.slug; document.getElementById('saved').innerHTML='Saved. <a class="text-link" target="_blank" href="/articles/'+encodeURIComponent(slug)+'?fresh='+Date.now()+'">Open article</a> or <a class="text-link" target="_blank" href="/?fresh='+Date.now()+'">check home</a>.'; if(!id)setTimeout(load,700)}; const del=document.getElementById('delete'); if(del)del.onclick=async()=>{if(!confirm('Delete this article?'))return; await api('/api/admin/posts/'+id,{method:'DELETE'}); load()}}
       load();
     </script></main>`;
-  return html(shell({ title: "Admin | Toumyou", description: "Toumyou admin.", path: "/admin", content }), { cache: "no-store" });
+  return html(shell({ title: `${tenant.lang === "zh-CN" ? "后台" : "Admin"} | ${tenant.name}`, description: `${tenant.name} admin.`, path: "/admin", content, tenant }), { cache: "no-store" });
 }
 
-function adminProductsPage() {
+function adminProductsPage(tenant = TENANTS.toumyou) {
   const content = `<main class="admin-wrap"><h1>Products</h1><p class="lead">Add fastener SKUs, publish product pages, and enable checkout when Stripe is configured.</p>
     <div id="app" class="notice">Loading...</div>
     <script>
@@ -1089,10 +1212,10 @@ function adminProductsPage() {
       function wireSave(id){const uploader=document.getElementById('upload_images'); if(uploader)uploader.onclick=uploadImages; document.getElementById('save').onclick=async()=>{const p=payload(); const result=await api(id?'/api/admin/products/'+id:'/api/admin/products',{method:id?'PUT':'POST',body:JSON.stringify(p)}); const slug=result.slug||p.slug; document.getElementById('saved').innerHTML='Saved. <a class="text-link" target="_blank" href="/shop/products/'+encodeURIComponent(slug)+'?fresh='+Date.now()+'">Open product</a> or <a class="text-link" target="_blank" href="/shop?fresh='+Date.now()+'">check shop</a>.'; if(!id)setTimeout(load,700)}; const del=document.getElementById('delete'); if(del)del.onclick=async()=>{if(!confirm('Delete this product?'))return; await api('/api/admin/products/'+id,{method:'DELETE'}); load()}}
       load();
     </script></main>`;
-  return html(shell({ title: "Product Admin | Toumyou", description: "Toumyou product admin.", path: "/admin/products", content }), { cache: "no-store" });
+  return html(shell({ title: `${tenant.lang === "zh-CN" ? "产品后台" : "Product Admin"} | ${tenant.name}`, description: `${tenant.name} product admin.`, path: "/admin/products", content, tenant }), { cache: "no-store" });
 }
 
-function adminOrdersPage() {
+function adminOrdersPage(tenant = TENANTS.toumyou) {
   const content = `<main class="admin-wrap"><h1>Orders & quotes</h1><p class="lead">Review Stripe checkout orders, update fulfillment status, and follow up on quote requests.</p>
     <div id="app" class="notice">Loading...</div>
     <script>
@@ -1112,10 +1235,10 @@ function adminOrdersPage() {
       async function load(){try{const s=await api('/api/admin/session'); if(!s.authenticated)return login(); const orders=await api('/api/admin/orders'); const inquiries=await api('/api/admin/inquiries'); const support=await api('/api/admin/support'); app.className=''; app.innerHTML='<div class="toolbar" style="margin-bottom:24px"><a class="btn" href="/admin/support">Support desk</a><a class="btn secondary" href="/admin/products">Products</a><a class="btn secondary" href="/admin">Articles</a><a class="btn secondary" href="/shop" target="_blank">Open shop</a></div>'+summary(orders,inquiries,support)+'<section class="section" style="padding:0"><p class="eyebrow">Paid checkout</p><h2>Orders</h2><div class="order-filter"><input id="orderSearch" type="search" placeholder="Search by SKU, buyer, country, session..."><select id="paymentFilter"><option value="">All payment statuses</option><option value="paid">Paid</option><option value="checkout_created">Waiting</option><option value="failed">Failed</option><option value="expired">Expired</option></select></div><p id="orderVisibleCount" class="muted"></p><div class="article-grid">'+(orders.length?orders.map(orderCard).join(''):'<div class="notice">No orders yet. New checkout attempts will appear here after customers click Pay.</div>')+'</div></section><section class="section" style="padding:40px 0 0"><p class="eyebrow">Support inbox</p><h2>Live chat conversations</h2><div class="article-grid">'+(support.length?support.map(supportCard).join(''):'<div class="notice">No support conversations yet.</div>')+'</div></section><section class="section" style="padding:40px 0 0"><p class="eyebrow">Quote requests</p><h2>Inquiries</h2><div class="article-grid">'+(inquiries.length?inquiries.map(inquiryCard).join(''):'<div class="notice">No quote requests yet.</div>')+'</div></section>'; orders.forEach(o=>{const s=document.querySelector('[data-status="'+CSS.escape(o.id)+'"]'); if(s)s.value=o.fulfillment_status||'new'}); inquiries.forEach(q=>{const s=document.querySelector('[data-inquiry-status="'+CSS.escape(q.id)+'"]'); if(s)s.value=q.status||'new'}); wireOrderFilter(); document.querySelectorAll('[data-save-order]').forEach(b=>b.onclick=async()=>{const id=b.dataset.saveOrder; await api('/api/admin/orders/'+encodeURIComponent(id),{method:'PATCH',body:JSON.stringify({fulfillment_status:document.querySelector('[data-status="'+CSS.escape(id)+'"]').value,notes:document.querySelector('[data-notes="'+CSS.escape(id)+'"]').value})}); b.textContent='Saved'}); document.querySelectorAll('[data-save-inquiry]').forEach(b=>b.onclick=async()=>{const id=b.dataset.saveInquiry; await api('/api/admin/inquiries/'+encodeURIComponent(id),{method:'PATCH',body:JSON.stringify({status:document.querySelector('[data-inquiry-status="'+CSS.escape(id)+'"]').value})}); b.textContent='Saved'})}catch(e){app.className='notice';app.textContent=e.message}}
       load();
     </script></main>`;
-  return html(shell({ title: "Orders | Toumyou", description: "Toumyou order and quote admin.", path: "/admin/orders", content }), { cache: "no-store" });
+  return html(shell({ title: `${tenant.lang === "zh-CN" ? "订单后台" : "Orders"} | ${tenant.name}`, description: `${tenant.name} order and quote admin.`, path: "/admin/orders", content, tenant }), { cache: "no-store" });
 }
 
-function adminSupportPage() {
+function adminSupportPage(tenant = TENANTS.toumyou) {
   const content = `<main class="admin-wrap"><h1>Support desk</h1><p class="lead">Reply to website live chat conversations here. Discord remains a private notification channel only.</p>
     <div id="app" class="notice">Loading...</div>
     <script>
@@ -1132,7 +1255,7 @@ function adminSupportPage() {
       async function load(){try{const s=await api('/api/admin/session');if(!s.authenticated)return login();conversations=await api('/api/admin/support');render()}catch(e){app.className='notice';app.textContent=e.message}}
       load();setInterval(async()=>{const box=document.getElementById('replyBox');if(app.className==='support-desk'&&!(box&&(document.activeElement===box||box.value.trim()))){const prev=activeId;conversations=await api('/api/admin/support');activeId=prev;render()}},5000);
     </script></main>`;
-  return html(shell({ title: "Support desk | Toumyou", description: "Toumyou live chat support desk.", path: "/admin/support", content }), { cache: "no-store" });
+  return html(shell({ title: `${tenant.lang === "zh-CN" ? "客服后台" : "Support desk"} | ${tenant.name}`, description: `${tenant.name} live chat support desk.`, path: "/admin/support", content, tenant }), { cache: "no-store" });
 }
 
 async function readBody(request) {
@@ -1146,11 +1269,14 @@ async function readBody(request) {
 }
 
 async function stripeCheckout(request, env) {
+  const tenant = tenantFromRequest(request);
+  const zh = tenant.lang === "zh-CN";
   const stripeKey = env.STRIPE_RESTRICTED_KEY || env.STRIPE_SECRET_KEY;
   if (!stripeKey) return html(shell({
-    title: "Checkout not configured | Toumyou",
-    description: "Stripe checkout is not configured yet.",
-    content: '<main class="listing"><h1>Checkout is<br><em>not configured.</em></h1><p class="lead">Please request a quote while payment keys are being configured.</p><a class="btn" href="mailto:sunflyerjp@gmail.com?subject=Fastener%20quote%20request">Request quote</a></main>',
+    title: zh ? "支付未配置 | 西缈科技" : "Checkout not configured | Toumyou",
+    description: zh ? "在线支付尚未配置。" : "Stripe checkout is not configured yet.",
+    content: zh ? `<main class="listing"><h1>在线支付<br><em>暂未配置。</em></h1><p class="lead">请先发送询价，我们会与你确认采购信息。</p><a class="btn" href="mailto:${escapeHtml(tenant.email)}?subject=${encodeURIComponent("紧固件询价")}">发送询价</a></main>` : '<main class="listing"><h1>Checkout is<br><em>not configured.</em></h1><p class="lead">Please request a quote while payment keys are being configured.</p><a class="btn" href="mailto:sunflyerjp@gmail.com?subject=Fastener%20quote%20request">Request quote</a></main>',
+    tenant,
   }), { status: 503 });
   const body = await readBody(request);
   const customer = await currentCustomer(request, env);
@@ -1170,8 +1296,8 @@ async function stripeCheckout(request, env) {
   const now = Math.floor(Date.now() / 1000);
   const params = new URLSearchParams();
   params.set("mode", "payment");
-  params.set("success_url", `${SITE.url}/shop/success?session_id={CHECKOUT_SESSION_ID}`);
-  params.set("cancel_url", `${SITE.url}/shop/products/${encodeURIComponent(product.slug)}`);
+  params.set("success_url", `${tenant.url}/shop/success?session_id={CHECKOUT_SESSION_ID}`);
+  params.set("cancel_url", `${tenant.url}/shop/products/${encodeURIComponent(product.slug)}`);
   params.set("client_reference_id", product.id);
   params.set("integration_identifier", "toumyou_shop_mqzjprla");
   params.set("phone_number_collection[enabled]", "true");
@@ -1240,12 +1366,13 @@ async function stripeCheckout(request, env) {
 }
 
 async function stripeCartCheckout(request, env) {
+  const tenant = tenantFromRequest(request);
   const stripeKey = env.STRIPE_RESTRICTED_KEY || env.STRIPE_SECRET_KEY;
-  if (!stripeKey) return html(shell({ title: "Checkout not configured | Toumyou", description: "Stripe checkout is not configured yet.", content: '<main class="listing"><h1>Checkout is not configured.</h1><p class="lead">Please request a quote while payment keys are being configured.</p></main>' }), { status: 503 });
+  if (!stripeKey) return html(shell({ title: tenant.lang === "zh-CN" ? "支付未配置 | 西缈科技" : "Checkout not configured | Toumyou", description: "Stripe checkout is not configured yet.", content: tenant.lang === "zh-CN" ? '<main class="listing"><h1>在线支付暂未配置。</h1><p class="lead">请先发送询价，我们会与你确认采购信息。</p></main>' : '<main class="listing"><h1>Checkout is not configured.</h1><p class="lead">Please request a quote while payment keys are being configured.</p></main>', tenant }), { status: 503 });
   const customer = await currentCustomer(request, env);
-  if (!customer) return Response.redirect(`${SITE.url}/login?next=/cart`, 303);
+  if (!customer) return Response.redirect(`${tenant.url}/login?next=/cart`, 303);
   const items = (await listCart(env, customer.id)).filter((item) => item.status === "published" && item.allow_checkout && item.price_cents > 0);
-  if (!items.length) return Response.redirect(`${SITE.url}/cart`, 303);
+  if (!items.length) return Response.redirect(`${tenant.url}/cart`, 303);
   const orderId = crypto.randomUUID();
   const now = Math.floor(Date.now() / 1000);
   const currency = String(items[0].currency || "JPY").toUpperCase();
@@ -1254,8 +1381,8 @@ async function stripeCartCheckout(request, env) {
   const totalQty = items.reduce((sum, item) => sum + Number(item.quantity || 1), 0);
   const params = new URLSearchParams();
   params.set("mode", "payment");
-  params.set("success_url", `${SITE.url}/shop/success?session_id={CHECKOUT_SESSION_ID}`);
-  params.set("cancel_url", `${SITE.url}/cart`);
+  params.set("success_url", `${tenant.url}/shop/success?session_id={CHECKOUT_SESSION_ID}`);
+  params.set("cancel_url", `${tenant.url}/cart`);
   params.set("client_reference_id", customer.id);
   params.set("customer_email", customer.email || "");
   params.set("integration_identifier", "toumyou_cart_mqzjprla");
@@ -1438,6 +1565,7 @@ async function supportConversationRequest(env, conversationId) {
 }
 
 async function adminSupportReply(request, env, conversationId) {
+  const tenant = tenantFromRequest(request);
   const body = await readBody(request);
   const message = String(body.message || "").trim();
   if (message.length < 2) return json({ error: "Reply is required" }, { status: 400 });
@@ -1446,112 +1574,126 @@ async function adminSupportReply(request, env, conversationId) {
   const now = Math.floor(Date.now() / 1000);
   const id = crypto.randomUUID();
   await env.DB.prepare("INSERT INTO support_messages (id,conversation_id,sender,page_url,name,email,company,message,status,forwarded_discord,forwarded_telegram,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)")
-    .bind(id, conversationId, "agent", existing.page_url || SITE.url, existing.name || "", existing.email || "", existing.company || "", message, "open", 0, 0, now, now).run();
+    .bind(id, conversationId, "agent", existing.page_url || tenant.url, existing.name || "", existing.email || "", existing.company || "", message, "open", 0, 0, now, now).run();
   return json({ ok: true, ...(await getSupportConversation(env, conversationId)) });
 }
 
 async function adminSupportReplyForm(request, env, conversationId) {
+  const tenant = tenantFromRequest(request);
   const body = await readBody(request);
   const message = String(body.message || "").trim();
-  if (message.length < 2) return redirect(`${SITE.url}/admin/support?error=empty`, 303);
+  if (message.length < 2) return redirect(`${tenant.url}/admin/support?error=empty`, 303);
   const existing = await getSupportConversation(env, conversationId);
-  if (!existing) return redirect(`${SITE.url}/admin/support?error=missing`, 303);
+  if (!existing) return redirect(`${tenant.url}/admin/support?error=missing`, 303);
   const now = Math.floor(Date.now() / 1000);
   const id = crypto.randomUUID();
   await env.DB.prepare("INSERT INTO support_messages (id,conversation_id,sender,page_url,name,email,company,message,status,forwarded_discord,forwarded_telegram,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)")
-    .bind(id, conversationId, "agent", existing.page_url || SITE.url, existing.name || "", existing.email || "", existing.company || "", message, "open", 0, 0, now, now).run();
-  return redirect(`${SITE.url}/admin/support?sent=1`, 303);
+    .bind(id, conversationId, "agent", existing.page_url || tenant.url, existing.name || "", existing.email || "", existing.company || "", message, "open", 0, 0, now, now).run();
+  return redirect(`${tenant.url}/admin/support?sent=1`, 303);
 }
 
-function checkoutSuccessPage() {
+function checkoutSuccessPage(tenant = TENANTS.toumyou) {
+  const zh = tenant.lang === "zh-CN";
   return html(shell({
-    title: "Order submitted | Toumyou",
-    description: "Thank you for your Toumyou shop order.",
+    title: zh ? "订单已提交 | 西缈科技" : "Order submitted | Toumyou",
+    description: zh ? "感谢你的订单提交。" : "Thank you for your Toumyou shop order.",
     path: "/shop/success",
-    content: `<main class="listing"><h1>Order submitted,<br><em>thank you.</em></h1><p class="lead">Your Stripe checkout was submitted. Some local payment methods, including Alipay, can take a little longer to confirm, so we will mark the order as paid only after Stripe sends the final payment confirmation.</p>
+    content: `<main class="listing"><h1>${zh ? "订单已提交，<br><em>谢谢。</em>" : "Order submitted,<br><em>thank you.</em>"}</h1><p class="lead">${zh ? "你的支付流程已提交。部分支付方式可能需要一点时间确认，后台会在收到支付确认后更新订单状态。" : "Your Stripe checkout was submitted. Some local payment methods, including Alipay, can take a little longer to confirm, so we will mark the order as paid only after Stripe sends the final payment confirmation."}</p>
       <div class="notice">
-        <p><strong>What happens next</strong></p>
-        <p>1. Stripe sends Toumyou a signed payment update.</p>
-        <p>2. Paid orders move to the admin order list automatically.</p>
-        <p>3. We verify SKU, stock, export handling, and freight details before dispatch.</p>
+        <p><strong>${zh ? "接下来" : "What happens next"}</strong></p>
+        <p>${zh ? "1. 支付平台发送最终支付确认。" : "1. Stripe sends Toumyou a signed payment update."}</p>
+        <p>${zh ? "2. 已支付订单会进入后台订单列表。" : "2. Paid orders move to the admin order list automatically."}</p>
+        <p>${zh ? "3. 我们会核对 SKU、库存和交付信息。" : "3. We verify SKU, stock, export handling, and freight details before dispatch."}</p>
         <p id="sessionNote" class="muted"></p>
       </div>
-      <div class="toolbar"><a class="btn" href="/shop">Back to shop</a><a class="btn secondary" href="mailto:sunflyerjp@gmail.com">Contact us</a></div>
+      <div class="toolbar"><a class="btn" href="/shop">${zh ? "返回产品页" : "Back to shop"}</a><a class="btn secondary" href="mailto:${escapeHtml(tenant.email)}">${zh ? "联系我们" : "Contact us"}</a></div>
       <script>
         const sid = new URL(location.href).searchParams.get('session_id');
         if (sid) document.getElementById('sessionNote').textContent = 'Stripe session: ' + sid;
       </script>
     </main>`,
+    tenant,
   }), { cache: "no-store" });
 }
 
 function loginPage(request, env) {
+  const tenant = tenantFromRequest(request);
+  const zh = tenant.lang === "zh-CN";
   const configured = Boolean(env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET);
   const next = new URL(request.url).searchParams.get("next") || "/account";
   return html(shell({
-    title: "Customer login | Toumyou",
-    description: "Sign in to Toumyou to manage cart, orders, and payment records.",
+    title: zh ? "客户登录 | 上海西缈科技有限公司" : "Customer login | Toumyou",
+    description: zh ? "登录后管理购物车、订单和支付记录。" : "Sign in to Toumyou to manage cart, orders, and payment records.",
     path: "/login",
-    content: `<main class="listing"><h1>Customer login.</h1><p class="lead">Sign in to save your cart and view your Toumyou orders, payment status, shipping address, and Stripe records.</p>
+    content: `<main class="listing"><h1>${zh ? "客户登录。" : "Customer login."}</h1><p class="lead">${zh ? "登录后可以保存购物车，查看订单、支付状态和采购记录。" : "Sign in to save your cart and view your Toumyou orders, payment status, shipping address, and Stripe records."}</p>
       <div class="notice">
         ${configured
-          ? `<a class="btn" href="/api/auth/google/start?next=${encodeURIComponent(next)}">Continue with Google</a>`
-          : `<p><strong>Google login is not configured yet.</strong></p><p>Add GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in Cloudflare Pages, then set the Google OAuth redirect URI to ${SITE.url}/api/auth/google/callback.</p>`}
+          ? `<a class="btn" href="/api/auth/google/start?next=${encodeURIComponent(next)}">${zh ? "使用 Google 登录" : "Continue with Google"}</a>`
+          : `<p><strong>${zh ? "Google 登录尚未配置。" : "Google login is not configured yet."}</strong></p><p>${zh ? "请在 Cloudflare Pages 中配置 GOOGLE_CLIENT_ID 和 GOOGLE_CLIENT_SECRET，并将 OAuth 回调地址设置为" : "Add GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in Cloudflare Pages, then set the Google OAuth redirect URI to"} ${tenant.url}/api/auth/google/callback.</p>`}
+        ${zh ? '<p class="muted" style="margin-top:16px">QQ 登录需要 QQ 互联 AppID / AppKey / 回调域名审核，拿到凭据后可以继续接入。</p>' : ""}
       </div>
     </main>`,
+    tenant,
   }), { cache: "no-store" });
 }
 
 async function accountPage(request, env) {
+  const tenant = tenantFromRequest(request);
+  const zh = tenant.lang === "zh-CN";
   const customer = await currentCustomer(request, env);
-  if (!customer) return loginPage(new Request(`${SITE.url}/login?next=/account`), env);
+  if (!customer) return loginPage(new Request(`${tenant.url}/login?next=/account`), env);
   const orders = await listCustomerOrders(env, customer);
   const cards = orders.map((o) => `<article class="article-card">
     <div class="meta">${escapeHtml(o.payment_status || "pending")} / ${escapeHtml(o.fulfillment_status || "new")}</div>
-    <h3>${escapeHtml(o.product_name || o.product_slug || "Toumyou order")}</h3>
+    <h3>${escapeHtml(o.product_name || o.product_slug || (zh ? "西缈订单" : "Toumyou order"))}</h3>
     <p>${escapeHtml(o.sku || "Order")}<br>${escapeHtml(money(o.amount_total, o.currency))}</p>
-    <p class="muted">Quantity ${escapeHtml(o.quantity || 1)}. Created ${escapeHtml(o.created_at ? new Date(Number(o.created_at) * 1000).toLocaleString() : "-")}.</p>
+    <p class="muted">${zh ? "数量" : "Quantity"} ${escapeHtml(o.quantity || 1)}. ${zh ? "创建时间" : "Created"} ${escapeHtml(o.created_at ? new Date(Number(o.created_at) * 1000).toLocaleString() : "-")}.</p>
     <p class="muted">Stripe session: ${escapeHtml(o.stripe_session_id || "-")}</p>
-    ${o.stripe_payment_intent ? `<a class="btn secondary" href="https://dashboard.stripe.com/payments/${escapeHtml(o.stripe_payment_intent)}" target="_blank">Payment record</a>` : ""}
+    ${o.stripe_payment_intent ? `<a class="btn secondary" href="https://dashboard.stripe.com/payments/${escapeHtml(o.stripe_payment_intent)}" target="_blank">${zh ? "支付记录" : "Payment record"}</a>` : ""}
   </article>`).join("");
   return html(shell({
-    title: "My account | Toumyou",
-    description: "Toumyou customer account and order history.",
+    title: zh ? "我的账户 | 上海西缈科技有限公司" : "My account | Toumyou",
+    description: zh ? "客户账户与订单历史。" : "Toumyou customer account and order history.",
     path: "/account",
-    content: `<main class="listing"><h1>My account.</h1><p class="lead">${escapeHtml(customer.name || customer.email)}<br>${escapeHtml(customer.email || "")}</p>
-      <div class="toolbar"><a class="btn" href="/cart">Open cart</a><a class="btn secondary" href="/shop">Continue shopping</a><a class="btn secondary" href="/api/auth/logout">Log out</a></div>
-      <section class="section" style="padding:40px 0 0"><p class="eyebrow">Orders and payments</p><h2>Your order history.</h2><div class="article-grid">${cards || '<div class="notice">No orders yet. Paid and attempted Stripe checkouts will appear here after you use this account.</div>'}</div></section>
+    content: `<main class="listing"><h1>${zh ? "我的账户。" : "My account."}</h1><p class="lead">${escapeHtml(customer.name || customer.email)}<br>${escapeHtml(customer.email || "")}</p>
+      <div class="toolbar"><a class="btn" href="/cart">${zh ? "打开购物车" : "Open cart"}</a><a class="btn secondary" href="/shop">${zh ? "继续采购" : "Continue shopping"}</a><a class="btn secondary" href="/api/auth/logout">${zh ? "退出登录" : "Log out"}</a></div>
+      <section class="section" style="padding:40px 0 0"><p class="eyebrow">${zh ? "订单与支付" : "Orders and payments"}</p><h2>${zh ? "你的订单记录。" : "Your order history."}</h2><div class="article-grid">${cards || `<div class="notice">${zh ? "暂无订单。登录后下单或支付尝试会显示在这里。" : "No orders yet. Paid and attempted Stripe checkouts will appear here after you use this account."}</div>`}</div></section>
     </main>`,
+    tenant,
   }), { cache: "no-store" });
 }
 
 async function cartPage(request, env) {
+  const tenant = tenantFromRequest(request);
+  const zh = tenant.lang === "zh-CN";
   const customer = await currentCustomer(request, env);
-  if (!customer) return loginPage(new Request(`${SITE.url}/login?next=/cart`), env);
+  if (!customer) return loginPage(new Request(`${tenant.url}/login?next=/cart`), env);
   const items = await listCart(env, customer.id);
   const subtotal = items.reduce((sum, item) => sum + (Number(item.price_cents || 0) * Number(item.quantity || 1)), 0);
   const currency = items[0]?.currency || "JPY";
   const cards = items.map((item) => `<article class="article-card">
-    <div class="meta">${escapeHtml(item.category || "Fasteners")} / ${escapeHtml(item.sku || item.slug)}</div>
+    <div class="meta">${escapeHtml(item.category || (zh ? "紧固件" : "Fasteners"))} / ${escapeHtml(item.sku || item.slug)}</div>
     <h3>${escapeHtml(item.name)}</h3>
-    <p>${escapeHtml(money(item.price_cents, item.currency))}<br>Quantity ${escapeHtml(item.quantity || 1)}</p>
+    <p>${escapeHtml(money(item.price_cents, item.currency))}<br>${zh ? "数量" : "Quantity"} ${escapeHtml(item.quantity || 1)}</p>
     <div class="toolbar">
-      <form method="post" action="/api/cart/update"><input type="hidden" name="cart_id" value="${escapeHtml(item.cart_id)}"><input name="quantity" type="number" min="1" value="${escapeHtml(item.quantity || 1)}"><button class="btn secondary" type="submit">Update</button></form>
-      <form method="post" action="/api/cart/remove"><input type="hidden" name="cart_id" value="${escapeHtml(item.cart_id)}"><button class="btn secondary" type="submit">Remove</button></form>
+      <form method="post" action="/api/cart/update"><input type="hidden" name="cart_id" value="${escapeHtml(item.cart_id)}"><input name="quantity" type="number" min="1" value="${escapeHtml(item.quantity || 1)}"><button class="btn secondary" type="submit">${zh ? "更新" : "Update"}</button></form>
+      <form method="post" action="/api/cart/remove"><input type="hidden" name="cart_id" value="${escapeHtml(item.cart_id)}"><button class="btn secondary" type="submit">${zh ? "移除" : "Remove"}</button></form>
     </div>
   </article>`).join("");
   return html(shell({
-    title: "Cart | Toumyou",
-    description: "Toumyou shopping cart.",
+    title: zh ? "购物车 | 上海西缈科技有限公司" : "Cart | Toumyou",
+    description: zh ? "西缈科技购物车。" : "Toumyou shopping cart.",
     path: "/cart",
-    content: `<main class="listing"><h1>Shopping cart.</h1><p class="lead">${items.length} item(s). Estimated subtotal ${escapeHtml(money(subtotal, currency))}. Freight is shown before payment.</p>
-      <div class="toolbar">${items.length ? '<form method="post" action="/api/checkout/cart"><button class="btn buy" type="submit">Buy selected</button></form>' : ""}<a class="btn secondary" href="/shop">Continue shopping</a><a class="btn secondary" href="/account">My account</a></div>
-      <div class="article-grid">${cards || '<div class="notice">Your cart is empty. Add products from the shop after signing in.</div>'}</div>
+    content: `<main class="listing"><h1>${zh ? "购物车。" : "Shopping cart."}</h1><p class="lead">${items.length} ${zh ? "个产品" : "item(s)"}. ${zh ? "预估小计" : "Estimated subtotal"} ${escapeHtml(money(subtotal, currency))}. ${zh ? "运费和最终支付信息会在付款前确认。" : "Freight is shown before payment."}</p>
+      <div class="toolbar">${items.length ? `<form method="post" action="/api/checkout/cart"><button class="btn buy" type="submit">${zh ? "购买已选产品" : "Buy selected"}</button></form>` : ""}<a class="btn secondary" href="/shop">${zh ? "继续采购" : "Continue shopping"}</a><a class="btn secondary" href="/account">${zh ? "我的账户" : "My account"}</a></div>
+      <div class="article-grid">${cards || `<div class="notice">${zh ? "购物车为空。登录后可从产品页添加产品。" : "Your cart is empty. Add products from the shop after signing in."}</div>`}</div>
     </main>`,
+    tenant,
   }), { cache: "no-store" });
 }
 
 async function handleApi(request, env, pathname) {
+  const tenant = tenantFromRequest(request);
   if (pathname === "/api/auth/google/start") {
     if (!env.GOOGLE_CLIENT_ID || !env.GOOGLE_CLIENT_SECRET) return json({ error: "Google login is not configured" }, { status: 503 });
     const url = new URL(request.url);
@@ -1559,7 +1701,7 @@ async function handleApi(request, env, pathname) {
     const next = url.searchParams.get("next") || "/account";
     const auth = new URL("https://accounts.google.com/o/oauth2/v2/auth");
     auth.searchParams.set("client_id", env.GOOGLE_CLIENT_ID);
-    auth.searchParams.set("redirect_uri", `${SITE.url}/api/auth/google/callback`);
+    auth.searchParams.set("redirect_uri", `${tenant.url}/api/auth/google/callback`);
     auth.searchParams.set("response_type", "code");
     auth.searchParams.set("scope", "openid profile email");
     auth.searchParams.set("state", `${state}:${next}`);
@@ -1570,14 +1712,14 @@ async function handleApi(request, env, pathname) {
     const url = new URL(request.url);
     const stateParam = url.searchParams.get("state") || "";
     const [state, next = "/account"] = stateParam.split(":");
-    if (!state || state !== cookieValue(request, "toumyou_oauth_state")) return html(shell({ title: "Login failed | Toumyou", description: "Google login failed.", content: '<main class="listing"><h1>Login failed.</h1><p class="lead">The login state expired. Please try again.</p><a class="btn" href="/login">Back to login</a></main>' }), { status: 400 });
+    if (!state || state !== cookieValue(request, "toumyou_oauth_state")) return html(shell({ title: tenant.lang === "zh-CN" ? "登录失败 | 西缈科技" : "Login failed | Toumyou", description: "Google login failed.", content: tenant.lang === "zh-CN" ? '<main class="listing"><h1>登录失败。</h1><p class="lead">登录状态已过期，请重新尝试。</p><a class="btn" href="/login">返回登录</a></main>' : '<main class="listing"><h1>Login failed.</h1><p class="lead">The login state expired. Please try again.</p><a class="btn" href="/login">Back to login</a></main>', tenant }), { status: 400 });
     const code = url.searchParams.get("code") || "";
     if (!code) return json({ error: "Missing Google authorization code" }, { status: 400 });
     const body = new URLSearchParams();
     body.set("code", code);
     body.set("client_id", env.GOOGLE_CLIENT_ID || "");
     body.set("client_secret", env.GOOGLE_CLIENT_SECRET || "");
-    body.set("redirect_uri", `${SITE.url}/api/auth/google/callback`);
+    body.set("redirect_uri", `${tenant.url}/api/auth/google/callback`);
     body.set("grant_type", "authorization_code");
     const tokenRes = await fetch("https://oauth2.googleapis.com/token", { method: "POST", headers: { "content-type": "application/x-www-form-urlencoded" }, body });
     const token = await tokenRes.json().catch(() => ({}));
@@ -1588,13 +1730,13 @@ async function handleApi(request, env, pathname) {
     const customer = await upsertCustomer(env, profile);
     const session = await issueCustomerSession(env, customer.id);
     const safeNext = String(next || "/account").startsWith("/") ? String(next || "/account") : "/account";
-    const headers = new Headers({ location: `${SITE.url}${safeNext}` });
+    const headers = new Headers({ location: `${tenant.url}${safeNext}` });
     headers.append("set-cookie", customerCookie(session));
     headers.append("set-cookie", "toumyou_oauth_state=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0");
     return new Response(null, { status: 302, headers });
   }
   if (pathname === "/api/auth/logout") {
-    return redirect(`${SITE.url}/`, 302, { "set-cookie": "toumyou_customer=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0" });
+    return redirect(`${tenant.url}/`, 302, { "set-cookie": "toumyou_customer=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0" });
   }
   if (pathname === "/api/customer/session") {
     const customer = await currentCustomer(request, env);
@@ -1607,7 +1749,7 @@ async function handleApi(request, env, pathname) {
   }
   if (pathname === "/api/cart/add" && request.method === "POST") {
     const customer = await currentCustomer(request, env);
-    if (!customer) return Response.redirect(`${SITE.url}/login?next=/cart`, 303);
+    if (!customer) return Response.redirect(`${tenant.url}/login?next=/cart`, 303);
     const body = await readBody(request);
     const product = await getProduct(env, body.product_id || body.productId);
     if (!product || product.status !== "published" || !product.allow_checkout || product.price_cents <= 0) return json({ error: "Product is not available for cart checkout" }, { status: 400 });
@@ -1616,22 +1758,22 @@ async function handleApi(request, env, pathname) {
     await ensureCommerce(env);
     await env.DB.prepare("INSERT INTO cart_items (id,customer_id,product_id,quantity,created_at,updated_at) VALUES (?,?,?,?,?,?) ON CONFLICT(customer_id,product_id) DO UPDATE SET quantity=quantity+excluded.quantity,updated_at=excluded.updated_at")
       .bind(crypto.randomUUID(), customer.id, product.id, qty, now, now).run();
-    return Response.redirect(`${SITE.url}/cart`, 303);
+    return Response.redirect(`${tenant.url}/cart`, 303);
   }
   if (pathname === "/api/cart/update" && request.method === "POST") {
     const customer = await currentCustomer(request, env);
-    if (!customer) return Response.redirect(`${SITE.url}/login?next=/cart`, 303);
+    if (!customer) return Response.redirect(`${tenant.url}/login?next=/cart`, 303);
     const body = await readBody(request);
     const qty = Math.max(1, Math.min(999, Number.parseInt(body.quantity || "1", 10) || 1));
     await env.DB.prepare("UPDATE cart_items SET quantity=?,updated_at=? WHERE id=? AND customer_id=?").bind(qty, Math.floor(Date.now() / 1000), body.cart_id || "", customer.id).run();
-    return Response.redirect(`${SITE.url}/cart`, 303);
+    return Response.redirect(`${tenant.url}/cart`, 303);
   }
   if (pathname === "/api/cart/remove" && request.method === "POST") {
     const customer = await currentCustomer(request, env);
-    if (!customer) return Response.redirect(`${SITE.url}/login?next=/cart`, 303);
+    if (!customer) return Response.redirect(`${tenant.url}/login?next=/cart`, 303);
     const body = await readBody(request);
     await env.DB.prepare("DELETE FROM cart_items WHERE id=? AND customer_id=?").bind(body.cart_id || "", customer.id).run();
-    return Response.redirect(`${SITE.url}/cart`, 303);
+    return Response.redirect(`${tenant.url}/cart`, 303);
   }
   if (pathname === "/api/account/orders") {
     const customer = await currentCustomer(request, env);
@@ -1735,11 +1877,11 @@ async function handleApi(request, env, pathname) {
   return json({ error: "Not found" }, { status: 404 });
 }
 
-async function sitemap(env) {
+async function sitemap(env, tenant = TENANTS.toumyou) {
   const posts = await listPublished(env);
   const products = await listProducts(env);
-  const urls = ["/", "/shop", "/digital", "/articles", ...products.map((p) => `/shop/products/${p.slug}`), ...posts.map((p) => `/articles/${p.slug}`)];
-  return new Response(`<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${urls.map((u) => `<url><loc>${SITE.url}${u}</loc></url>`).join("")}</urlset>`, {
+  const urls = ["/", "/shop", ...(tenant.showDigital ? ["/digital"] : []), "/articles", ...products.map((p) => `/shop/products/${p.slug}`), ...posts.map((p) => `/articles/${p.slug}`)];
+  return new Response(`<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${urls.map((u) => `<url><loc>${tenant.url}${u}</loc></url>`).join("")}</urlset>`, {
     headers: { "content-type": "application/xml; charset=utf-8", "cache-control": "no-store, no-cache, must-revalidate" },
   });
 }
@@ -1747,24 +1889,26 @@ async function sitemap(env) {
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
-    if (url.pathname === "/robots.txt") return new Response(`User-agent: *\nAllow: /\nSitemap: ${SITE.url}/sitemap.xml\n`, { headers: { "content-type": "text/plain; charset=utf-8" } });
-    if (url.pathname === "/sitemap.xml") return sitemap(env);
+    const tenant = tenantFromRequest(request);
+    if (url.pathname === "/robots.txt") return new Response(`User-agent: *\nAllow: /\nSitemap: ${tenant.url}/sitemap.xml\n`, { headers: { "content-type": "text/plain; charset=utf-8" } });
+    if (url.pathname === "/sitemap.xml") return sitemap(env, tenant);
     if (url.pathname.startsWith("/media/")) return mediaFile(request, env, decodeURIComponent(url.pathname.slice("/media/".length)));
     if (url.pathname.startsWith("/api/")) return handleApi(request, env, url.pathname);
-    if (url.pathname === "/") return home(env);
+    if (url.pathname === "/") return home(env, tenant);
     if (url.pathname === "/login") return loginPage(request, env);
     if (url.pathname === "/cart") return cartPage(request, env);
     if (url.pathname === "/account") return accountPage(request, env);
-    if (url.pathname === "/shop") return shopPage(env);
-    if (url.pathname === "/digital") return digitalPage();
-    if (url.pathname === "/shop/success") return checkoutSuccessPage();
-    if (url.pathname.startsWith("/shop/products/")) return productPage(env, decodeURIComponent(url.pathname.split("/").pop()));
-    if (url.pathname === "/articles") return articles(env);
-    if (url.pathname.startsWith("/articles/")) return article(env, decodeURIComponent(url.pathname.split("/").pop()));
-    if (url.pathname === "/admin") return adminPage();
-    if (url.pathname === "/admin/products") return adminProductsPage();
-    if (url.pathname === "/admin/orders") return adminOrdersPage();
-    if (url.pathname === "/admin/support") return adminSupportPage();
-    return html(shell({ title: "Not found | Toumyou", description: "Page not found.", content: "<main><h1>Page not found</h1></main>" }), { status: 404 });
+    if (url.pathname === "/shop") return shopPage(env, tenant);
+    if (url.pathname === "/digital" && tenant.showDigital) return digitalPage();
+    if (url.pathname === "/digital") return redirect(`${tenant.url}/`, 302);
+    if (url.pathname === "/shop/success") return checkoutSuccessPage(tenant);
+    if (url.pathname.startsWith("/shop/products/")) return productPage(env, decodeURIComponent(url.pathname.split("/").pop()), tenant);
+    if (url.pathname === "/articles") return articles(env, tenant);
+    if (url.pathname.startsWith("/articles/")) return article(env, decodeURIComponent(url.pathname.split("/").pop()), tenant);
+    if (url.pathname === "/admin") return adminPage(tenant);
+    if (url.pathname === "/admin/products") return adminProductsPage(tenant);
+    if (url.pathname === "/admin/orders") return adminOrdersPage(tenant);
+    if (url.pathname === "/admin/support") return adminSupportPage(tenant);
+    return html(shell({ title: tenant.lang === "zh-CN" ? "页面未找到 | 西缈科技" : "Not found | Toumyou", description: tenant.lang === "zh-CN" ? "页面未找到。" : "Page not found.", content: tenant.lang === "zh-CN" ? "<main><h1>页面未找到</h1></main>" : "<main><h1>Page not found</h1></main>", tenant }), { status: 404 });
   },
 };
