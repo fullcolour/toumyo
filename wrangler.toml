@@ -1,0 +1,12 @@
+name = "toumyou-studio"
+pages_build_output_dir = "."
+compatibility_date = "2026-08-07"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "toumyou_db"
+database_id = "8d827732-f600-4a0c-bacc-ee791a93cd60"
+
+[[r2_buckets]]
+binding = "ASSETS"
+bucket_name = "image"
