@@ -2,7 +2,7 @@ const SITE = {
   name: "Toumyou",
   url: "https://toumyou.com",
   description:
-    "Toumyou LLC supplies fasteners and industrial accessories for cross-border buyers, with digital design and software services from Japan.",
+    "Toumyou LLC supplies fasteners, hardware, and industrial accessories for cross-border buyers from Japan and Asia.",
 };
 
 const SHOP = {
@@ -642,7 +642,7 @@ function shell({ title, description, path = "/", content, schema }) {
   ${schema ? `<script type="application/ld+json">${JSON.stringify(schema)}</script>` : ""}
 </head>
 <body>
-  <header><a class="brand" href="/">TOUMYOU<span>®</span></a><nav><a class="nav" href="/#supply">Supply</a><a class="nav" href="/shop">Shop</a><a class="nav" href="/cart">Cart</a><a class="nav" href="/account">Account</a><a class="nav" href="/#digital">Digital</a><a class="nav" href="/articles">Insights</a><a class="nav nav-admin" href="/admin">Admin</a></nav></header>
+  <header><a class="brand" href="/">TOUMYOU<span>®</span></a><nav><a class="nav" href="/#supply">Supply</a><a class="nav" href="/shop">Shop</a><a class="nav" href="/cart">Cart</a><a class="nav" href="/account">Account</a><a class="nav" href="/digital">Digital</a><a class="nav" href="/articles">Insights</a><a class="nav nav-admin" href="/admin">Admin</a></nav></header>
   ${content}
   <!--Start of Tawk.to Script-->
   <script type="text/javascript">
@@ -657,7 +657,7 @@ function shell({ title, description, path = "/", content, schema }) {
     })();
   </script>
   <!--End of Tawk.to Script-->
-  <footer><span>© ${new Date().getFullYear()} Toumyou LLC</span><span>Fastener supply, digital systems, and cross-border operations from Japan.</span></footer>
+  <footer><span>© ${new Date().getFullYear()} Toumyou LLC</span><span>Cross-border fastener supply and practical procurement support from Japan.</span></footer>
 </body>
 </html>`;
 }
@@ -665,7 +665,6 @@ function shell({ title, description, path = "/", content, schema }) {
 async function home(env) {
   const posts = (await listPublished(env)).slice(0, 3);
   const products = (await listProducts(env)).slice(0, 3);
-  const asset = "https://4f4b3799.toumyou.pages.dev/assets/img";
   const content = `<main>
     <section id="supply" class="hero">
       <p class="eyebrow">Cross-border fastener supply</p>
@@ -691,15 +690,48 @@ async function home(env) {
       <div class="insights-head"><div><p class="eyebrow">Featured catalog</p><h2>Ready-to-order<br>and quote-ready SKUs.</h2></div><a class="text-link" href="/shop">Open full shop</a></div>
       <div class="article-grid">${products.length ? products.map((p) => productCard(p, env)).join("") : SHOP.categories.map((item) => `<article class="article-card"><div class="meta">${escapeHtml(item.slug)}</div><h3>${escapeHtml(item.name)}</h3><p>${escapeHtml(item.summary)}</p><b>Request quote</b></article>`).join("")}</div>
     </section>
-    <section id="digital" class="section">
-      <p class="eyebrow">Digital services</p>
-      <h2>Design and software<br>support the operation.</h2>
+    <section id="insights" class="section">
+      <div class="insights-head"><div><p class="eyebrow">Articles</p><h2>Updates and<br>procurement notes.</h2></div><a class="text-link" href="/articles">All articles</a></div>
+      ${posts.length ? `<div class="article-grid">${posts.map(articleLink).join("")}</div>` : '<div class="empty"><p>Our first notes are in progress.</p><span class="muted">Published articles will appear here immediately after you save them.</span></div>'}
+    </section>
+    <section id="contact" class="contact">
+      <div class="contact-grid">
+        <div><p class="eyebrow">Contact</p><h2>Send your drawing,<br>SKU, or quantity.</h2><a href="mailto:sunflyerjp@gmail.com" class="contact-mail">sunflyerjp@gmail.com</a></div>
+        <ul class="contact-list">
+          <li><span>Tel</span><a href="tel:+8107018461357">+81 070 1846 1357</a></li>
+          <li><span>Email</span><a href="mailto:sunflyerjp@gmail.com">sunflyerjp@gmail.com</a></li>
+          <li><span>Address</span><p class="address">2-1-35 Sugimoto, Sumiyoshi-ku<br>Osaka City, Japan</p></li>
+        </ul>
+      </div>
+    </section>
+  </main>`;
+  return html(shell({
+    title: "Toumyou | Fastener supply from Japan",
+    description: SITE.description,
+    content,
+    schema: { "@context": "https://schema.org", "@type": "Organization", name: "Toumyou LLC", url: SITE.url, email: "sunflyerjp@gmail.com", telephone: "+8107018461357", address: { "@type": "PostalAddress", streetAddress: "2-1-35 Sugimoto, Sumiyoshi-ku", addressLocality: "Osaka City", addressCountry: "JP" }, description: SITE.description, sameAs: ["https://toumyou.com"] },
+  }));
+}
+
+function digitalPage() {
+  const asset = "https://4f4b3799.toumyou.pages.dev/assets/img";
+  const description = "Toumyou digital services: brand identity, graphic design, websites, animation, WeChat mini-programs, software tools, and AI workflow support.";
+  const content = `<main>
+    <section class="hero">
+      <p class="eyebrow">Digital services archive</p>
+      <h1>Design, web,<br>and software work.</h1>
+      <p class="lead">Toumyou's original creative and technology services are collected here: visual identity, websites, animation, WeChat mini-programs, lightweight software, and AI-assisted workflow systems.</p>
+      <div class="toolbar"><a class="btn" href="mailto:sunflyerjp@gmail.com?subject=Digital%20service%20inquiry">Discuss a project</a><a class="btn secondary" href="/">Back to fasteners</a></div>
+    </section>
+    <section class="section">
+      <p class="eyebrow">Original business content</p>
+      <h2>Creative systems<br>for practical operations.</h2>
       <div class="intro-strip">
-        <p>Toumyou also keeps its original design and development work: brand identity, websites, animation, WeChat mini-programs, software tools, and AI workflow support.</p>
+        <p>The earlier Toumyou site introduced a design-and-development practice. Instead of mixing it into the fastener homepage, those services now live here as a focused secondary business page.</p>
         <ul>
-          <li>Brand systems and graphic design</li>
-          <li>Responsive websites and commerce interfaces</li>
-          <li>Mini-programs, internal tools, and AI workflows</li>
+          <li>Brand systems, logo design, graphic design, and printed communication</li>
+          <li>Responsive websites, landing pages, and commerce interfaces</li>
+          <li>Animation, mini-programs, internal tools, and AI workflow support</li>
         </ul>
       </div>
     </section>
@@ -722,26 +754,23 @@ async function home(env) {
         <article><img src="${asset}/about/4.jpg" alt="Toumyou Japan operation" loading="lazy"><strong>2025</strong><h3>Japan-based cross-border work grows.</h3><p>The company now combines supply, commerce, and digital operations from Osaka.</p></article>
       </div>
     </section>
-    <section id="insights" class="section">
-      <div class="insights-head"><div><p class="eyebrow">Articles</p><h2>Updates and<br>procurement notes.</h2></div><a class="text-link" href="/articles">All articles</a></div>
-      ${posts.length ? `<div class="article-grid">${posts.map(articleLink).join("")}</div>` : '<div class="empty"><p>Our first notes are in progress.</p><span class="muted">Published articles will appear here immediately after you save them.</span></div>'}
-    </section>
-    <section id="contact" class="contact">
+    <section class="contact">
       <div class="contact-grid">
-        <div><p class="eyebrow">Contact</p><h2>Send your drawing,<br>SKU, or quantity.</h2><a href="mailto:sunflyerjp@gmail.com" class="contact-mail">sunflyerjp@gmail.com</a></div>
+        <div><p class="eyebrow">Digital inquiry</p><h2>Need a clean web,<br>design, or workflow system?</h2><a href="mailto:sunflyerjp@gmail.com?subject=Digital%20service%20inquiry" class="contact-mail">sunflyerjp@gmail.com</a></div>
         <ul class="contact-list">
-          <li><span>Tel</span><a href="tel:+8107018461357">+81 070 1846 1357</a></li>
-          <li><span>Email</span><a href="mailto:sunflyerjp@gmail.com">sunflyerjp@gmail.com</a></li>
-          <li><span>Address</span><p class="address">2-1-35 Sugimoto, Sumiyoshi-ku<br>Osaka City, Japan</p></li>
+          <li><span>Services</span><p class="address">Brand identity, websites, animation, mini-programs, internal tools, and AI workflow support.</p></li>
+          <li><span>Base</span><p class="address">Osaka City, Japan</p></li>
+          <li><span>Main site</span><p class="address"><a href="/">Toumyou fastener supply</a></p></li>
         </ul>
       </div>
     </section>
   </main>`;
   return html(shell({
-    title: "Toumyou | Fastener supply and digital operations from Japan",
-    description: SITE.description,
+    title: "Digital Services | Toumyou",
+    description,
+    path: "/digital",
     content,
-    schema: { "@context": "https://schema.org", "@type": "Organization", name: "Toumyou LLC", url: SITE.url, email: "sunflyerjp@gmail.com", telephone: "+8107018461357", address: { "@type": "PostalAddress", streetAddress: "2-1-35 Sugimoto, Sumiyoshi-ku", addressLocality: "Osaka City", addressCountry: "JP" }, description: SITE.description, sameAs: ["https://toumyou.com"] },
+    schema: { "@context": "https://schema.org", "@type": "ProfessionalService", name: "Toumyou Digital Services", url: `${SITE.url}/digital`, email: "sunflyerjp@gmail.com", description, parentOrganization: { "@type": "Organization", name: "Toumyou LLC", url: SITE.url } },
   }));
 }
 
@@ -1709,7 +1738,7 @@ async function handleApi(request, env, pathname) {
 async function sitemap(env) {
   const posts = await listPublished(env);
   const products = await listProducts(env);
-  const urls = ["/", "/shop", "/articles", ...products.map((p) => `/shop/products/${p.slug}`), ...posts.map((p) => `/articles/${p.slug}`)];
+  const urls = ["/", "/shop", "/digital", "/articles", ...products.map((p) => `/shop/products/${p.slug}`), ...posts.map((p) => `/articles/${p.slug}`)];
   return new Response(`<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${urls.map((u) => `<url><loc>${SITE.url}${u}</loc></url>`).join("")}</urlset>`, {
     headers: { "content-type": "application/xml; charset=utf-8", "cache-control": "no-store, no-cache, must-revalidate" },
   });
@@ -1727,6 +1756,7 @@ export default {
     if (url.pathname === "/cart") return cartPage(request, env);
     if (url.pathname === "/account") return accountPage(request, env);
     if (url.pathname === "/shop") return shopPage(env);
+    if (url.pathname === "/digital") return digitalPage();
     if (url.pathname === "/shop/success") return checkoutSuccessPage();
     if (url.pathname.startsWith("/shop/products/")) return productPage(env, decodeURIComponent(url.pathname.split("/").pop()));
     if (url.pathname === "/articles") return articles(env);
