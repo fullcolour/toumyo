@@ -259,6 +259,8 @@ async function ensureCommerce(env) {
   )`).run();
   await env.DB.prepare(`CREATE TABLE IF NOT EXISTS support_messages (
     id TEXT PRIMARY KEY,
+    conversation_id TEXT,
+    sender TEXT DEFAULT 'customer',
     page_url TEXT,
     name TEXT,
     email TEXT,
@@ -270,6 +272,8 @@ async function ensureCommerce(env) {
     created_at INTEGER,
     updated_at INTEGER
   )`).run();
+  await env.DB.prepare("ALTER TABLE support_messages ADD COLUMN conversation_id TEXT").run().catch(() => {});
+  await env.DB.prepare("ALTER TABLE support_messages ADD COLUMN sender TEXT DEFAULT 'customer'").run().catch(() => {});
   await env.DB.prepare(`CREATE TABLE IF NOT EXISTS customers (
     id TEXT PRIMARY KEY,
     google_sub TEXT UNIQUE,
@@ -384,8 +388,70 @@ async function listInquiries(env) {
 async function listSupportMessages(env) {
   await ensureCommerce(env);
   if (!env.DB) return [];
-  const result = await env.DB.prepare("SELECT * FROM support_messages ORDER BY created_at DESC").all();
-  return result.results || [];
+  const result = await env.DB.prepare("SELECT *, COALESCE(conversation_id,id) AS thread_id FROM support_messages ORDER BY created_at ASC").all();
+  const threads = new Map();
+  for (const row of result.results || []) {
+    const id = row.thread_id || row.id;
+    if (!threads.has(id)) {
+      threads.set(id, {
+        id,
+        page_url: row.page_url || SITE.url,
+        name: row.name || "",
+        email: row.email || "",
+        company: row.company || "",
+        status: row.status || "open",
+        forwarded_discord: 0,
+        forwarded_telegram: 0,
+        created_at: row.created_at,
+        updated_at: row.updated_at,
+        messages: [],
+      });
+    }
+    const thread = threads.get(id);
+    thread.page_url = row.page_url || thread.page_url;
+    thread.name = row.name || thread.name;
+    thread.email = row.email || thread.email;
+    thread.company = row.company || thread.company;
+    thread.status = row.status || thread.status;
+    thread.forwarded_discord = Math.max(Number(thread.forwarded_discord || 0), Number(row.forwarded_discord || 0));
+    thread.forwarded_telegram = Math.max(Number(thread.forwarded_telegram || 0), Number(row.forwarded_telegram || 0));
+    thread.created_at = Math.min(Number(thread.created_at || row.created_at || 0), Number(row.created_at || thread.created_at || 0));
+    thread.updated_at = Math.max(Number(thread.updated_at || 0), Number(row.updated_at || row.created_at || 0));
+    thread.messages.push({
+      id: row.id,
+      sender: row.sender || "customer",
+      message: row.message || "",
+      created_at: row.created_at,
+    });
+  }
+  return [...threads.values()].sort((a, b) => Number(b.updated_at || 0) - Number(a.updated_at || 0));
+}
+
+async function getSupportConversation(env, conversationId) {
+  await ensureCommerce(env);
+  if (!env.DB || !conversationId) return null;
+  const result = await env.DB.prepare("SELECT *, COALESCE(conversation_id,id) AS thread_id FROM support_messages WHERE conversation_id=? OR id=? ORDER BY created_at ASC")
+    .bind(conversationId, conversationId).all();
+  const rows = result.results || [];
+  if (!rows.length) return null;
+  const first = rows[0];
+  const last = rows[rows.length - 1];
+  return {
+    id: conversationId,
+    page_url: last.page_url || first.page_url || SITE.url,
+    name: last.name || first.name || "",
+    email: last.email || first.email || "",
+    company: last.company || first.company || "",
+    status: last.status || "open",
+    created_at: first.created_at,
+    updated_at: last.updated_at || last.created_at,
+    messages: rows.map((row) => ({
+      id: row.id,
+      sender: row.sender || "customer",
+      message: row.message || "",
+      created_at: row.created_at,
+    })),
+  };
 }
 
 function supportText(payload = {}) {
@@ -578,7 +644,7 @@ function shell({ title, description, path = "/", content, schema }) {
     .contact{background:var(--ink);color:var(--paper);padding:104px 8vw;min-height:520px}.contact-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:8vw;align-items:end}.contact-mail{display:block;margin-top:48px;font-size:clamp(20px,2.6vw,36px);border-bottom:1px solid #666960;padding-bottom:13px}.contact-list{list-style:none;margin:0;padding:0;border-top:1px solid #666960}.contact-list li{display:grid;grid-template-columns:90px 1fr;gap:24px;padding:18px 0;border-bottom:1px solid #41433d}.contact-list span{font-size:11px;text-transform:uppercase;letter-spacing:.9px;color:#a9ada2}.address{font-size:13px;line-height:1.7;color:#c5c7be;margin:0}
     footer{padding:24px 4vw;background:var(--ink);color:#c5c7be;display:flex;justify-content:space-between;gap:20px;border-top:1px solid #494b44;font-size:11px}.listing{padding:88px 8vw}.listing h1{font-size:clamp(56px,7vw,108px)}.articles{display:grid;gap:14px}.article-link{display:block;border-top:1px solid var(--line);padding:24px 0}.article-link:hover h3{color:#2b3310}
     .article-page{padding:88px 8vw}.article-page article{max-width:860px}.article h1{font-size:clamp(52px,7.4vw,110px)}.article-dek{font-size:23px;line-height:1.42;max-width:700px;margin:36px 0}.post-body{font-family:Georgia,"Times New Roman",serif;font-size:21px;line-height:1.65;white-space:pre-wrap;max-width:680px}
-    input,textarea,select{width:100%;border:1px solid #aaa69c;border-radius:6px;padding:11px 12px;background:var(--soft);color:var(--ink);font:15px Arial,Helvetica,sans-serif}textarea{min-height:150px;line-height:1.45;resize:vertical}label{display:block;margin:14px 0 7px;font-size:12px;font-weight:800;letter-spacing:.3px}.notice{border:1px solid var(--line);padding:18px;border-radius:6px;background:var(--soft)}.support-widget{position:fixed;right:22px;bottom:22px;z-index:20;max-width:min(360px,calc(100vw - 32px));font-family:Arial,Helvetica,sans-serif}.support-toggle{width:100%;justify-content:space-between;border-radius:999px;padding:14px 18px}.support-panel{display:none;margin-top:10px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.97);box-shadow:0 20px 60px rgba(18,20,23,.18);padding:18px;backdrop-filter:blur(18px)}.support-widget.open .support-panel{display:block}.support-panel h3{margin:0 0 8px;font-size:24px}.support-panel p{margin:0;color:var(--muted);font-size:13px}.support-panel textarea{min-height:96px}.support-status{font-size:13px;color:#36510d;margin:10px 0 0;font-weight:700}.support-close{background:transparent;border:0;color:var(--muted);font-weight:800;cursor:pointer;padding:0}.support-head{display:flex;align-items:flex-start;justify-content:space-between;gap:18px}
+    input,textarea,select{width:100%;border:1px solid #aaa69c;border-radius:6px;padding:11px 12px;background:var(--soft);color:var(--ink);font:15px Arial,Helvetica,sans-serif}textarea{min-height:150px;line-height:1.45;resize:vertical}label{display:block;margin:14px 0 7px;font-size:12px;font-weight:800;letter-spacing:.3px}.notice{border:1px solid var(--line);padding:18px;border-radius:6px;background:var(--soft)}.support-widget{position:fixed;right:22px;bottom:22px;z-index:20;width:min(390px,calc(100vw - 32px));font-family:Arial,Helvetica,sans-serif}.support-toggle{width:100%;justify-content:space-between;border-radius:999px;padding:14px 18px}.support-panel{display:none;margin-top:10px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.97);box-shadow:0 20px 60px rgba(18,20,23,.18);padding:16px;backdrop-filter:blur(18px)}.support-widget.open .support-panel{display:block}.support-panel h3{margin:0 0 8px;font-size:24px}.support-panel p{margin:0;color:var(--muted);font-size:13px}.support-panel textarea{min-height:70px}.support-status{font-size:13px;color:#36510d;margin:10px 0 0;font-weight:700}.support-close{background:transparent;border:0;color:var(--muted);font-weight:800;cursor:pointer;padding:0}.support-head{display:flex;align-items:flex-start;justify-content:space-between;gap:18px}.support-feed{height:230px;overflow:auto;margin:14px 0;padding:12px;background:var(--paper);border:1px solid var(--line);border-radius:10px;display:flex;flex-direction:column;gap:10px}.support-bubble{max-width:86%;padding:10px 12px;border-radius:12px;background:#fff;border:1px solid var(--line);font-size:14px;line-height:1.42;white-space:pre-wrap}.support-bubble.customer{align-self:flex-end;background:var(--accent);border-color:var(--accent);color:#fff}.support-bubble.agent{align-self:flex-start}.support-bubble.system{align-self:center;background:transparent;border:0;color:var(--muted);font-size:12px;text-align:center}.support-fields{display:grid;grid-template-columns:1fr 1fr;gap:8px}.support-fields input{padding:9px 10px}.support-fields.hidden{display:none}.support-chat-row{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:end}.support-chat-row textarea{min-height:58px}.support-meta-line{font-size:12px;color:var(--muted);margin-top:8px}
     .admin-wrap{padding:58px 5vw 90px}.editor{display:grid;grid-template-columns:minmax(240px,360px) minmax(0,740px);gap:7vw}.editor aside{border-right:1px solid var(--line);padding-right:28px}.editor-actions{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:20px}.status{margin:12px 0 0;color:#36510d;font-weight:700}.danger{background:transparent;color:var(--ink);border:1px solid var(--line)}
     :focus-visible{outline:3px solid var(--focus);outline-offset:3px}@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.btn,.btn:before,.article-card,.gallery-main,.gallery-thumb{transition:none}.btn:hover,.btn:active,.article-card:hover,.gallery-thumb:hover,.gallery-thumb.active{transform:none}}@media(max-width:980px){.portfolio-grid,.timeline,.team-panel,.contact-grid,.intro-strip,.commerce-panel,.metric-strip,.order-dashboard{grid-template-columns:1fr 1fr}.portfolio-grid{grid-auto-rows:minmax(310px,auto)}.work-card.large{grid-row:auto}.timeline article,.timeline article+article{border-right:0;border-bottom:1px solid var(--line);padding:26px 0}.team-grid{grid-template-columns:1fr 1fr}.contact-list{margin-top:34px}}@media(max-width:760px){header{height:auto;min-height:68px;align-items:flex-start;gap:14px;flex-direction:column;padding:18px 6vw}nav{gap:16px;flex-wrap:wrap}.hero{min-height:620px;padding:82px 7vw 46px}.hero:after{width:88vw;height:88vw;right:-36vw;top:126px}.hero-note{position:static;margin-top:42px}.section,.contact,.listing,.article-page{padding:72px 7vw}.service-grid,.article-grid,.editor,.team-grid,.shop-filter,.order-filter,.commerce-panel,.metric-strip,.order-dashboard{grid-template-columns:1fr}.service-grid article,.service-grid article+article{border-right:0;border-bottom:1px solid var(--line);min-height:auto;padding:24px 0}.person img{height:310px}.insights-head{display:block}.article-grid{margin-top:40px}.editor aside{border-right:0;border-bottom:1px solid var(--line);padding:0 0 26px}footer{display:block}.contact-mail{word-break:break-word}.contact-list li{grid-template-columns:1fr;gap:6px}.support-widget{right:16px;bottom:16px}}
   </style>
@@ -588,22 +654,24 @@ function shell({ title, description, path = "/", content, schema }) {
   <header><a class="brand" href="/">TOUMYOU<span>®</span></a><nav><a class="nav" href="/#supply">Supply</a><a class="nav" href="/shop">Shop</a><a class="nav" href="/cart">Cart</a><a class="nav" href="/account">Account</a><a class="nav" href="/#digital">Digital</a><a class="nav" href="/articles">Insights</a><a class="nav nav-admin" href="/admin">Admin</a></nav></header>
   ${content}
   <aside class="support-widget" id="supportWidget" aria-label="Customer support">
-    <button class="btn buy support-toggle" type="button" id="supportToggle"><span>Need help?</span><span>Contact</span></button>
+    <button class="btn buy support-toggle" type="button" id="supportToggle"><span>Need help?</span><span>Live chat</span></button>
     <div class="support-panel">
-      <div class="support-head"><div><h3>Ask Toumyou</h3><p>Send this page with your question. We reply by email.</p></div><button class="support-close" type="button" id="supportClose" aria-label="Close support">Close</button></div>
+      <div class="support-head"><div><h3>Ask Toumyou</h3><p>Send a message about this page. Replies appear here automatically.</p></div><button class="support-close" type="button" id="supportClose" aria-label="Close support">Close</button></div>
+      <div class="support-feed" id="supportFeed" aria-live="polite"><div class="support-bubble system">Start a conversation with our team.</div></div>
       <form id="supportForm">
         <input type="hidden" name="page_url" id="supportPageUrl">
-        <label>Name</label><input name="name" autocomplete="name">
-        <label>Email</label><input name="email" type="email" autocomplete="email" required>
-        <label>Company</label><input name="company" autocomplete="organization">
-        <label>Message</label><textarea name="message" required placeholder="Tell us what you need, or ask about this product page."></textarea>
-        <div class="toolbar"><button class="btn buy" type="submit">Send message</button></div>
+        <div class="support-fields" id="supportFields">
+          <input name="name" autocomplete="name" placeholder="Name">
+          <input name="email" type="email" autocomplete="email" placeholder="Email" required>
+          <input name="company" autocomplete="organization" placeholder="Company" style="grid-column:1/-1">
+        </div>
+        <div class="support-chat-row"><textarea name="message" required placeholder="Write a message..."></textarea><button class="btn buy" type="submit">Send</button></div>
         <p class="support-status" id="supportStatus"></p>
       </form>
     </div>
   </aside>
   <script>
-    (()=>{const w=document.getElementById('supportWidget');const f=document.getElementById('supportForm');const s=document.getElementById('supportStatus');const page=document.getElementById('supportPageUrl');document.getElementById('supportToggle')?.addEventListener('click',()=>w.classList.toggle('open'));document.getElementById('supportClose')?.addEventListener('click',()=>w.classList.remove('open'));if(page)page.value=location.href;f?.addEventListener('submit',async(e)=>{e.preventDefault();s.textContent='Sending...';if(page)page.value=location.href;const payload=Object.fromEntries(new FormData(f).entries());const r=await fetch('/api/support',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(payload)});s.textContent=r.ok?'Message sent. We will reply soon.':'Could not send. Please email us directly.';if(r.ok)f.reset();if(page)page.value=location.href})})();
+    (()=>{const key='toumyou_support_conversation';const w=document.getElementById('supportWidget');const f=document.getElementById('supportForm');const s=document.getElementById('supportStatus');const page=document.getElementById('supportPageUrl');const feed=document.getElementById('supportFeed');const fields=document.getElementById('supportFields');let cid=localStorage.getItem(key)||'';let timer=null;const esc=(v='')=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));function known(){if(!fields)return;fields.classList.add('hidden');fields.querySelectorAll('input').forEach(i=>{i.required=false;i.disabled=true})}function render(messages=[]){feed.innerHTML=messages.length?messages.map(m=>'<div class="support-bubble '+esc(m.sender||'customer')+'">'+esc(m.message||'')+'</div>').join(''):'<div class="support-bubble system">Start a conversation with our team.</div>';feed.scrollTop=feed.scrollHeight}async function load(){if(!cid)return;const r=await fetch('/api/support/'+encodeURIComponent(cid),{cache:'no-store'});if(!r.ok)return;const data=await r.json();render(data.messages||[]);known()}function poll(){clearInterval(timer);if(cid)timer=setInterval(load,5000)}document.getElementById('supportToggle')?.addEventListener('click',()=>{w.classList.toggle('open');if(w.classList.contains('open'))load()});document.getElementById('supportClose')?.addEventListener('click',()=>w.classList.remove('open'));if(page)page.value=location.href;if(cid)known();if(cid)load();poll();f?.addEventListener('submit',async(e)=>{e.preventDefault();s.textContent='Sending...';if(page)page.value=location.href;const payload=Object.fromEntries(new FormData(f).entries());payload.conversation_id=cid;const r=await fetch('/api/support',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(payload)});const data=await r.json().catch(()=>({}));if(r.ok){cid=data.conversation_id||data.id||cid;localStorage.setItem(key,cid);known();f.message.value='';render(data.messages||[]);s.textContent='Sent. Replies will appear here.';poll()}else{s.textContent=data.error||'Could not send. Please email us directly.'}})})();
   </script>
   <footer><span>© ${new Date().getFullYear()} Toumyou LLC</span><span>Fastener supply, digital systems, and cross-border operations from Japan.</span></footer>
 </body>
@@ -1025,10 +1093,10 @@ function adminOrdersPage() {
       function paymentHint(o){const s=String(o.payment_status||'pending').toLowerCase(); if(s==='paid')return 'Payment confirmed by Stripe webhook.'; if(s==='failed')return 'Payment failed or was declined. Ask buyer to retry checkout.'; if(s==='expired')return 'Checkout session expired before payment.'; if(s==='checkout_created')return 'Buyer opened Checkout; waiting for Stripe final payment update.'; return 'Payment status from Stripe: '+s}
       function orderCard(o){const paymentStatus=esc(o.payment_status||'pending'); const stripe=o.stripe_payment_intent?'<a class="btn secondary" href="https://dashboard.stripe.com/payments/'+esc(o.stripe_payment_intent)+'" target="_blank">Stripe payment</a>':'<span class="pill">Waiting for webhook</span>';return '<article class="article-card order-card" data-order-card data-payment="'+esc(statusClass(o.payment_status))+'" data-search="'+esc([o.product_name,o.product_slug,o.sku,o.customer_email,o.customer_name,o.shipping_name,o.shipping_country,o.stripe_session_id].filter(Boolean).join(' ').toLowerCase())+'"><div class="meta"><span class="status-badge '+esc(statusClass(o.payment_status))+'">'+paymentStatus+'</span> / '+esc(o.fulfillment_status||'new')+'</div><h3>'+esc(o.product_name||o.product_slug||'Order')+'</h3><p>'+esc(o.sku||'No SKU')+' · Qty '+esc(o.quantity||1)+' · '+esc(money(o.amount_total,o.currency))+'</p><p class="muted">'+esc(paymentHint(o))+'</p><div class="order-meta"><span>Email<br>'+esc(o.customer_email||'No email yet')+'</span><span>Name<br>'+esc(o.customer_name||o.shipping_name||'-')+'</span><span>Phone<br>'+esc(o.customer_phone||'-')+'</span><span>Country<br>'+esc(o.shipping_country||'-')+'</span></div><p class="muted">'+esc(o.shipping_address||'No shipping address yet')+'</p><p class="muted">Session: '+esc(o.stripe_session_id||'-')+'</p><label>Fulfillment</label><select data-status="'+esc(o.id)+'"><option value="new">new</option><option value="processing">processing</option><option value="shipped">shipped</option><option value="completed">completed</option><option value="cancelled">cancelled</option></select><label>Notes</label><textarea data-notes="'+esc(o.id)+'">'+esc(o.notes||'')+'</textarea><div class="toolbar"><button class="btn" data-save-order="'+esc(o.id)+'">Save</button>'+stripe+'</div><p class="muted">Created '+esc(dt(o.created_at))+' · Updated '+esc(dt(o.updated_at))+'</p></article>'}
       function inquiryCard(q){return '<article class="article-card"><div class="meta">Quote / '+esc(q.status||'new')+'</div><h3>'+esc(q.product_name||'General inquiry')+'</h3><p>'+esc(q.name||'')+' · '+esc(q.email||'')+' · '+esc(q.company||'')+'</p><p class="muted">Qty '+esc(q.quantity||'-')+' · '+esc(q.country||'')+'</p><p>'+esc(q.specs||q.message||'').replace(/\\n/g,'<br>')+'</p><label>Status</label><select data-inquiry-status="'+esc(q.id)+'"><option value="new">new</option><option value="quoted">quoted</option><option value="won">won</option><option value="lost">lost</option><option value="archived">archived</option></select><div class="toolbar"><button class="btn" data-save-inquiry="'+esc(q.id)+'">Save</button><a class="btn secondary" href="mailto:'+encodeURIComponent(q.email||'')+'?subject='+encodeURIComponent('Quote request: '+(q.product_name||'Toumyou shop'))+'">Reply</a></div><p class="muted">Created '+esc(dt(q.created_at))+'</p></article>'}
-      function supportCard(m){const subject='Toumyou support: '+(m.page_url||'website'); return '<article class="article-card"><div class="meta">Support / '+esc(m.status||'new')+'</div><h3>'+esc(m.name||'Website visitor')+'</h3><p>'+esc(m.email||'')+' · '+esc(m.company||'')+'</p><p class="muted"><a class="text-link" href="'+esc(m.page_url||'/')+'" target="_blank">Open submitted page</a> · Discord '+(Number(m.forwarded_discord)?'sent':'not configured')+' · Telegram '+(Number(m.forwarded_telegram)?'sent':'not configured')+'</p><p>'+esc(m.message||'').replace(/\\n/g,'<br>')+'</p><div class="toolbar"><a class="btn secondary" href="mailto:'+encodeURIComponent(m.email||'')+'?subject='+encodeURIComponent(subject)+'">Reply by email</a></div><p class="muted">Created '+esc(dt(m.created_at))+'</p></article>'}
+      function supportCard(m){const subject='Toumyou support: '+(m.page_url||'website'); const msgs=(m.messages||[]).map(x=>'<p class="muted"><b>'+esc(x.sender==='agent'?'Toumyou':'Customer')+'</b> · '+esc(dt(x.created_at))+'<br>'+esc(x.message||'').replace(/\\n/g,'<br>')+'</p>').join(''); return '<article class="article-card"><div class="meta">Support conversation / '+esc(m.status||'open')+'</div><h3>'+esc(m.name||'Website visitor')+'</h3><p>'+esc(m.email||'')+' · '+esc(m.company||'')+'</p><p class="muted"><a class="text-link" href="'+esc(m.page_url||'/')+'" target="_blank">Open submitted page</a> · Discord '+(Number(m.forwarded_discord)?'sent':'not configured')+' · Telegram '+(Number(m.forwarded_telegram)?'sent':'not configured')+'</p><div style="max-height:260px;overflow:auto;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:10px 0;margin:12px 0">'+msgs+'</div><label>Reply in live chat</label><textarea data-support-reply="'+esc(m.id)+'" placeholder="Write a reply that will appear in the customer chat window."></textarea><div class="toolbar"><button class="btn" data-send-support="'+esc(m.id)+'">Send reply</button><a class="btn secondary" href="mailto:'+encodeURIComponent(m.email||'')+'?subject='+encodeURIComponent(subject)+'">Reply by email</a></div><p class="muted">Updated '+esc(dt(m.updated_at||m.created_at))+'</p></article>'}
       function summary(orders,inquiries,support){const paid=orders.filter(o=>String(o.payment_status).toLowerCase()==='paid'); const attention=orders.filter(o=>['checkout_created','failed','expired','unpaid'].includes(String(o.payment_status).toLowerCase())); const openQuotes=inquiries.filter(q=>!['won','lost','archived'].includes(String(q.status||'new').toLowerCase())); return '<div class="order-dashboard"><div class="metric-card"><strong>'+orders.length+'</strong><span>Total checkout orders</span></div><div class="metric-card"><strong>'+paid.length+'</strong><span>Paid by Stripe</span></div><div class="metric-card"><strong>'+attention.length+'</strong><span>Need attention</span></div><div class="metric-card"><strong>'+openQuotes.length+'</strong><span>Open quotes</span></div><div class="metric-card"><strong>'+support.length+'</strong><span>Support messages</span></div></div>'}
       function wireOrderFilter(){const q=document.getElementById('orderSearch'); const f=document.getElementById('paymentFilter'); const cards=[...document.querySelectorAll('[data-order-card]')]; const count=document.getElementById('orderVisibleCount'); function apply(){const text=(q?.value||'').trim().toLowerCase(); const status=f?.value||''; let shown=0; cards.forEach(card=>{const ok=(!text||(card.dataset.search||'').includes(text))&&(!status||card.dataset.payment===status); card.hidden=!ok; if(ok)shown+=1}); if(count)count.textContent=shown+' of '+cards.length+' orders shown'} [q,f].forEach(el=>el&&el.addEventListener('input',apply)); apply()}
-      async function load(){try{const s=await api('/api/admin/session'); if(!s.authenticated)return login(); const orders=await api('/api/admin/orders'); const inquiries=await api('/api/admin/inquiries'); const support=await api('/api/admin/support'); app.className=''; app.innerHTML='<div class="toolbar" style="margin-bottom:24px"><a class="btn secondary" href="/admin/products">Products</a><a class="btn secondary" href="/admin">Articles</a><a class="btn secondary" href="/shop" target="_blank">Open shop</a></div>'+summary(orders,inquiries,support)+'<section class="section" style="padding:0"><p class="eyebrow">Paid checkout</p><h2>Orders</h2><div class="order-filter"><input id="orderSearch" type="search" placeholder="Search by SKU, buyer, country, session..."><select id="paymentFilter"><option value="">All payment statuses</option><option value="paid">Paid</option><option value="checkout_created">Waiting</option><option value="failed">Failed</option><option value="expired">Expired</option></select></div><p id="orderVisibleCount" class="muted"></p><div class="article-grid">'+(orders.length?orders.map(orderCard).join(''):'<div class="notice">No orders yet. New checkout attempts will appear here after customers click Pay.</div>')+'</div></section><section class="section" style="padding:40px 0 0"><p class="eyebrow">Support inbox</p><h2>Website messages</h2><div class="article-grid">'+(support.length?support.map(supportCard).join(''):'<div class="notice">No support messages yet.</div>')+'</div></section><section class="section" style="padding:40px 0 0"><p class="eyebrow">Quote requests</p><h2>Inquiries</h2><div class="article-grid">'+(inquiries.length?inquiries.map(inquiryCard).join(''):'<div class="notice">No quote requests yet.</div>')+'</div></section>'; orders.forEach(o=>{const s=document.querySelector('[data-status="'+CSS.escape(o.id)+'"]'); if(s)s.value=o.fulfillment_status||'new'}); inquiries.forEach(q=>{const s=document.querySelector('[data-inquiry-status="'+CSS.escape(q.id)+'"]'); if(s)s.value=q.status||'new'}); wireOrderFilter(); document.querySelectorAll('[data-save-order]').forEach(b=>b.onclick=async()=>{const id=b.dataset.saveOrder; await api('/api/admin/orders/'+encodeURIComponent(id),{method:'PATCH',body:JSON.stringify({fulfillment_status:document.querySelector('[data-status="'+CSS.escape(id)+'"]').value,notes:document.querySelector('[data-notes="'+CSS.escape(id)+'"]').value})}); b.textContent='Saved'}); document.querySelectorAll('[data-save-inquiry]').forEach(b=>b.onclick=async()=>{const id=b.dataset.saveInquiry; await api('/api/admin/inquiries/'+encodeURIComponent(id),{method:'PATCH',body:JSON.stringify({status:document.querySelector('[data-inquiry-status="'+CSS.escape(id)+'"]').value})}); b.textContent='Saved'})}catch(e){app.className='notice';app.textContent=e.message}}
+      async function load(){try{const s=await api('/api/admin/session'); if(!s.authenticated)return login(); const orders=await api('/api/admin/orders'); const inquiries=await api('/api/admin/inquiries'); const support=await api('/api/admin/support'); app.className=''; app.innerHTML='<div class="toolbar" style="margin-bottom:24px"><a class="btn secondary" href="/admin/products">Products</a><a class="btn secondary" href="/admin">Articles</a><a class="btn secondary" href="/shop" target="_blank">Open shop</a></div>'+summary(orders,inquiries,support)+'<section class="section" style="padding:0"><p class="eyebrow">Paid checkout</p><h2>Orders</h2><div class="order-filter"><input id="orderSearch" type="search" placeholder="Search by SKU, buyer, country, session..."><select id="paymentFilter"><option value="">All payment statuses</option><option value="paid">Paid</option><option value="checkout_created">Waiting</option><option value="failed">Failed</option><option value="expired">Expired</option></select></div><p id="orderVisibleCount" class="muted"></p><div class="article-grid">'+(orders.length?orders.map(orderCard).join(''):'<div class="notice">No orders yet. New checkout attempts will appear here after customers click Pay.</div>')+'</div></section><section class="section" style="padding:40px 0 0"><p class="eyebrow">Support inbox</p><h2>Live chat conversations</h2><div class="article-grid">'+(support.length?support.map(supportCard).join(''):'<div class="notice">No support conversations yet.</div>')+'</div></section><section class="section" style="padding:40px 0 0"><p class="eyebrow">Quote requests</p><h2>Inquiries</h2><div class="article-grid">'+(inquiries.length?inquiries.map(inquiryCard).join(''):'<div class="notice">No quote requests yet.</div>')+'</div></section>'; orders.forEach(o=>{const s=document.querySelector('[data-status="'+CSS.escape(o.id)+'"]'); if(s)s.value=o.fulfillment_status||'new'}); inquiries.forEach(q=>{const s=document.querySelector('[data-inquiry-status="'+CSS.escape(q.id)+'"]'); if(s)s.value=q.status||'new'}); wireOrderFilter(); document.querySelectorAll('[data-save-order]').forEach(b=>b.onclick=async()=>{const id=b.dataset.saveOrder; await api('/api/admin/orders/'+encodeURIComponent(id),{method:'PATCH',body:JSON.stringify({fulfillment_status:document.querySelector('[data-status="'+CSS.escape(id)+'"]').value,notes:document.querySelector('[data-notes="'+CSS.escape(id)+'"]').value})}); b.textContent='Saved'}); document.querySelectorAll('[data-send-support]').forEach(b=>b.onclick=async()=>{const id=b.dataset.sendSupport; const box=document.querySelector('[data-support-reply="'+CSS.escape(id)+'"]'); await api('/api/admin/support/'+encodeURIComponent(id)+'/reply',{method:'POST',body:JSON.stringify({message:box.value})}); b.textContent='Sent'; setTimeout(load,600)}); document.querySelectorAll('[data-save-inquiry]').forEach(b=>b.onclick=async()=>{const id=b.dataset.saveInquiry; await api('/api/admin/inquiries/'+encodeURIComponent(id),{method:'PATCH',body:JSON.stringify({status:document.querySelector('[data-inquiry-status="'+CSS.escape(id)+'"]').value})}); b.textContent='Saved'})}catch(e){app.className='notice';app.textContent=e.message}}
       load();
     </script></main>`;
   return html(shell({ title: "Orders | Toumyou", description: "Toumyou order and quote admin.", path: "/admin/orders", content }), { cache: "no-store" });
@@ -1308,22 +1376,44 @@ async function supportRequest(request, env) {
   const body = await readBody(request);
   const email = String(body.email || "").trim();
   const message = String(body.message || "").trim();
-  if (!email || !email.includes("@")) return json({ error: "Valid email is required" }, { status: 400 });
   if (message.length < 3) return json({ error: "Message is required" }, { status: 400 });
   await ensureCommerce(env);
+  const requestedConversation = String(body.conversation_id || "").trim();
+  const existing = requestedConversation ? await getSupportConversation(env, requestedConversation) : null;
+  if (!existing && (!email || !email.includes("@"))) return json({ error: "Valid email is required" }, { status: 400 });
   const now = Math.floor(Date.now() / 1000);
   const id = crypto.randomUUID();
+  const conversationId = existing?.id || requestedConversation || id;
   const payload = {
     page_url: supportPageUrl(request, body.page_url),
     name: String(body.name || "").trim(),
-    email,
+    email: email || existing?.email || "",
     company: String(body.company || "").trim(),
     message,
   };
   const forwarded = await forwardSupportMessage(env, payload);
-  await env.DB.prepare("INSERT INTO support_messages (id,page_url,name,email,company,message,status,forwarded_discord,forwarded_telegram,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?)")
-    .bind(id, payload.page_url, payload.name, payload.email, payload.company, payload.message, "new", forwarded.discord ? 1 : 0, forwarded.telegram ? 1 : 0, now, now).run();
-  return json({ ok: true, id, forwarded });
+  await env.DB.prepare("INSERT INTO support_messages (id,conversation_id,sender,page_url,name,email,company,message,status,forwarded_discord,forwarded_telegram,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)")
+    .bind(id, conversationId, "customer", payload.page_url, payload.name || existing?.name || "", payload.email, payload.company || existing?.company || "", payload.message, "open", forwarded.discord ? 1 : 0, forwarded.telegram ? 1 : 0, now, now).run();
+  return json({ ok: true, id, conversation_id: conversationId, forwarded, ...(await getSupportConversation(env, conversationId)) });
+}
+
+async function supportConversationRequest(env, conversationId) {
+  const conversation = await getSupportConversation(env, conversationId);
+  if (!conversation) return json({ error: "Conversation not found" }, { status: 404 });
+  return json(conversation, { cache: "no-store" });
+}
+
+async function adminSupportReply(request, env, conversationId) {
+  const body = await readBody(request);
+  const message = String(body.message || "").trim();
+  if (message.length < 2) return json({ error: "Reply is required" }, { status: 400 });
+  const existing = await getSupportConversation(env, conversationId);
+  if (!existing) return json({ error: "Conversation not found" }, { status: 404 });
+  const now = Math.floor(Date.now() / 1000);
+  const id = crypto.randomUUID();
+  await env.DB.prepare("INSERT INTO support_messages (id,conversation_id,sender,page_url,name,email,company,message,status,forwarded_discord,forwarded_telegram,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)")
+    .bind(id, conversationId, "agent", existing.page_url || SITE.url, existing.name || "", existing.email || "", existing.company || "", message, "open", 0, 0, now, now).run();
+  return json({ ok: true, ...(await getSupportConversation(env, conversationId)) });
 }
 
 function checkoutSuccessPage() {
@@ -1506,6 +1596,8 @@ async function handleApi(request, env, pathname) {
   if (pathname === "/api/stripe/webhook" && request.method === "POST") return stripeWebhook(request, env);
   if (pathname === "/api/quote" && request.method === "POST") return quoteRequest(request, env);
   if (pathname === "/api/support" && request.method === "POST") return supportRequest(request, env);
+  const publicSupportMatch = pathname.match(/^\/api\/support\/([^/]+)$/);
+  if (publicSupportMatch && request.method === "GET") return supportConversationRequest(env, decodeURIComponent(publicSupportMatch[1]));
   if (pathname === "/api/admin/login" && request.method === "POST") {
     const body = await request.json().catch(() => ({}));
     if (!env.ADMIN_PASSWORD || body.password !== env.ADMIN_PASSWORD) return json({ error: "Invalid password" }, { status: 401 });
@@ -1519,6 +1611,8 @@ async function handleApi(request, env, pathname) {
   if (pathname === "/api/admin/orders" && request.method === "GET") return json(await listOrders(env));
   if (pathname === "/api/admin/inquiries" && request.method === "GET") return json(await listInquiries(env));
   if (pathname === "/api/admin/support" && request.method === "GET") return json(await listSupportMessages(env));
+  const supportReplyMatch = pathname.match(/^\/api\/admin\/support\/([^/]+)\/reply$/);
+  if (supportReplyMatch && request.method === "POST") return adminSupportReply(request, env, decodeURIComponent(supportReplyMatch[1]));
   if (pathname === "/api/admin/upload" && request.method === "POST") return uploadMedia(request, env);
   if (pathname === "/api/admin/products" && request.method === "POST") {
     const raw = await request.json();
