@@ -457,10 +457,14 @@ async function getSupportConversation(env, conversationId) {
 function supportText(payload = {}) {
   return [
     "New Toumyou support message",
+    payload.conversation_id ? `Conversation: ${payload.conversation_id}` : "",
     `Page: ${payload.page_url || SITE.url}`,
     `Name: ${payload.name || "Not provided"}`,
     `Email: ${payload.email || "Not provided"}`,
     payload.company ? `Company: ${payload.company}` : "",
+    `Reply in admin: ${SITE.url}/admin/orders`,
+    "Telegram: reply to this bot message and your reply will appear on the customer page.",
+    "Discord: notification only; use admin to reply.",
     "",
     truncate(payload.message || "", 1800),
   ].filter((line) => line !== "").join("\n");
@@ -1386,6 +1390,7 @@ async function supportRequest(request, env) {
   const conversationId = existing?.id || requestedConversation || id;
   const payload = {
     page_url: supportPageUrl(request, body.page_url),
+    conversation_id: conversationId,
     name: String(body.name || "").trim(),
     email: email || existing?.email || "",
     company: String(body.company || "").trim(),
@@ -1414,6 +1419,35 @@ async function adminSupportReply(request, env, conversationId) {
   await env.DB.prepare("INSERT INTO support_messages (id,conversation_id,sender,page_url,name,email,company,message,status,forwarded_discord,forwarded_telegram,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)")
     .bind(id, conversationId, "agent", existing.page_url || SITE.url, existing.name || "", existing.email || "", existing.company || "", message, "open", 0, 0, now, now).run();
   return json({ ok: true, ...(await getSupportConversation(env, conversationId)) });
+}
+
+function conversationIdFromTelegram(message = {}) {
+  const text = String(message.text || "");
+  const replyText = String(message.reply_to_message?.text || message.reply_to_message?.caption || "");
+  const combined = `${text}\n${replyText}`;
+  const command = text.match(/^\/reply\s+([0-9a-f-]{24,})\s+([\s\S]+)/i);
+  if (command) return { id: command[1], message: command[2].trim() };
+  const match = combined.match(/Conversation:\s*([0-9a-f-]{24,})/i);
+  return { id: match ? match[1] : "", message: text.trim() };
+}
+
+async function telegramWebhook(request, env) {
+  if (env.TELEGRAM_WEBHOOK_SECRET) {
+    const token = request.headers.get("x-telegram-bot-api-secret-token") || "";
+    if (token !== env.TELEGRAM_WEBHOOK_SECRET) return json({ ok: false }, { status: 403 });
+  }
+  const update = await request.json().catch(() => ({}));
+  const message = update.message || update.edited_message || {};
+  if (!message.text) return json({ ok: true, ignored: true });
+  const parsed = conversationIdFromTelegram(message);
+  if (!parsed.id || !parsed.message || parsed.message.startsWith("/start")) return json({ ok: true, ignored: true });
+  const existing = await getSupportConversation(env, parsed.id);
+  if (!existing) return json({ ok: true, ignored: true });
+  const now = Math.floor(Date.now() / 1000);
+  const id = crypto.randomUUID();
+  await env.DB.prepare("INSERT INTO support_messages (id,conversation_id,sender,page_url,name,email,company,message,status,forwarded_discord,forwarded_telegram,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)")
+    .bind(id, parsed.id, "agent", existing.page_url || SITE.url, existing.name || "", existing.email || "", existing.company || "", parsed.message, "open", 0, 0, now, now).run();
+  return json({ ok: true, conversation_id: parsed.id });
 }
 
 function checkoutSuccessPage() {
@@ -1549,6 +1583,7 @@ async function handleApi(request, env, pathname) {
   if (pathname === "/api/auth/logout") {
     return redirect(`${SITE.url}/`, 302, { "set-cookie": "toumyou_customer=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0" });
   }
+  if (pathname === "/api/telegram/webhook" && request.method === "POST") return telegramWebhook(request, env);
   if (pathname === "/api/customer/session") {
     const customer = await currentCustomer(request, env);
     return json({ authenticated: Boolean(customer), customer: customer ? { email: customer.email, name: customer.name, picture: customer.picture } : null });
