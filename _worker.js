@@ -644,26 +644,19 @@ function shell({ title, description, path = "/", content, schema }) {
 <body>
   <header><a class="brand" href="/">TOUMYOU<span>®</span></a><nav><a class="nav" href="/#supply">Supply</a><a class="nav" href="/shop">Shop</a><a class="nav" href="/cart">Cart</a><a class="nav" href="/account">Account</a><a class="nav" href="/#digital">Digital</a><a class="nav" href="/articles">Insights</a><a class="nav nav-admin" href="/admin">Admin</a></nav></header>
   ${content}
-  <aside class="support-widget" id="supportWidget" aria-label="Customer support">
-    <button class="btn buy support-toggle" type="button" id="supportToggle"><span>Need help?</span><span>Live chat</span></button>
-    <div class="support-panel">
-      <div class="support-head"><div><h3>Ask Toumyou</h3><p>Send a message about this page. Replies appear here automatically.</p></div><button class="support-close" type="button" id="supportClose" aria-label="Close support">Close</button></div>
-      <div class="support-feed" id="supportFeed" aria-live="polite"><div class="support-bubble system">Start a conversation with our team.</div></div>
-      <form id="supportForm">
-        <input type="hidden" name="page_url" id="supportPageUrl">
-        <div class="support-fields" id="supportFields">
-          <input name="name" autocomplete="name" placeholder="Name">
-          <input name="email" type="email" autocomplete="email" placeholder="Email" required>
-          <input name="company" autocomplete="organization" placeholder="Company" style="grid-column:1/-1">
-        </div>
-        <div class="support-chat-row"><textarea name="message" required placeholder="Write a message..."></textarea><button class="btn buy" type="submit">Send</button></div>
-        <p class="support-status" id="supportStatus"></p>
-      </form>
-    </div>
-  </aside>
-  <script>
-    (()=>{const key='toumyou_support_conversation';const w=document.getElementById('supportWidget');const f=document.getElementById('supportForm');const s=document.getElementById('supportStatus');const page=document.getElementById('supportPageUrl');const feed=document.getElementById('supportFeed');const fields=document.getElementById('supportFields');let cid=localStorage.getItem(key)||'';let timer=null;const esc=(v='')=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));function known(){if(!fields)return;fields.classList.add('hidden');fields.querySelectorAll('input').forEach(i=>{i.required=false;i.disabled=true})}function render(messages=[]){feed.innerHTML=messages.length?messages.map(m=>'<div class="support-bubble '+esc(m.sender||'customer')+'">'+esc(m.message||'')+'</div>').join(''):'<div class="support-bubble system">Start a conversation with our team.</div>';feed.scrollTop=feed.scrollHeight}async function load(){if(!cid)return;const r=await fetch('/api/support/'+encodeURIComponent(cid),{cache:'no-store'});if(!r.ok)return;const data=await r.json();render(data.messages||[]);known()}function poll(){clearInterval(timer);if(cid)timer=setInterval(load,5000)}document.getElementById('supportToggle')?.addEventListener('click',()=>{w.classList.toggle('open');if(w.classList.contains('open'))load()});document.getElementById('supportClose')?.addEventListener('click',()=>w.classList.remove('open'));if(page)page.value=location.href;if(cid)known();if(cid)load();poll();f?.addEventListener('submit',async(e)=>{e.preventDefault();s.textContent='Sending...';if(page)page.value=location.href;const payload=Object.fromEntries(new FormData(f).entries());payload.conversation_id=cid;const r=await fetch('/api/support',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(payload)});const data=await r.json().catch(()=>({}));if(r.ok){cid=data.conversation_id||data.id||cid;localStorage.setItem(key,cid);known();f.message.value='';render(data.messages||[]);s.textContent='Sent. Replies will appear here.';poll()}else{s.textContent=data.error||'Could not send. Please email us directly.'}})})();
+  <!--Start of Tawk.to Script-->
+  <script type="text/javascript">
+    var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+    (function(){
+      var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+      s1.async=true;
+      s1.src='https://embed.tawk.to/6a7deb5d9b88671d449028d5/1jvttupc1';
+      s1.charset='UTF-8';
+      s1.setAttribute('crossorigin','*');
+      s0.parentNode.insertBefore(s1,s0);
+    })();
   </script>
+  <!--End of Tawk.to Script-->
   <footer><span>© ${new Date().getFullYear()} Toumyou LLC</span><span>Fastener supply, digital systems, and cross-border operations from Japan.</span></footer>
 </body>
 </html>`;
