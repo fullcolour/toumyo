@@ -426,8 +426,9 @@ function safeFileName(name = "image") {
 }
 
 async function mediaFile(request, env, key) {
-  if (!env.ASSETS) return new Response("Media bucket is not configured", { status: 503 });
-  const object = await env.ASSETS.get(key);
+  const bucket = env.PRODUCT_MEDIA;
+  if (!bucket) return new Response("Media bucket is not configured", { status: 503 });
+  const object = await bucket.get(key);
   if (!object) return new Response("Not found", { status: 404 });
   const headers = new Headers();
   object.writeHttpMetadata?.(headers);
@@ -438,7 +439,8 @@ async function mediaFile(request, env, key) {
 }
 
 async function uploadMedia(request, env) {
-  if (!env.ASSETS) return json({ error: "R2 bucket binding ASSETS is not configured yet" }, { status: 503 });
+  const bucket = env.PRODUCT_MEDIA;
+  if (!bucket) return json({ error: "R2 bucket binding PRODUCT_MEDIA is not configured yet" }, { status: 503 });
   const form = await request.formData();
   const files = [...form.getAll("files"), form.get("file")].filter((file) => file && typeof file === "object" && file.name);
   if (!files.length) return json({ error: "No image file received" }, { status: 400 });
@@ -451,7 +453,7 @@ async function uploadMedia(request, env) {
     if (!type.startsWith("image/")) return json({ error: "Only image files are supported" }, { status: 400 });
     if (file.size > 8 * 1024 * 1024) return json({ error: "Each image must be smaller than 8 MB" }, { status: 400 });
     const key = `products/${yyyy}/${mm}/${crypto.randomUUID()}-${safeFileName(file.name)}`;
-    await env.ASSETS.put(key, file.stream(), {
+    await bucket.put(key, file.stream(), {
       httpMetadata: { contentType: type || mediaContentType(file.name) },
       customMetadata: { originalName: String(file.name).slice(0, 180) },
     });

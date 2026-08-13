@@ -8,5 +8,5 @@ database_name = "toumyou_db"
 database_id = "8d827732-f600-4a0c-bacc-ee791a93cd60"
 
 [[r2_buckets]]
-binding = "ASSETS"
+binding = "PRODUCT_MEDIA"
 bucket_name = "image"
