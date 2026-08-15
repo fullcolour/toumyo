@@ -9,6 +9,12 @@
     "directory": ".open-next/assets",
     "binding": "ASSETS"
   },
+  "routes": [
+    {
+      "pattern": "cms.toumyou.com",
+      "custom_domain": true
+    }
+  ],
   "d1_databases": [
     {
       "binding": "D1",
