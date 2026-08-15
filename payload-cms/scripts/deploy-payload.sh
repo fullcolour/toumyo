@@ -28,4 +28,4 @@ fi
 
 npm run check
 npm run build:cloudflare
-npx opennextjs-cloudflare deploy
+npx opennextjs-cloudflare deploy --config wrangler.jsonc

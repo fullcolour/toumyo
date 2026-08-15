@@ -13,7 +13,7 @@
     "migrate": "payload migrate",
     "d1:apply-schema": "wrangler d1 migrations apply toumyou_payload_cms --remote",
     "check": "npx tsc --noEmit && npm run generate:types",
-    "deploy": "npm run check && npm run build:cloudflare && opennextjs-cloudflare deploy",
+    "deploy": "npm run check && npm run build:cloudflare && opennextjs-cloudflare deploy --config wrangler.jsonc",
     "deploy:guide": "bash scripts/deploy-payload.sh"
   },
   "dependencies": {
