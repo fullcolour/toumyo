@@ -678,8 +678,8 @@ function shell({ title, description, path = "/", content, schema, tenant = TENAN
     footer{padding:24px 4vw;background:var(--ink);color:#c5c7be;display:flex;justify-content:space-between;gap:20px;border-top:1px solid #494b44;font-size:11px}.listing{padding:88px 8vw}.listing h1{font-size:clamp(56px,7vw,108px)}.articles{display:grid;gap:14px}.article-link{display:block;border-top:1px solid var(--line);padding:24px 0}.article-link:hover h3{color:#2b3310}
     .article-page{padding:88px 8vw}.article-page article{max-width:860px}.article h1{font-size:clamp(52px,7.4vw,110px)}.article-dek{font-size:23px;line-height:1.42;max-width:700px;margin:36px 0}.post-body{font-family:Georgia,"Times New Roman",serif;font-size:21px;line-height:1.65;white-space:pre-wrap;max-width:680px}
     input,textarea,select{width:100%;border:1px solid #aaa69c;border-radius:6px;padding:11px 12px;background:var(--soft);color:var(--ink);font:15px Arial,Helvetica,sans-serif}textarea{min-height:150px;line-height:1.45;resize:vertical}label{display:block;margin:14px 0 7px;font-size:12px;font-weight:800;letter-spacing:.3px}.notice{border:1px solid var(--line);padding:18px;border-radius:6px;background:var(--soft)}.support-widget{position:fixed;right:22px;bottom:22px;z-index:20;width:min(390px,calc(100vw - 32px));font-family:Arial,Helvetica,sans-serif}.support-toggle{width:100%;justify-content:space-between;border-radius:999px;padding:14px 18px}.support-panel{display:none;margin-top:10px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.97);box-shadow:0 20px 60px rgba(18,20,23,.18);padding:16px;backdrop-filter:blur(18px)}.support-widget.open .support-panel{display:block}.support-panel h3{margin:0 0 8px;font-size:24px}.support-panel p{margin:0;color:var(--muted);font-size:13px}.support-panel textarea{min-height:70px}.support-status{font-size:13px;color:#36510d;margin:10px 0 0;font-weight:700}.support-close{background:transparent;border:0;color:var(--muted);font-weight:800;cursor:pointer;padding:0}.support-head{display:flex;align-items:flex-start;justify-content:space-between;gap:18px}.support-feed{height:230px;overflow:auto;margin:14px 0;padding:12px;background:var(--paper);border:1px solid var(--line);border-radius:10px;display:flex;flex-direction:column;gap:10px}.support-bubble{max-width:86%;padding:10px 12px;border-radius:12px;background:#fff;border:1px solid var(--line);font-size:14px;line-height:1.42;white-space:pre-wrap}.support-bubble.customer{align-self:flex-end;background:var(--accent);border-color:var(--accent);color:#fff}.support-bubble.agent{align-self:flex-start}.support-bubble.system{align-self:center;background:transparent;border:0;color:var(--muted);font-size:12px;text-align:center}.support-fields{display:grid;grid-template-columns:1fr 1fr;gap:8px}.support-fields input{padding:9px 10px}.support-fields.hidden{display:none}.support-chat-row{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:end}.support-chat-row textarea{min-height:58px}.support-meta-line{font-size:12px;color:var(--muted);margin-top:8px}.support-desk{display:grid;grid-template-columns:minmax(260px,360px) minmax(0,1fr);gap:24px;background:transparent;border:0;padding:0}.support-desk aside,.support-desk section{min-height:680px}.support-thread-list{display:grid;gap:10px;margin-top:14px;max-height:680px;overflow:auto}.support-thread{width:100%;text-align:left;border:1px solid var(--line);background:var(--soft);border-radius:10px;padding:14px;cursor:pointer;color:var(--ink)}.support-thread.active,.support-thread:hover{border-color:var(--accent);box-shadow:0 12px 28px rgba(36,87,255,.1)}.support-thread span{display:flex;justify-content:space-between;gap:10px}.support-thread b{display:block;font-size:15px}.support-thread small,.support-thread em{display:block;color:var(--muted);font-size:11px;font-style:normal}.support-thread p{margin:10px 0 0;color:var(--muted);font-size:13px}.support-conversation-head{display:flex;justify-content:space-between;gap:20px;align-items:flex-start;border-bottom:1px solid var(--line);padding-bottom:18px}.support-conversation-head h2{font-family:Arial,Helvetica,sans-serif;font-size:clamp(34px,4vw,56px);font-weight:850;letter-spacing:-.055em;line-height:.95;margin:0}.desk-feed{height:430px;overflow:auto;border:1px solid var(--line);border-radius:12px;background:var(--paper);padding:18px;margin:18px 0;display:flex;flex-direction:column;gap:12px}.desk-bubble{max-width:76%;border:1px solid var(--line);border-radius:12px;background:#fff;padding:13px 15px}.desk-bubble.agent{align-self:flex-end;background:var(--accent);color:#fff;border-color:var(--accent)}.desk-bubble.customer{align-self:flex-start}.desk-bubble strong{display:block;font-size:12px;margin-bottom:6px}.desk-bubble p{margin:0;white-space:pre-wrap}.desk-bubble small{display:block;margin-top:8px;font-size:11px;opacity:.72}
-    .admin-wrap{padding:58px 5vw 90px}.editor{display:grid;grid-template-columns:minmax(240px,360px) minmax(0,740px);gap:7vw}.editor aside{border-right:1px solid var(--line);padding-right:28px}.editor-actions{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:20px}.status{margin:12px 0 0;color:#36510d;font-weight:700}.danger{background:transparent;color:var(--ink);border:1px solid var(--line)}
-    :focus-visible{outline:3px solid var(--focus);outline-offset:3px}@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.btn,.btn:before,.article-card,.gallery-main,.gallery-thumb{transition:none}.btn:hover,.btn:active,.article-card:hover,.gallery-thumb:hover,.gallery-thumb.active{transform:none}}@media(max-width:980px){.portfolio-grid,.timeline,.team-panel,.contact-grid,.intro-strip,.commerce-panel,.metric-strip,.order-dashboard{grid-template-columns:1fr 1fr}.portfolio-grid{grid-auto-rows:minmax(310px,auto)}.work-card.large{grid-row:auto}.timeline article,.timeline article+article{border-right:0;border-bottom:1px solid var(--line);padding:26px 0}.team-grid{grid-template-columns:1fr 1fr}.contact-list{margin-top:34px}.support-desk{grid-template-columns:1fr}.support-desk aside,.support-desk section{min-height:auto}}@media(max-width:760px){header{height:auto;min-height:68px;align-items:flex-start;gap:14px;flex-direction:column;padding:18px 6vw}nav{gap:16px;flex-wrap:wrap}.hero{min-height:620px;padding:82px 7vw 46px}.hero:after{width:88vw;height:88vw;right:-36vw;top:126px}.hero-note{position:static;margin-top:42px}.section,.contact,.listing,.article-page{padding:72px 7vw}.service-grid,.article-grid,.editor,.team-grid,.shop-filter,.order-filter,.commerce-panel,.metric-strip,.order-dashboard{grid-template-columns:1fr}.service-grid article,.service-grid article+article{border-right:0;border-bottom:1px solid var(--line);min-height:auto;padding:24px 0}.person img{height:310px}.insights-head{display:block}.article-grid{margin-top:40px}.editor aside{border-right:0;border-bottom:1px solid var(--line);padding:0 0 26px}footer{display:block}.contact-mail{word-break:break-word}.contact-list li{grid-template-columns:1fr;gap:6px}.support-widget{right:16px;bottom:16px}.desk-feed{height:360px}.desk-bubble{max-width:92%}}
+    .admin-wrap{padding:58px 5vw 90px}.admin-hero{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:24px;align-items:end;margin-bottom:28px;border-bottom:1px solid var(--ink);padding-bottom:28px}.admin-hero h1{font-size:clamp(48px,6vw,88px);letter-spacing:-.06em;margin:0}.admin-tabs{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 32px}.admin-tab{border:1px solid var(--line);background:var(--soft);border-radius:999px;padding:10px 14px;font-size:12px;font-weight:850;letter-spacing:.5px;text-transform:uppercase}.admin-tab.active,.admin-tab:hover{border-color:var(--ink);background:var(--ink);color:var(--paper)}.editor{display:grid;grid-template-columns:minmax(260px,390px) minmax(0,820px);gap:5vw}.editor aside{border-right:1px solid var(--line);padding-right:28px}.admin-list-tools{display:grid;grid-template-columns:1fr 130px;gap:10px;margin:18px 0}.mini-dashboard{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:18px 0}.mini-dashboard div{border:1px solid var(--line);background:var(--soft);border-radius:8px;padding:14px}.mini-dashboard strong{display:block;font-size:26px;letter-spacing:-.04em}.mini-dashboard span{display:block;margin-top:4px;font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:var(--muted)}.admin-list-empty{border-top:1px solid var(--line);padding:20px 0;color:var(--muted)}.admin-thumb-row{display:grid;grid-template-columns:62px 1fr;gap:12px;align-items:center}.admin-thumb{width:62px;height:52px;border-radius:8px;object-fit:cover;background:var(--panel);border:1px solid var(--line)}.admin-preview-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(72px,1fr));gap:10px;margin:12px 0}.image-chip{position:relative;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--soft);min-height:68px}.image-chip img{width:100%;height:74px;object-fit:cover;display:block}.image-chip span{display:block;padding:6px 8px;font-size:10px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.field-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.editor-actions{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:20px}.status{margin:12px 0 0;color:#36510d;font-weight:700}.danger{background:transparent;color:var(--ink);border:1px solid var(--line)}
+    :focus-visible{outline:3px solid var(--focus);outline-offset:3px}@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.btn,.btn:before,.article-card,.gallery-main,.gallery-thumb{transition:none}.btn:hover,.btn:active,.article-card:hover,.gallery-thumb:hover,.gallery-thumb.active{transform:none}}@media(max-width:980px){.portfolio-grid,.timeline,.team-panel,.contact-grid,.intro-strip,.commerce-panel,.metric-strip,.order-dashboard,.mini-dashboard{grid-template-columns:1fr 1fr}.portfolio-grid{grid-auto-rows:minmax(310px,auto)}.work-card.large{grid-row:auto}.timeline article,.timeline article+article{border-right:0;border-bottom:1px solid var(--line);padding:26px 0}.team-grid{grid-template-columns:1fr 1fr}.contact-list{margin-top:34px}.support-desk{grid-template-columns:1fr}.support-desk aside,.support-desk section{min-height:auto}}@media(max-width:760px){header{height:auto;min-height:68px;align-items:flex-start;gap:14px;flex-direction:column;padding:18px 6vw}nav{gap:16px;flex-wrap:wrap}.hero{min-height:620px;padding:82px 7vw 46px}.hero:after{width:88vw;height:88vw;right:-36vw;top:126px}.hero-note{position:static;margin-top:42px}.section,.contact,.listing,.article-page{padding:72px 7vw}.service-grid,.article-grid,.editor,.team-grid,.shop-filter,.order-filter,.commerce-panel,.metric-strip,.order-dashboard,.mini-dashboard,.field-grid,.admin-hero,.admin-list-tools{grid-template-columns:1fr}.service-grid article,.service-grid article+article{border-right:0;border-bottom:1px solid var(--line);min-height:auto;padding:24px 0}.person img{height:310px}.insights-head{display:block}.article-grid{margin-top:40px}.editor aside{border-right:0;border-bottom:1px solid var(--line);padding:0 0 26px}footer{display:block}.contact-mail{word-break:break-word}.contact-list li{grid-template-columns:1fr;gap:6px}.support-widget{right:16px;bottom:16px}.desk-feed{height:360px}.desk-bubble{max-width:92%}}
   </style>
   ${schema ? `<script type="application/ld+json">${JSON.stringify(schema)}</script>` : ""}
 </head>
@@ -1177,46 +1177,194 @@ async function productPage(env, slug, tenant = TENANTS.toumyou) {
   }));
 }
 
+function adminHeader(tenant = TENANTS.toumyou, active = "articles") {
+  const zh = tenant.lang === "zh-CN";
+  const labels = zh
+    ? { articles: "文章", products: "商品", orders: "订单", support: "客服", shop: "查看商城" }
+    : { articles: "Articles", products: "Products", orders: "Orders", support: "Support", shop: "Open shop" };
+  const tab = (key, href) => `<a class="admin-tab ${active === key ? "active" : ""}" href="${href}">${labels[key]}</a>`;
+  return `<div class="admin-hero"><div><p class="eyebrow">${zh ? "运营后台" : "Operations console"}</p><h1>${zh ? "内容与商品管理。" : "Content and commerce."}</h1><p class="lead">${zh ? "统一管理文章、商品、订单与客户咨询，让前台内容保持实时、清楚、可信。" : "Manage articles, products, orders, and customer conversations from one cleaner workspace."}</p></div><a class="btn secondary" href="/shop" target="_blank">${labels.shop}</a></div>
+    <nav class="admin-tabs" aria-label="Admin sections">${tab("articles", "/admin")}${tab("products", "/admin/products")}${tab("orders", "/admin/orders")}${tab("support", "/admin/support")}</nav>`;
+}
+
 function adminPage(tenant = TENANTS.toumyou) {
-  const content = `<main class="admin-wrap"><h1>Editor</h1><p class="lead">Create, publish, and update Toumyou articles.</p>
+  const zh = tenant.lang === "zh-CN";
+  const content = `<main class="admin-wrap">${adminHeader(tenant, "articles")}
     <div id="app" class="notice">Loading...</div>
     <script>
       const app = document.getElementById('app');
       const esc = (v='') => String(v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
+      const copy = ${JSON.stringify(zh ? {
+        password: "后台密码",
+        login: "登录",
+        newArticle: "新建文章",
+        search: "搜索标题、分类、slug...",
+        all: "全部状态",
+        published: "已发布",
+        draft: "草稿",
+        title: "标题",
+        slug: "Slug",
+        excerpt: "摘要",
+        body: "正文",
+        category: "分类",
+        status: "状态",
+        save: "保存文章",
+        delete: "删除",
+        openHome: "查看首页",
+        openArticles: "查看文章",
+        products: "商品",
+        orders: "订单",
+        support: "客服",
+        empty: "没有匹配的文章。",
+        deleteConfirm: "确定删除这篇文章？"
+      } : {
+        password: "Password",
+        login: "Log in",
+        newArticle: "New article",
+        search: "Search title, category, slug...",
+        all: "All status",
+        published: "Published",
+        draft: "Draft",
+        title: "Title",
+        slug: "Slug",
+        excerpt: "Excerpt",
+        body: "Body",
+        category: "Category",
+        status: "Status",
+        save: "Save article",
+        delete: "Delete",
+        openHome: "Open home",
+        openArticles: "Open insights",
+        products: "Products",
+        orders: "Orders",
+        support: "Support",
+        empty: "No matching articles.",
+        deleteConfirm: "Delete this article?"
+      })};
       async function api(url, options={}){const r=await fetch(url,{cache:'no-store',headers:{'content-type':'application/json'},...options}); if(!r.ok) throw new Error(await r.text()); return r.json();}
-      function login(){app.className='notice';app.innerHTML='<label>Password</label><input id="pw" type="password" autocomplete="current-password"><div class="toolbar"><button class="btn" id="go">Log in</button></div>';document.getElementById('go').onclick=async()=>{try{await api('/api/admin/login',{method:'POST',body:JSON.stringify({password:document.getElementById('pw').value})});load()}catch(e){alert('Login failed')}}}
-      function form(p={}){const currentStatus=p.status||'published';return '<label>Title</label><input id="title" value="'+esc(p.title||'')+'"><label>Slug</label><input id="slug" value="'+esc(p.slug||'')+'"><label>Excerpt</label><textarea id="excerpt">'+esc(p.excerpt||'')+'</textarea><label>Body</label><textarea id="body">'+esc(p.body||'')+'</textarea><label>Category</label><input id="category" value="'+esc(p.category||'Insights')+'"><label>Status</label><select id="status"><option value="published" '+(currentStatus==='published'?'selected':'')+'>published</option><option value="draft" '+(currentStatus==='draft'?'selected':'')+'>draft</option></select><div class="editor-actions"><button class="btn" id="save">Save and publish</button>'+(p.id?'<button class="btn danger" id="delete">Delete</button>':'')+'<a class="btn secondary" href="/" target="_blank">Open home</a><a class="btn secondary" href="/articles" target="_blank">Open insights</a><a class="btn secondary" href="/admin/products">Products</a><a class="btn secondary" href="/admin/orders">Orders</a><a class="btn secondary" href="/admin/support">Support</a></div><p id="saved" class="status"></p>'}
-      async function load(){try{const s=await api('/api/admin/session'); if(!s.authenticated)return login(); const posts=await api('/api/admin/posts'); app.className='editor'; app.innerHTML='<aside><button class="btn" id="new">New article</button><div class="articles">'+posts.map(p=>'<a class="article-link" data-id="'+esc(p.id)+'"><div class="meta">'+esc(p.status)+' / '+esc(p.category||'Insights')+'</div><h3>'+esc(p.title)+'</h3><p>'+esc(p.slug)+'</p></a>').join('')+'</div></aside><section id="edit">'+form()+'</section>'; const edit=document.getElementById('edit'); document.getElementById('new').onclick=()=>{edit.innerHTML=form(); wireSave()}; document.querySelectorAll('[data-id]').forEach(a=>a.onclick=()=>{const p=posts.find(x=>x.id===a.dataset.id); edit.innerHTML=form(p); wireSave(p.id)}); wireSave()}catch(e){app.className='notice';app.textContent=e.message}}
-      function wireSave(id){document.getElementById('save').onclick=async()=>{const payload={title:document.getElementById('title').value,slug:document.getElementById('slug').value,excerpt:document.getElementById('excerpt').value,body:document.getElementById('body').value,category:document.getElementById('category').value,status:document.getElementById('status').value}; const result=await api(id?'/api/admin/posts/'+id:'/api/admin/posts',{method:id?'PUT':'POST',body:JSON.stringify(payload)}); const slug=result.slug||payload.slug; document.getElementById('saved').innerHTML='Saved. <a class="text-link" target="_blank" href="/articles/'+encodeURIComponent(slug)+'?fresh='+Date.now()+'">Open article</a> or <a class="text-link" target="_blank" href="/?fresh='+Date.now()+'">check home</a>.'; if(!id)setTimeout(load,700)}; const del=document.getElementById('delete'); if(del)del.onclick=async()=>{if(!confirm('Delete this article?'))return; await api('/api/admin/posts/'+id,{method:'DELETE'}); load()}}
+      function login(){app.className='notice';app.innerHTML='<label>'+copy.password+'</label><input id="pw" type="password" autocomplete="current-password"><div class="toolbar"><button class="btn" id="go">'+copy.login+'</button></div>';document.getElementById('go').onclick=async()=>{try{await api('/api/admin/login',{method:'POST',body:JSON.stringify({password:document.getElementById('pw').value})});load()}catch(e){alert('Login failed')}}}
+      function form(p={}){const currentStatus=p.status||'published';return '<div class="field-grid"><div><label>'+copy.title+'</label><input id="title" value="'+esc(p.title||'')+'"></div><div><label>'+copy.slug+'</label><input id="slug" value="'+esc(p.slug||'')+'"></div></div><label>'+copy.excerpt+'</label><textarea id="excerpt">'+esc(p.excerpt||'')+'</textarea><label>'+copy.body+'</label><textarea id="body" style="min-height:320px">'+esc(p.body||'')+'</textarea><div class="field-grid"><div><label>'+copy.category+'</label><input id="category" value="'+esc(p.category||'Insights')+'"></div><div><label>'+copy.status+'</label><select id="status"><option value="published" '+(currentStatus==='published'?'selected':'')+'>published</option><option value="draft" '+(currentStatus==='draft'?'selected':'')+'>draft</option></select></div></div><div class="editor-actions"><button class="btn" id="save">'+copy.save+'</button>'+(p.id?'<button class="btn danger" id="delete">'+copy.delete+'</button>':'')+'<a class="btn secondary" href="/" target="_blank">'+copy.openHome+'</a><a class="btn secondary" href="/articles" target="_blank">'+copy.openArticles+'</a></div><p id="saved" class="status"></p>'}
+      function stats(posts){const published=posts.filter(p=>String(p.status).toLowerCase()==='published').length;const draft=posts.filter(p=>String(p.status).toLowerCase()==='draft').length;return '<div class="mini-dashboard"><div><strong>'+posts.length+'</strong><span>Total</span></div><div><strong>'+published+'</strong><span>'+copy.published+'</span></div><div><strong>'+draft+'</strong><span>'+copy.draft+'</span></div></div>'}
+      function listItem(p){return '<a class="article-link" data-id="'+esc(p.id)+'" data-status="'+esc(String(p.status||'').toLowerCase())+'" data-search="'+esc([p.title,p.slug,p.category,p.excerpt].filter(Boolean).join(' ').toLowerCase())+'"><div class="meta"><span class="status-badge '+esc(String(p.status||'draft').toLowerCase())+'">'+esc(p.status||'draft')+'</span> / '+esc(p.category||'Insights')+'</div><h3>'+esc(p.title||'Untitled article')+'</h3><p>'+esc(p.slug||'no-slug')+'</p></a>'}
+      function wireFilter(){const q=document.getElementById('adminSearch');const f=document.getElementById('adminStatus');const empty=document.getElementById('adminEmpty');const items=[...document.querySelectorAll('[data-id]')];function apply(){const text=(q?.value||'').trim().toLowerCase();const status=f?.value||'';let shown=0;items.forEach(item=>{const ok=(!text||(item.dataset.search||'').includes(text))&&(!status||item.dataset.status===status);item.hidden=!ok;if(ok)shown++});if(empty)empty.hidden=shown>0}q&&q.addEventListener('input',apply);f&&f.addEventListener('input',apply);apply()}
+      async function load(){try{const s=await api('/api/admin/session'); if(!s.authenticated)return login(); const posts=await api('/api/admin/posts'); app.className='editor'; app.innerHTML='<aside><button class="btn" id="new">'+copy.newArticle+'</button>'+stats(posts)+'<div class="admin-list-tools"><input id="adminSearch" type="search" placeholder="'+copy.search+'"><select id="adminStatus"><option value="">'+copy.all+'</option><option value="published">'+copy.published+'</option><option value="draft">'+copy.draft+'</option></select></div><div class="articles">'+posts.map(listItem).join('')+'<div id="adminEmpty" class="admin-list-empty" hidden>'+copy.empty+'</div></div></aside><section id="edit">'+form()+'</section>'; const edit=document.getElementById('edit'); document.getElementById('new').onclick=()=>{edit.innerHTML=form(); wireSave()}; document.querySelectorAll('[data-id]').forEach(a=>a.onclick=()=>{const p=posts.find(x=>x.id===a.dataset.id); edit.innerHTML=form(p); wireSave(p.id)}); wireFilter(); wireSave()}catch(e){app.className='notice';app.textContent=e.message}}
+      function wireSave(id){document.getElementById('save').onclick=async()=>{const payload={title:document.getElementById('title').value,slug:document.getElementById('slug').value,excerpt:document.getElementById('excerpt').value,body:document.getElementById('body').value,category:document.getElementById('category').value,status:document.getElementById('status').value}; const result=await api(id?'/api/admin/posts/'+id:'/api/admin/posts',{method:id?'PUT':'POST',body:JSON.stringify(payload)}); const slug=result.slug||payload.slug; document.getElementById('saved').innerHTML='Saved. <a class="text-link" target="_blank" href="/articles/'+encodeURIComponent(slug)+'?fresh='+Date.now()+'">Open article</a> or <a class="text-link" target="_blank" href="/?fresh='+Date.now()+'">check home</a>.'; if(!id)setTimeout(load,700)}; const del=document.getElementById('delete'); if(del)del.onclick=async()=>{if(!confirm(copy.deleteConfirm))return; await api('/api/admin/posts/'+id,{method:'DELETE'}); load()}}
       load();
     </script></main>`;
   return html(shell({ title: `${tenant.lang === "zh-CN" ? "后台" : "Admin"} | ${tenant.name}`, description: `${tenant.name} admin.`, path: "/admin", content, tenant }), { cache: "no-store" });
 }
 
 function adminProductsPage(tenant = TENANTS.toumyou) {
-  const content = `<main class="admin-wrap"><h1>Products</h1><p class="lead">Add fastener SKUs, publish product pages, and enable checkout when Stripe is configured.</p>
+  const zh = tenant.lang === "zh-CN";
+  const content = `<main class="admin-wrap">${adminHeader(tenant, "products")}
     <div id="app" class="notice">Loading...</div>
     <script>
       const app = document.getElementById('app');
       const esc = (v='') => String(v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
+      const copy = ${JSON.stringify(zh ? {
+        password: "后台密码",
+        login: "登录",
+        newProduct: "新建商品",
+        search: "搜索商品、SKU、分类、材质...",
+        all: "全部状态",
+        published: "已发布",
+        draft: "草稿",
+        name: "商品名称",
+        slug: "Slug",
+        sku: "SKU",
+        excerpt: "短摘要",
+        description: "详细描述",
+        category: "分类",
+        material: "材质",
+        size: "规格尺寸",
+        specs: "详细规格",
+        moq: "起订量",
+        weight: "单件重量（克）",
+        mainImage: "主图 URL",
+        gallery: "轮播图 URL",
+        upload: "上传商品图片",
+        uploadButton: "上传图片",
+        uploadHint: "图片会保存到 Cloudflare R2。",
+        price: "价格",
+        currency: "币种",
+        inventory: "库存",
+        status: "状态",
+        checkout: "开启 Stripe 购买",
+        save: "保存商品",
+        delete: "删除",
+        openShop: "查看商城",
+        orders: "订单",
+        support: "客服",
+        articles: "文章",
+        empty: "没有匹配的商品。",
+        deleteConfirm: "确定删除这个商品？",
+        noImage: "暂无图片",
+        checkoutOn: "可购买",
+        checkoutOff: "询价"
+      } : {
+        password: "Password",
+        login: "Log in",
+        newProduct: "New product",
+        search: "Search product, SKU, category, material...",
+        all: "All status",
+        published: "Published",
+        draft: "Draft",
+        name: "Name",
+        slug: "Slug",
+        sku: "SKU",
+        excerpt: "Short excerpt",
+        description: "Description",
+        category: "Category",
+        material: "Material",
+        size: "Size",
+        specs: "Detailed specifications",
+        moq: "MOQ",
+        weight: "Weight grams / unit",
+        mainImage: "Main image URL",
+        gallery: "Gallery image URLs",
+        upload: "Upload product images",
+        uploadButton: "Upload images",
+        uploadHint: "Images are stored in Cloudflare R2.",
+        price: "Price",
+        currency: "Currency",
+        inventory: "Inventory",
+        status: "Status",
+        checkout: "Enable Stripe Buy for this product",
+        save: "Save product",
+        delete: "Delete",
+        openShop: "Open shop",
+        orders: "Orders",
+        support: "Support",
+        articles: "Articles",
+        empty: "No matching products.",
+        deleteConfirm: "Delete this product?",
+        noImage: "No image",
+        checkoutOn: "Buy enabled",
+        checkoutOff: "Quote"
+      })};
       async function api(url, options={}){const r=await fetch(url,{cache:'no-store',headers:{'content-type':'application/json'},...options}); if(!r.ok) throw new Error(await r.text()); return r.json();}
-      function login(){app.className='notice';app.innerHTML='<label>Password</label><input id="pw" type="password" autocomplete="current-password"><div class="toolbar"><button class="btn" id="go">Log in</button></div>';document.getElementById('go').onclick=async()=>{try{await api('/api/admin/login',{method:'POST',body:JSON.stringify({password:document.getElementById('pw').value})});load()}catch(e){alert('Login failed')}}}
+      function login(){app.className='notice';app.innerHTML='<label>'+copy.password+'</label><input id="pw" type="password" autocomplete="current-password"><div class="toolbar"><button class="btn" id="go">'+copy.login+'</button></div>';document.getElementById('go').onclick=async()=>{try{await api('/api/admin/login',{method:'POST',body:JSON.stringify({password:document.getElementById('pw').value})});load()}catch(e){alert('Login failed')}}}
       const zeroDecimalCurrencies = new Set(['BIF','CLP','DJF','GNF','JPY','KMF','KRW','MGA','PYG','RWF','UGX','VND','VUV','XAF','XOF','XPF']);
       function currencyScale(currency){return zeroDecimalCurrencies.has(String(currency||'USD').toUpperCase())?1:100}
       function amountFromPrice(v,currency){const n=Number(String(v||'').replace(/[^0-9.]/g,'')); return Math.round((Number.isFinite(n)?n:0)*currencyScale(currency))}
       function priceFromAmount(v,currency){const scale=currencyScale(currency); return ((Number(v)||0)/scale).toFixed(scale===1?0:2)}
-      function form(p={}){const status=p.status||'draft'; const checkout=Number(p.allow_checkout||0)===1; const currency=p.currency||'JPY'; return '<label>Name</label><input id="name" value="'+esc(p.name||'')+'"><label>Slug</label><input id="slug" value="'+esc(p.slug||'')+'"><label>SKU</label><input id="sku" value="'+esc(p.sku||'')+'"><label>Short excerpt</label><textarea id="excerpt">'+esc(p.excerpt||'')+'</textarea><label>Description</label><textarea id="description">'+esc(p.description||'')+'</textarea><label>Category</label><input id="category" value="'+esc(p.category||'Fasteners')+'"><label>Material</label><input id="material" value="'+esc(p.material||'')+'"><label>Size</label><input id="size" value="'+esc(p.size||'')+'"><label>Detailed specifications</label><textarea id="specs" placeholder="Standards, finish, thread pitch, packaging, drawing notes...">'+esc(p.specs||'')+'</textarea><label>MOQ</label><input id="moq" type="number" min="1" value="'+esc(p.moq||1)+'"><label>Weight grams / unit</label><input id="weight_grams" type="number" min="0" value="'+esc(p.weight_grams||0)+'"><label>Main image URL</label><input id="image_url" value="'+esc(p.image_url||'')+'"><label>Gallery image URLs</label><textarea id="image_urls" placeholder="One image URL per line. Upload images below or paste CDN URLs here.">'+esc(p.image_urls||'')+'</textarea><label>Upload product images</label><input id="image_files" type="file" accept="image/*" multiple><div class="toolbar"><button class="btn secondary" id="upload_images" type="button">Upload images</button><span id="upload_status" class="muted">Images are stored in Cloudflare R2.</span></div><label>Price</label><input id="price" inputmode="decimal" value="'+esc(priceFromAmount(p.price_cents,currency))+'"><label>Currency</label><input id="currency" value="'+esc(currency)+'"><label>Inventory</label><input id="inventory" type="number" min="0" value="'+esc(p.inventory||0)+'"><label>Status</label><select id="status"><option value="draft" '+(status==='draft'?'selected':'')+'>draft</option><option value="published" '+(status==='published'?'selected':'')+'>published</option></select><label><input id="allow_checkout" type="checkbox" style="width:auto" '+(checkout?'checked':'')+'> Enable Stripe Checkout for this product</label><div class="editor-actions"><button class="btn" id="save">Save product</button>'+(p.id?'<button class="btn danger" id="delete">Delete</button>':'')+'<a class="btn secondary" href="/shop" target="_blank">Open shop</a><a class="btn secondary" href="/admin/orders">Orders</a><a class="btn secondary" href="/admin/support">Support</a><a class="btn secondary" href="/admin">Articles</a></div><p id="saved" class="status"></p>'}
-      async function load(){try{const s=await api('/api/admin/session'); if(!s.authenticated)return login(); const products=await api('/api/admin/products'); app.className='editor'; app.innerHTML='<aside><button class="btn" id="new">New product</button><div class="articles">'+products.map(p=>'<a class="article-link" data-id="'+esc(p.id)+'"><div class="meta">'+esc(p.status)+' / '+esc(p.category||'Fasteners')+'</div><h3>'+esc(p.name)+'</h3><p>'+esc(p.sku||p.slug)+' · '+esc(priceFromAmount(p.price_cents,p.currency))+' '+esc(p.currency||'JPY')+'</p></a>').join('')+'</div></aside><section id="edit">'+form()+'</section>'; const edit=document.getElementById('edit'); document.getElementById('new').onclick=()=>{edit.innerHTML=form(); wireSave()}; document.querySelectorAll('[data-id]').forEach(a=>a.onclick=()=>{const p=products.find(x=>x.id===a.dataset.id); edit.innerHTML=form(p); wireSave(p.id)}); wireSave()}catch(e){app.className='notice';app.textContent=e.message}}
+      function imageList(p={}){return [p.image_url,...String(p.image_urls||'').split(/\\n|,/)].map(x=>String(x||'').trim()).filter(Boolean)}
+      function imagePreview(p={}){const imgs=imageList(p).slice(0,6);return imgs.length?'<div class="admin-preview-grid">'+imgs.map((src,i)=>'<div class="image-chip"><img src="'+esc(src)+'" alt=""><span>'+(i===0?'Main':'Gallery '+i)+'</span></div>').join('')+'</div>':'<div class="notice">'+copy.noImage+'</div>'}
+      function form(p={}){const status=p.status||'draft'; const checkout=Number(p.allow_checkout||0)===1; const currency=p.currency||'JPY'; return imagePreview(p)+'<div class="field-grid"><div><label>'+copy.name+'</label><input id="name" value="'+esc(p.name||'')+'"></div><div><label>'+copy.slug+'</label><input id="slug" value="'+esc(p.slug||'')+'"></div></div><div class="field-grid"><div><label>'+copy.sku+'</label><input id="sku" value="'+esc(p.sku||'')+'"></div><div><label>'+copy.category+'</label><input id="category" value="'+esc(p.category||'Fasteners')+'"></div></div><label>'+copy.excerpt+'</label><textarea id="excerpt">'+esc(p.excerpt||'')+'</textarea><label>'+copy.description+'</label><textarea id="description">'+esc(p.description||'')+'</textarea><div class="field-grid"><div><label>'+copy.material+'</label><input id="material" value="'+esc(p.material||'')+'"></div><div><label>'+copy.size+'</label><input id="size" value="'+esc(p.size||'')+'"></div></div><label>'+copy.specs+'</label><textarea id="specs" placeholder="Standards, finish, thread pitch, packaging, drawing notes...">'+esc(p.specs||'')+'</textarea><div class="field-grid"><div><label>'+copy.moq+'</label><input id="moq" type="number" min="1" value="'+esc(p.moq||1)+'"></div><div><label>'+copy.weight+'</label><input id="weight_grams" type="number" min="0" value="'+esc(p.weight_grams||0)+'"></div></div><label>'+copy.mainImage+'</label><input id="image_url" value="'+esc(p.image_url||'')+'"><label>'+copy.gallery+'</label><textarea id="image_urls" placeholder="One image URL per line. Upload images below or paste CDN URLs here.">'+esc(p.image_urls||'')+'</textarea><label>'+copy.upload+'</label><input id="image_files" type="file" accept="image/*" multiple><div class="toolbar"><button class="btn secondary" id="upload_images" type="button">'+copy.uploadButton+'</button><span id="upload_status" class="muted">'+copy.uploadHint+'</span></div><div class="field-grid"><div><label>'+copy.price+'</label><input id="price" inputmode="decimal" value="'+esc(priceFromAmount(p.price_cents,currency))+'"></div><div><label>'+copy.currency+'</label><input id="currency" value="'+esc(currency)+'"></div></div><div class="field-grid"><div><label>'+copy.inventory+'</label><input id="inventory" type="number" min="0" value="'+esc(p.inventory||0)+'"></div><div><label>'+copy.status+'</label><select id="status"><option value="draft" '+(status==='draft'?'selected':'')+'>draft</option><option value="published" '+(status==='published'?'selected':'')+'>published</option></select></div></div><label><input id="allow_checkout" type="checkbox" style="width:auto" '+(checkout?'checked':'')+'> '+copy.checkout+'</label><div class="editor-actions"><button class="btn" id="save">'+copy.save+'</button>'+(p.id?'<button class="btn danger" id="delete">'+copy.delete+'</button>':'')+'<a class="btn secondary" href="/shop" target="_blank">'+copy.openShop+'</a><a class="btn secondary" href="/admin/orders">'+copy.orders+'</a></div><p id="saved" class="status"></p>'}
+      function stats(products){const published=products.filter(p=>String(p.status).toLowerCase()==='published').length;const buy=products.filter(p=>Number(p.allow_checkout||0)===1).length;const low=products.filter(p=>Number(p.inventory||0)>0&&Number(p.inventory||0)<=5).length;return '<div class="mini-dashboard"><div><strong>'+products.length+'</strong><span>Total</span></div><div><strong>'+published+'</strong><span>'+copy.published+'</span></div><div><strong>'+buy+'</strong><span>'+copy.checkoutOn+'</span></div><div><strong>'+low+'</strong><span>Low stock</span></div></div>'}
+      function listItem(p){const imgs=imageList(p);const thumb=imgs[0]?'<img class="admin-thumb" src="'+esc(imgs[0])+'" alt="">':'<div class="admin-thumb"></div>';return '<a class="article-link" data-id="'+esc(p.id)+'" data-status="'+esc(String(p.status||'').toLowerCase())+'" data-search="'+esc([p.name,p.slug,p.sku,p.category,p.material,p.size].filter(Boolean).join(' ').toLowerCase())+'"><div class="admin-thumb-row">'+thumb+'<div><div class="meta"><span class="status-badge '+esc(String(p.status||'draft').toLowerCase())+'">'+esc(p.status||'draft')+'</span> / '+(Number(p.allow_checkout||0)===1?copy.checkoutOn:copy.checkoutOff)+'</div><h3>'+esc(p.name||'Untitled product')+'</h3><p>'+esc(p.sku||p.slug||'No SKU')+' · '+esc(priceFromAmount(p.price_cents,p.currency))+' '+esc(p.currency||'JPY')+' · Stock '+esc(p.inventory||0)+'</p></div></div></a>'}
+      function wireFilter(){const q=document.getElementById('adminSearch');const f=document.getElementById('adminStatus');const empty=document.getElementById('adminEmpty');const items=[...document.querySelectorAll('[data-id]')];function apply(){const text=(q?.value||'').trim().toLowerCase();const status=f?.value||'';let shown=0;items.forEach(item=>{const ok=(!text||(item.dataset.search||'').includes(text))&&(!status||item.dataset.status===status);item.hidden=!ok;if(ok)shown++});if(empty)empty.hidden=shown>0}q&&q.addEventListener('input',apply);f&&f.addEventListener('input',apply);apply()}
+      async function load(){try{const s=await api('/api/admin/session'); if(!s.authenticated)return login(); const products=await api('/api/admin/products'); app.className='editor'; app.innerHTML='<aside><button class="btn" id="new">'+copy.newProduct+'</button>'+stats(products)+'<div class="admin-list-tools"><input id="adminSearch" type="search" placeholder="'+copy.search+'"><select id="adminStatus"><option value="">'+copy.all+'</option><option value="published">'+copy.published+'</option><option value="draft">'+copy.draft+'</option></select></div><div class="articles">'+products.map(listItem).join('')+'<div id="adminEmpty" class="admin-list-empty" hidden>'+copy.empty+'</div></div></aside><section id="edit">'+form()+'</section>'; const edit=document.getElementById('edit'); document.getElementById('new').onclick=()=>{edit.innerHTML=form(); wireSave()}; document.querySelectorAll('[data-id]').forEach(a=>a.onclick=()=>{const p=products.find(x=>x.id===a.dataset.id); edit.innerHTML=form(p); wireSave(p.id)}); wireFilter(); wireSave()}catch(e){app.className='notice';app.textContent=e.message}}
       async function uploadImages(){const input=document.getElementById('image_files'); const status=document.getElementById('upload_status'); if(!input?.files?.length){status.textContent='Choose one or more image files first.';return} const form=new FormData(); [...input.files].forEach(file=>form.append('files',file)); status.textContent='Uploading...'; const r=await fetch('/api/admin/upload',{method:'POST',body:form}); const data=await r.json().catch(()=>({})); if(!r.ok){status.textContent=data.error||'Upload failed';return} const urls=(data.files||[]).map(f=>f.url).filter(Boolean); if(!urls.length){status.textContent='No image URL returned.';return} const main=document.getElementById('image_url'); const gallery=document.getElementById('image_urls'); if(!main.value)main.value=urls[0]; const existing=gallery.value.trim(); gallery.value=[existing,...urls.slice(main.value===urls[0]?1:0)].filter(Boolean).join('\\n'); status.textContent='Uploaded '+urls.length+' image(s). Save product to publish them.'}
       function payload(){const currency=document.getElementById('currency').value; return {name:document.getElementById('name').value,slug:document.getElementById('slug').value,sku:document.getElementById('sku').value,excerpt:document.getElementById('excerpt').value,description:document.getElementById('description').value,category:document.getElementById('category').value,material:document.getElementById('material').value,size:document.getElementById('size').value,specs:document.getElementById('specs').value,moq:Number(document.getElementById('moq').value||1),weight_grams:Number(document.getElementById('weight_grams').value||0),image_url:document.getElementById('image_url').value,image_urls:document.getElementById('image_urls').value,price_cents:amountFromPrice(document.getElementById('price').value,currency),currency,inventory:Number(document.getElementById('inventory').value||0),status:document.getElementById('status').value,allow_checkout:document.getElementById('allow_checkout').checked?1:0}}
-      function wireSave(id){const uploader=document.getElementById('upload_images'); if(uploader)uploader.onclick=uploadImages; document.getElementById('save').onclick=async()=>{const p=payload(); const result=await api(id?'/api/admin/products/'+id:'/api/admin/products',{method:id?'PUT':'POST',body:JSON.stringify(p)}); const slug=result.slug||p.slug; document.getElementById('saved').innerHTML='Saved. <a class="text-link" target="_blank" href="/shop/products/'+encodeURIComponent(slug)+'?fresh='+Date.now()+'">Open product</a> or <a class="text-link" target="_blank" href="/shop?fresh='+Date.now()+'">check shop</a>.'; if(!id)setTimeout(load,700)}; const del=document.getElementById('delete'); if(del)del.onclick=async()=>{if(!confirm('Delete this product?'))return; await api('/api/admin/products/'+id,{method:'DELETE'}); load()}}
+      function wireSave(id){const uploader=document.getElementById('upload_images'); if(uploader)uploader.onclick=uploadImages; document.getElementById('save').onclick=async()=>{const p=payload(); const result=await api(id?'/api/admin/products/'+id:'/api/admin/products',{method:id?'PUT':'POST',body:JSON.stringify(p)}); const slug=result.slug||p.slug; document.getElementById('saved').innerHTML='Saved. <a class="text-link" target="_blank" href="/shop/products/'+encodeURIComponent(slug)+'?fresh='+Date.now()+'">Open product</a> or <a class="text-link" target="_blank" href="/shop?fresh='+Date.now()+'">check shop</a>.'; if(!id)setTimeout(load,700)}; const del=document.getElementById('delete'); if(del)del.onclick=async()=>{if(!confirm(copy.deleteConfirm))return; await api('/api/admin/products/'+id,{method:'DELETE'}); load()}}
       load();
     </script></main>`;
   return html(shell({ title: `${tenant.lang === "zh-CN" ? "产品后台" : "Product Admin"} | ${tenant.name}`, description: `${tenant.name} product admin.`, path: "/admin/products", content, tenant }), { cache: "no-store" });
 }
 
 function adminOrdersPage(tenant = TENANTS.toumyou) {
-  const content = `<main class="admin-wrap"><h1>Orders & quotes</h1><p class="lead">Review Stripe checkout orders, update fulfillment status, and follow up on quote requests.</p>
+  const content = `<main class="admin-wrap">${adminHeader(tenant, "orders")}
     <div id="app" class="notice">Loading...</div>
     <script>
       const app = document.getElementById('app');
@@ -1239,7 +1387,7 @@ function adminOrdersPage(tenant = TENANTS.toumyou) {
 }
 
 function adminSupportPage(tenant = TENANTS.toumyou) {
-  const content = `<main class="admin-wrap"><h1>Support desk</h1><p class="lead">Reply to website live chat conversations here. Discord remains a private notification channel only.</p>
+  const content = `<main class="admin-wrap">${adminHeader(tenant, "support")}
     <div id="app" class="notice">Loading...</div>
     <script>
       const app=document.getElementById('app');
