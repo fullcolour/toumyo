@@ -40,6 +40,7 @@ npx wrangler secret put PAYLOAD_SECRET
 
 ```bash
 npm install
+npx tsc --noEmit
 npm run generate:types
 npm run migrate:create
 npm run migrate
@@ -47,14 +48,26 @@ npm run migrate
 
 ## Deploy flow
 
-This folder contains the Payload config and collections for the CMS service. For production, use Payload's Cloudflare/D1 template or a Next/OpenNext Cloudflare Worker build, then copy this `payload.config.ts` and `src/collections` folder into that app.
+This folder is now structured as a Next + Payload + OpenNext Cloudflare app.
 
 Before deploying:
 
-1. Replace the D1 placeholder in `wrangler.toml`.
+1. Replace the D1 placeholder in `wrangler.jsonc`.
 2. Set `PAYLOAD_SECRET`.
-3. Ensure the Worker build output path in `wrangler.toml` matches the actual Next/OpenNext output.
-4. Deploy the Payload CMS as a separate Cloudflare Worker, for example `cms.toumyou.com`.
+3. Run `npm run generate:types`.
+4. Run `npm run build:cloudflare`.
+5. Deploy with `npm run deploy`.
+
+If local `next build` runs slowly on a desktop workspace, validate with `npx tsc --noEmit` and `npm run generate:types`, then run the production build in Cloudflare/CI. The CMS uses Next/OpenNext and can be heavy locally.
+
+Before production deployment, also replace the D1 placeholder in `wrangler.jsonc`:
+
+```jsonc
+"database_id": "REPLACE_WITH_PAYLOAD_D1_DATABASE_ID"
+```
+
+The old `wrangler.toml` format is intentionally not used; this app follows the current Cloudflare JSONC config structure.
+6. Deploy the Payload CMS as a separate Cloudflare Worker, for example `cms.toumyou.com`.
 
 After the Payload deployment is live:
 
