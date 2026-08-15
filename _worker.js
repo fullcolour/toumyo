@@ -203,6 +203,8 @@ function customerCookie(token) {
 }
 
 async function listPublished(env) {
+  const payloadPosts = await listPayloadArticles(env);
+  if (payloadPosts?.length) return payloadPosts;
   const db = env.DB;
   if (!db) return [];
   await ensureContent(env);
@@ -221,11 +223,88 @@ async function listAll(env) {
 }
 
 async function getPost(env, slug) {
+  const payloadPost = await getPayloadArticle(env, slug);
+  if (payloadPost) return payloadPost;
   await ensureContent(env);
   return await env.DB
     .prepare("SELECT slug,title,excerpt,body,category,status,cover_image,seo_title,seo_description,published_at,updated_at FROM posts WHERE slug=?")
     .bind(slug)
     .first();
+}
+
+async function getPayloadSettings(env, tenant = TENANTS.toumyou) {
+  if (!env.DB) return {};
+  return await getSiteSettings(env, tenant).catch(() => ({}));
+}
+
+function payloadImageUrl(value) {
+  if (!value) return "";
+  if (typeof value === "string") return value;
+  return value.url || value.filename && `/media/${value.filename}` || value.sizes?.card?.url || value.sizes?.thumbnail?.url || "";
+}
+
+function payloadText(value = "") {
+  if (typeof value === "string") return value;
+  if (!value) return "";
+  if (Array.isArray(value)) return value.map(payloadText).filter(Boolean).join("\n\n");
+  if (value.root) return payloadText(value.root.children || []);
+  if (value.children) return payloadText(value.children);
+  return value.text || "";
+}
+
+function payloadTime(value) {
+  if (!value) return null;
+  const stamp = Date.parse(value);
+  return Number.isFinite(stamp) ? Math.floor(stamp / 1000) : null;
+}
+
+async function fetchPayloadCollection(env, collection, { enabledKey, slug = "" } = {}) {
+  const settings = await getPayloadSettings(env);
+  if (settings[enabledKey] !== "true" || !settings.payload_api_base) return null;
+  try {
+    const base = new URL(settings.payload_api_base);
+    const path = base.pathname.replace(/\/$/, "");
+    base.pathname = `${path}/${collection}`;
+    base.searchParams.set("limit", slug ? "1" : "100");
+    base.searchParams.set("depth", "2");
+    if (slug) base.searchParams.set("where[slug][equals]", slug);
+    const res = await fetch(base.toString(), { headers: { accept: "application/json" } });
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data.docs || data.items || [];
+  } catch {
+    return null;
+  }
+}
+
+function normalizePayloadArticle(doc = {}) {
+  const status = doc.status || doc._status || "published";
+  return {
+    id: doc.id || doc.slug,
+    slug: doc.slug || doc.id,
+    title: doc.title || "Untitled",
+    excerpt: doc.excerpt || doc.summary || "",
+    body: payloadText(doc.body || doc.content || ""),
+    category: doc.category || "Insights",
+    status,
+    cover_image: payloadImageUrl(doc.coverImage || doc.cover_image || doc.image),
+    seo_title: doc.seoTitle || doc.seo_title || doc.meta?.title || "",
+    seo_description: doc.seoDescription || doc.seo_description || doc.meta?.description || "",
+    published_at: payloadTime(doc.publishedAt || doc.published_at || doc.createdAt),
+    updated_at: payloadTime(doc.updatedAt),
+  };
+}
+
+async function listPayloadArticles(env) {
+  const docs = await fetchPayloadCollection(env, "articles", { enabledKey: "payload_articles_enabled" });
+  if (!docs) return null;
+  return docs.map(normalizePayloadArticle).filter((post) => post.slug && String(post.status).toLowerCase() === "published");
+}
+
+async function getPayloadArticle(env, slug) {
+  const docs = await fetchPayloadCollection(env, "articles", { enabledKey: "payload_articles_enabled", slug });
+  if (!docs?.length) return null;
+  return normalizePayloadArticle(docs[0]);
 }
 
 async function ensureContent(env) {
@@ -440,7 +519,54 @@ function productImages(product = {}) {
   return [...new Set(urls)].slice(0, 12);
 }
 
+function normalizePayloadProduct(doc = {}) {
+  const images = Array.isArray(doc.images) ? doc.images.map((item) => payloadImageUrl(item?.image || item)).filter(Boolean) : [payloadImageUrl(doc.image || doc.imageUrl || doc.image_url)].filter(Boolean);
+  const priceCents = Number.parseInt(doc.priceCents ?? doc.price_cents ?? 0, 10) || 0;
+  return {
+    id: doc.id || doc.slug,
+    slug: doc.slug || doc.id,
+    name: doc.name || doc.title || "Untitled product",
+    sku: doc.sku || "",
+    excerpt: doc.excerpt || doc.summary || "",
+    description: payloadText(doc.description || doc.body || ""),
+    category: doc.category || "Fasteners",
+    material: doc.material || "",
+    size: doc.size || "",
+    image_url: images[0] || "",
+    image_urls: images.slice(1).join("\n"),
+    specs: payloadText(doc.specs || ""),
+    package_info: doc.packageInfo || doc.package_info || "",
+    lead_time: doc.leadTime || doc.lead_time || "",
+    shipping_note: doc.shippingNote || doc.shipping_note || "",
+    moq: Math.max(1, Number.parseInt(doc.moq || 1, 10) || 1),
+    weight_grams: Math.max(0, Number.parseInt(doc.weightGrams ?? doc.weight_grams ?? 0, 10) || 0),
+    price_cents: Math.max(0, priceCents),
+    currency: String(doc.currency || "JPY").toUpperCase().slice(0, 3),
+    inventory: Math.max(0, Number.parseInt(doc.inventory || 0, 10) || 0),
+    status: doc.status || doc._status || "published",
+    allow_checkout: doc.allowCheckout || doc.allow_checkout ? 1 : 0,
+    updated_at: payloadTime(doc.updatedAt),
+  };
+}
+
+async function listPayloadProducts(env) {
+  const docs = await fetchPayloadCollection(env, "products", { enabledKey: "payload_products_enabled" });
+  if (!docs) return null;
+  return docs.map(normalizePayloadProduct).filter((product) => product.slug && String(product.status).toLowerCase() === "published");
+}
+
+async function getPayloadProduct(env, slugOrId) {
+  const docs = await fetchPayloadCollection(env, "products", { enabledKey: "payload_products_enabled", slug: slugOrId });
+  if (docs?.length) return normalizePayloadProduct(docs[0]);
+  const all = await listPayloadProducts(env);
+  return all?.find((product) => product.id === slugOrId || product.slug === slugOrId) || null;
+}
+
 async function listProducts(env, { admin = false } = {}) {
+  if (!admin) {
+    const payloadProducts = await listPayloadProducts(env);
+    if (payloadProducts?.length) return payloadProducts;
+  }
   await ensureCommerce(env);
   if (!env.DB) return [];
   const sql = admin
@@ -451,9 +577,20 @@ async function listProducts(env, { admin = false } = {}) {
 }
 
 async function getProduct(env, slugOrId) {
+  const payloadProduct = await getPayloadProduct(env, slugOrId);
+  if (payloadProduct) return payloadProduct;
   await ensureCommerce(env);
   if (!env.DB) return null;
   return await env.DB.prepare("SELECT * FROM products WHERE slug=? OR id=?").bind(slugOrId, slugOrId).first();
+}
+
+async function upsertProductSnapshot(env, product = {}) {
+  if (!env.DB || !product?.id) return;
+  await ensureCommerce(env);
+  const p = normalizeProduct(product, product.id);
+  const now = Math.floor(Date.now() / 1000);
+  await env.DB.prepare("INSERT INTO products (id,slug,name,sku,excerpt,description,category,material,size,image_url,image_urls,specs,package_info,lead_time,shipping_note,moq,weight_grams,price_cents,currency,inventory,status,allow_checkout,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET slug=excluded.slug,name=excluded.name,sku=excluded.sku,excerpt=excluded.excerpt,description=excluded.description,category=excluded.category,material=excluded.material,size=excluded.size,image_url=excluded.image_url,image_urls=excluded.image_urls,specs=excluded.specs,package_info=excluded.package_info,lead_time=excluded.lead_time,shipping_note=excluded.shipping_note,moq=excluded.moq,weight_grams=excluded.weight_grams,price_cents=excluded.price_cents,currency=excluded.currency,inventory=excluded.inventory,status=excluded.status,allow_checkout=excluded.allow_checkout,updated_at=excluded.updated_at")
+    .bind(p.id, p.slug, p.name, p.sku, p.excerpt, p.description, p.category, p.material, p.size, p.image_url, p.image_urls, p.specs, p.package_info, p.lead_time, p.shipping_note, p.moq, p.weight_grams, p.price_cents, p.currency, p.inventory, p.status, p.allow_checkout, now, now).run();
 }
 
 async function listOrders(env) {
@@ -1668,6 +1805,7 @@ async function stripeCheckout(request, env) {
   if (requestedQuantity < minQty) return json({ error: `Minimum order quantity is ${minQty}` }, { status: 400 });
   if (inventory > 0 && requestedQuantity > inventory) return json({ error: `Only ${inventory} units are available for immediate checkout` }, { status: 400 });
   const quantity = requestedQuantity;
+  await upsertProductSnapshot(env, product);
   await ensureCommerce(env);
   const orderId = crypto.randomUUID();
   const now = Math.floor(Date.now() / 1000);
@@ -2130,6 +2268,7 @@ async function handleApi(request, env, pathname) {
     const body = await readBody(request);
     const product = await getProduct(env, body.product_id || body.productId);
     if (!product || product.status !== "published" || !product.allow_checkout || product.price_cents <= 0) return json({ error: "Product is not available for cart checkout" }, { status: 400 });
+    await upsertProductSnapshot(env, product);
     const qty = Math.max(Math.max(1, Number(product.moq || 1)), Math.min(999, Number.parseInt(body.quantity || "1", 10) || 1));
     const now = Math.floor(Date.now() / 1000);
     await ensureCommerce(env);

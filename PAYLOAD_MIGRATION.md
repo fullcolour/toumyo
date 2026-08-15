@@ -16,8 +16,16 @@ Goal: use Payload CMS for `articles`, `products`, and media management while kee
 - Payload collection: `products`
 - Payload upload collection: `media`, backed by R2
 - Frontend read mode:
-  - Phase 1: D1 remains primary, Payload sync/export writes into D1
-  - Phase 2: frontend can read Payload API directly when `payload_articles_enabled` and `payload_products_enabled` are enabled in `/admin/settings`
+  - Phase 1: D1 remains primary, Payload API support is available but disabled by default
+  - Phase 2: frontend reads Payload API directly when `payload_articles_enabled` and `payload_products_enabled` are enabled in `/admin/settings`
+  - If Payload is unavailable or returns no documents, the storefront falls back to D1
+
+## Implemented in this repository
+
+- Storefront Payload API reader for articles and products
+- `/admin/settings` switches for Payload article/product reads
+- Product snapshot sync into D1 before cart/Stripe Checkout, so existing cart/order tables keep working
+- `payload-cms/` config package with `articles`, `products`, `media`, and `users` collections
 
 ## Collections
 
@@ -66,4 +74,3 @@ Goal: use Payload CMS for `articles`, `products`, and media management while kee
 - Fulfillment status and payment record history
 
 This keeps commercial reliability separate from content editing.
-
