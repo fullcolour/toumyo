@@ -1,6 +1,7 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "toumyou-payload-cms",
+  "account_id": "1c9ff8f2024e236353e989faba3a9a24",
   "main": ".open-next/worker.js",
   "compatibility_date": "2026-08-16",
   "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],

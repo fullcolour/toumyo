@@ -73,6 +73,13 @@ The guided deploy command checks Cloudflare login, D1 configuration, and `PAYLOA
 npm run deploy:guide
 ```
 
+The guide pins the Cloudflare account to `toumyou` and writes Wrangler logs to `/tmp/toumyou-payload-wrangler.log` by default:
+
+```bash
+CLOUDFLARE_ACCOUNT_ID=1c9ff8f2024e236353e989faba3a9a24
+WRANGLER_LOG_PATH=/tmp/toumyou-payload-wrangler.log
+```
+
 If `wrangler deploy --dry-run` reports a conflict with an outer `.wrangler/deploy/config.json`, run Wrangler from a clean checkout of this repository or remove the stale outer deploy config. The CMS project itself uses `payload-cms/wrangler.jsonc`.
 
 Before production deployment, also replace the D1 placeholder in `wrangler.jsonc`:
