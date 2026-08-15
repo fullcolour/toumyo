@@ -265,6 +265,9 @@ async function ensureCommerce(env) {
     image_url TEXT,
     image_urls TEXT,
     specs TEXT,
+    package_info TEXT,
+    lead_time TEXT,
+    shipping_note TEXT,
     moq INTEGER DEFAULT 1,
     weight_grams INTEGER DEFAULT 0,
     price_cents INTEGER DEFAULT 0,
@@ -277,6 +280,9 @@ async function ensureCommerce(env) {
   )`).run();
   await env.DB.prepare("ALTER TABLE products ADD COLUMN image_urls TEXT").run().catch(() => {});
   await env.DB.prepare("ALTER TABLE products ADD COLUMN specs TEXT").run().catch(() => {});
+  await env.DB.prepare("ALTER TABLE products ADD COLUMN package_info TEXT").run().catch(() => {});
+  await env.DB.prepare("ALTER TABLE products ADD COLUMN lead_time TEXT").run().catch(() => {});
+  await env.DB.prepare("ALTER TABLE products ADD COLUMN shipping_note TEXT").run().catch(() => {});
   await env.DB.prepare("ALTER TABLE products ADD COLUMN moq INTEGER DEFAULT 1").run().catch(() => {});
   await env.DB.prepare("ALTER TABLE products ADD COLUMN weight_grams INTEGER DEFAULT 0").run().catch(() => {});
   await env.DB.prepare(`CREATE TABLE IF NOT EXISTS orders (
@@ -356,6 +362,11 @@ async function ensureCommerce(env) {
     updated_at INTEGER,
     UNIQUE(customer_id, product_id)
   )`).run();
+  await env.DB.prepare(`CREATE TABLE IF NOT EXISTS site_settings (
+    key TEXT PRIMARY KEY,
+    value TEXT,
+    updated_at INTEGER
+  )`).run();
 }
 
 function normalizeProduct(p = {}, id = crypto.randomUUID()) {
@@ -378,6 +389,9 @@ function normalizeProduct(p = {}, id = crypto.randomUUID()) {
     image_url: String(p.image_url || p.imageUrl || "").trim(),
     image_urls: String(p.image_urls || p.imageUrls || "").trim(),
     specs: String(p.specs || "").trim(),
+    package_info: String(p.package_info || p.packageInfo || "").trim(),
+    lead_time: String(p.lead_time || p.leadTime || "").trim(),
+    shipping_note: String(p.shipping_note || p.shippingNote || "").trim(),
     moq,
     weight_grams: weightGrams,
     price_cents: priceCents,
@@ -398,6 +412,13 @@ function currencyScale(currency = "USD") {
 
 function minorToDisplay(amount = 0, currency = "USD") {
   return (Number(amount) || 0) / currencyScale(currency);
+}
+
+function parsePublishDate(value, fallback = null) {
+  const text = String(value || "").trim();
+  if (!text) return fallback;
+  const stamp = Date.parse(`${text}T00:00:00Z`);
+  return Number.isFinite(stamp) ? Math.floor(stamp / 1000) : fallback;
 }
 
 function money(amount = 0, currency = "USD") {
@@ -440,6 +461,41 @@ async function listOrders(env) {
   if (!env.DB) return [];
   const result = await env.DB.prepare("SELECT * FROM orders ORDER BY created_at DESC, updated_at DESC").all();
   return result.results || [];
+}
+
+async function listCustomers(env) {
+  await ensureCommerce(env);
+  if (!env.DB) return [];
+  const result = await env.DB.prepare(`SELECT customers.*, COUNT(orders.id) AS order_count, COALESCE(SUM(CASE WHEN lower(orders.payment_status)='paid' THEN orders.amount_total ELSE 0 END),0) AS paid_total
+    FROM customers LEFT JOIN orders ON orders.customer_id=customers.id OR lower(orders.customer_email)=lower(customers.email)
+    GROUP BY customers.id ORDER BY customers.updated_at DESC`).all();
+  return result.results || [];
+}
+
+async function getSiteSettings(env, tenant = TENANTS.toumyou) {
+  await ensureCommerce(env);
+  const defaults = {
+    payload_articles_enabled: "false",
+    payload_products_enabled: "false",
+    payload_api_base: "",
+    payload_notes: "Payload CMS is planned as the next backend layer. Current production reads D1 and R2.",
+    b2b_shipping_default: tenant.lang === "zh-CN" ? "运费、交期、关税根据数量和目的地确认。" : "Freight, lead time, duties, and import taxes are confirmed by quantity and destination.",
+  };
+  const result = await env.DB.prepare("SELECT key,value FROM site_settings").all().catch(() => ({ results: [] }));
+  for (const row of result.results || []) defaults[row.key] = row.value || "";
+  return defaults;
+}
+
+async function saveSiteSettings(env, values = {}) {
+  await ensureCommerce(env);
+  const allowed = ["payload_articles_enabled", "payload_products_enabled", "payload_api_base", "payload_notes", "b2b_shipping_default"];
+  const now = Math.floor(Date.now() / 1000);
+  for (const key of allowed) {
+    if (!(key in values)) continue;
+    await env.DB.prepare("INSERT INTO site_settings (key,value,updated_at) VALUES (?,?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value,updated_at=excluded.updated_at")
+      .bind(key, String(values[key] ?? "").slice(0, 2000), now).run();
+  }
+  return getSiteSettings(env);
 }
 
 async function listInquiries(env) {
@@ -661,6 +717,30 @@ async function uploadMedia(request, env) {
   return json({ ok: true, files: uploaded });
 }
 
+async function listMedia(env, cursor = "") {
+  const bucket = env.PRODUCT_MEDIA;
+  if (!bucket) return json({ error: "R2 bucket binding PRODUCT_MEDIA is not configured yet" }, { status: 503 });
+  const options = { limit: 60 };
+  if (cursor) options.cursor = cursor;
+  const result = await bucket.list(options);
+  const files = (result.objects || []).map((object) => ({
+    key: object.key,
+    url: `/media/${object.key}`,
+    size: object.size || 0,
+    uploaded: object.uploaded ? new Date(object.uploaded).toISOString() : "",
+    type: mediaContentType(object.key),
+  }));
+  return json({ ok: true, files, cursor: result.truncated ? result.cursor : "", truncated: Boolean(result.truncated) });
+}
+
+async function deleteMedia(env, key) {
+  const bucket = env.PRODUCT_MEDIA;
+  if (!bucket) return json({ error: "R2 bucket binding PRODUCT_MEDIA is not configured yet" }, { status: 503 });
+  if (!key || key.includes("..") || key.startsWith("/") || !key.includes("/")) return json({ error: "Invalid media key" }, { status: 400 });
+  await bucket.delete(key);
+  return json({ ok: true, key });
+}
+
 function shell({ title, description, path = "/", content, schema, image, tenant = TENANTS.toumyou }) {
   const canonical = `${tenant.url}${path}`;
   const absoluteImage = image ? new URL(image, tenant.url).toString() : "";
@@ -706,7 +786,7 @@ function shell({ title, description, path = "/", content, schema, image, tenant 
     footer{padding:24px 4vw;background:var(--ink);color:#c5c7be;display:flex;justify-content:space-between;gap:20px;border-top:1px solid #494b44;font-size:11px}.listing{padding:88px 8vw}.listing h1{font-size:clamp(56px,7vw,108px)}.articles{display:grid;gap:14px}.article-link{display:block;border-top:1px solid var(--line);padding:24px 0}.article-link:hover h3{color:#2b3310}
     .article-page{padding:88px 8vw}.article-page article{max-width:860px}.article h1{font-size:clamp(52px,7.4vw,110px)}.article-dek{font-size:23px;line-height:1.42;max-width:700px;margin:36px 0}.post-body{font-family:Georgia,"Times New Roman",serif;font-size:21px;line-height:1.65;white-space:pre-wrap;max-width:680px}
     input,textarea,select{width:100%;border:1px solid #aaa69c;border-radius:6px;padding:11px 12px;background:var(--soft);color:var(--ink);font:15px Arial,Helvetica,sans-serif}textarea{min-height:150px;line-height:1.45;resize:vertical}label{display:block;margin:14px 0 7px;font-size:12px;font-weight:800;letter-spacing:.3px}.notice{border:1px solid var(--line);padding:18px;border-radius:6px;background:var(--soft)}.support-widget{position:fixed;right:22px;bottom:22px;z-index:20;width:min(390px,calc(100vw - 32px));font-family:Arial,Helvetica,sans-serif}.support-toggle{width:100%;justify-content:space-between;border-radius:999px;padding:14px 18px}.support-panel{display:none;margin-top:10px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.97);box-shadow:0 20px 60px rgba(18,20,23,.18);padding:16px;backdrop-filter:blur(18px)}.support-widget.open .support-panel{display:block}.support-panel h3{margin:0 0 8px;font-size:24px}.support-panel p{margin:0;color:var(--muted);font-size:13px}.support-panel textarea{min-height:70px}.support-status{font-size:13px;color:#36510d;margin:10px 0 0;font-weight:700}.support-close{background:transparent;border:0;color:var(--muted);font-weight:800;cursor:pointer;padding:0}.support-head{display:flex;align-items:flex-start;justify-content:space-between;gap:18px}.support-feed{height:230px;overflow:auto;margin:14px 0;padding:12px;background:var(--paper);border:1px solid var(--line);border-radius:10px;display:flex;flex-direction:column;gap:10px}.support-bubble{max-width:86%;padding:10px 12px;border-radius:12px;background:#fff;border:1px solid var(--line);font-size:14px;line-height:1.42;white-space:pre-wrap}.support-bubble.customer{align-self:flex-end;background:var(--accent);border-color:var(--accent);color:#fff}.support-bubble.agent{align-self:flex-start}.support-bubble.system{align-self:center;background:transparent;border:0;color:var(--muted);font-size:12px;text-align:center}.support-fields{display:grid;grid-template-columns:1fr 1fr;gap:8px}.support-fields input{padding:9px 10px}.support-fields.hidden{display:none}.support-chat-row{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:end}.support-chat-row textarea{min-height:58px}.support-meta-line{font-size:12px;color:var(--muted);margin-top:8px}.support-desk{display:grid;grid-template-columns:minmax(260px,360px) minmax(0,1fr);gap:24px;background:transparent;border:0;padding:0}.support-desk aside,.support-desk section{min-height:680px}.support-thread-list{display:grid;gap:10px;margin-top:14px;max-height:680px;overflow:auto}.support-thread{width:100%;text-align:left;border:1px solid var(--line);background:var(--soft);border-radius:10px;padding:14px;cursor:pointer;color:var(--ink)}.support-thread.active,.support-thread:hover{border-color:var(--accent);box-shadow:0 12px 28px rgba(36,87,255,.1)}.support-thread span{display:flex;justify-content:space-between;gap:10px}.support-thread b{display:block;font-size:15px}.support-thread small,.support-thread em{display:block;color:var(--muted);font-size:11px;font-style:normal}.support-thread p{margin:10px 0 0;color:var(--muted);font-size:13px}.support-conversation-head{display:flex;justify-content:space-between;gap:20px;align-items:flex-start;border-bottom:1px solid var(--line);padding-bottom:18px}.support-conversation-head h2{font-family:Arial,Helvetica,sans-serif;font-size:clamp(34px,4vw,56px);font-weight:850;letter-spacing:-.055em;line-height:.95;margin:0}.desk-feed{height:430px;overflow:auto;border:1px solid var(--line);border-radius:12px;background:var(--paper);padding:18px;margin:18px 0;display:flex;flex-direction:column;gap:12px}.desk-bubble{max-width:76%;border:1px solid var(--line);border-radius:12px;background:#fff;padding:13px 15px}.desk-bubble.agent{align-self:flex-end;background:var(--accent);color:#fff;border-color:var(--accent)}.desk-bubble.customer{align-self:flex-start}.desk-bubble strong{display:block;font-size:12px;margin-bottom:6px}.desk-bubble p{margin:0;white-space:pre-wrap}.desk-bubble small{display:block;margin-top:8px;font-size:11px;opacity:.72}
-    .admin-wrap{padding:58px 5vw 90px}.admin-hero{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:24px;align-items:end;margin-bottom:28px;border-bottom:1px solid var(--ink);padding-bottom:28px}.admin-hero h1{font-size:clamp(48px,6vw,88px);letter-spacing:-.06em;margin:0}.admin-tabs{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 32px}.admin-tab{border:1px solid var(--line);background:var(--soft);border-radius:999px;padding:10px 14px;font-size:12px;font-weight:850;letter-spacing:.5px;text-transform:uppercase}.admin-tab.active,.admin-tab:hover{border-color:var(--ink);background:var(--ink);color:var(--paper)}.editor{display:grid;grid-template-columns:minmax(260px,390px) minmax(0,820px);gap:5vw}.editor aside{border-right:1px solid var(--line);padding-right:28px}.admin-list-tools{display:grid;grid-template-columns:1fr 130px;gap:10px;margin:18px 0}.mini-dashboard{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:18px 0}.mini-dashboard div{border:1px solid var(--line);background:var(--soft);border-radius:8px;padding:14px}.mini-dashboard strong{display:block;font-size:26px;letter-spacing:-.04em}.mini-dashboard span{display:block;margin-top:4px;font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:var(--muted)}.admin-list-empty{border-top:1px solid var(--line);padding:20px 0;color:var(--muted)}.admin-thumb-row{display:grid;grid-template-columns:62px 1fr;gap:12px;align-items:center}.admin-thumb{width:62px;height:52px;border-radius:8px;object-fit:cover;background:var(--panel);border:1px solid var(--line)}.admin-preview-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(72px,1fr));gap:10px;margin:12px 0}.image-chip{position:relative;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--soft);min-height:68px}.image-chip img{width:100%;height:74px;object-fit:cover;display:block}.image-chip span{display:block;padding:6px 8px;font-size:10px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.field-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.editor-actions{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:20px}.status{margin:12px 0 0;color:#36510d;font-weight:700}.danger{background:transparent;color:var(--ink);border:1px solid var(--line)}
+    .admin-wrap{padding:58px 5vw 90px}.admin-hero{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:24px;align-items:end;margin-bottom:28px;border-bottom:1px solid var(--ink);padding-bottom:28px}.admin-hero h1{font-size:clamp(48px,6vw,88px);letter-spacing:-.06em;margin:0}.admin-tabs{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 32px}.admin-tab{border:1px solid var(--line);background:var(--soft);border-radius:999px;padding:10px 14px;font-size:12px;font-weight:850;letter-spacing:.5px;text-transform:uppercase}.admin-tab.active,.admin-tab:hover{border-color:var(--ink);background:var(--ink);color:var(--paper)}.editor{display:grid;grid-template-columns:minmax(260px,390px) minmax(0,820px);gap:5vw}.editor aside{border-right:1px solid var(--line);padding-right:28px}.admin-list-tools{display:grid;grid-template-columns:1fr 130px;gap:10px;margin:18px 0}.mini-dashboard{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:18px 0}.mini-dashboard div{border:1px solid var(--line);background:var(--soft);border-radius:8px;padding:14px}.mini-dashboard strong{display:block;font-size:26px;letter-spacing:-.04em}.mini-dashboard span{display:block;margin-top:4px;font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:var(--muted)}.admin-list-empty{border-top:1px solid var(--line);padding:20px 0;color:var(--muted)}.admin-thumb-row{display:grid;grid-template-columns:62px 1fr;gap:12px;align-items:center}.admin-thumb{width:62px;height:52px;border-radius:8px;object-fit:cover;background:var(--panel);border:1px solid var(--line)}.admin-preview-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(72px,1fr));gap:10px;margin:12px 0}.image-chip{position:relative;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--soft);min-height:68px}.image-chip img{width:100%;height:74px;object-fit:cover;display:block}.image-chip span{display:block;padding:6px 8px;font-size:10px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.media-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:14px;margin-top:24px}.media-card{border:1px solid var(--line);border-radius:10px;background:var(--soft);overflow:hidden}.media-card img{width:100%;height:154px;object-fit:cover;background:var(--panel);display:block}.media-card div{padding:12px}.media-card code{display:block;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--muted);background:transparent}.media-card .toolbar{margin:12px 0 0}.field-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.editor-actions{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:20px}.status{margin:12px 0 0;color:#36510d;font-weight:700}.danger{background:transparent;color:var(--ink);border:1px solid var(--line)}
     :focus-visible{outline:3px solid var(--focus);outline-offset:3px}@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.btn,.btn:before,.article-card,.gallery-main,.gallery-thumb{transition:none}.btn:hover,.btn:active,.article-card:hover,.gallery-thumb:hover,.gallery-thumb.active{transform:none}}@media(max-width:980px){.portfolio-grid,.timeline,.team-panel,.contact-grid,.intro-strip,.commerce-panel,.metric-strip,.order-dashboard,.mini-dashboard{grid-template-columns:1fr 1fr}.portfolio-grid{grid-auto-rows:minmax(310px,auto)}.work-card.large{grid-row:auto}.timeline article,.timeline article+article{border-right:0;border-bottom:1px solid var(--line);padding:26px 0}.team-grid{grid-template-columns:1fr 1fr}.contact-list{margin-top:34px}.support-desk{grid-template-columns:1fr}.support-desk aside,.support-desk section{min-height:auto}}@media(max-width:760px){header{height:auto;min-height:68px;align-items:flex-start;gap:14px;flex-direction:column;padding:18px 6vw}nav{gap:16px;flex-wrap:wrap}.hero{min-height:620px;padding:82px 7vw 46px}.hero:after{width:88vw;height:88vw;right:-36vw;top:126px}.hero-note{position:static;margin-top:42px}.section,.contact,.listing,.article-page{padding:72px 7vw}.service-grid,.article-grid,.editor,.team-grid,.shop-filter,.order-filter,.commerce-panel,.metric-strip,.order-dashboard,.mini-dashboard,.field-grid,.admin-hero,.admin-list-tools{grid-template-columns:1fr}.service-grid article,.service-grid article+article{border-right:0;border-bottom:1px solid var(--line);min-height:auto;padding:24px 0}.person img{height:310px}.insights-head{display:block}.article-grid{margin-top:40px}.editor aside{border-right:0;border-bottom:1px solid var(--line);padding:0 0 26px}footer{display:block}.contact-mail{word-break:break-word}.contact-list li{grid-template-columns:1fr;gap:6px}.support-widget{right:16px;bottom:16px}.desk-feed{height:360px}.desk-bubble{max-width:92%}}
   </style>
   ${schema ? `<script type="application/ld+json">${JSON.stringify(schema)}</script>` : ""}
@@ -1118,7 +1198,9 @@ async function productPage(env, slug, tenant = TENANTS.toumyou) {
     [zh ? "分类" : "Category", product.category || (zh ? "紧固件" : "Fasteners")],
     [zh ? "材质" : "Material", product.material || (zh ? "按订单确认" : "Confirm by order")],
     [zh ? "规格" : "Size", product.size || (zh ? "按订单确认" : "Confirm by order")],
+    [zh ? "包装" : "Packaging", product.package_info || (zh ? "标准出口包装，可按订单确认" : "Standard export packaging, confirmed by order")],
     [zh ? "起订量" : "MOQ", product.moq || 1],
+    [zh ? "交期" : "Lead time", product.lead_time || (zh ? "常规 7-14 个工作日，急单另行确认" : "Usually 7-14 business days; urgent orders confirmed case by case")],
     [zh ? "重量" : "Weight", product.weight_grams ? `${product.weight_grams} g / ${zh ? "件" : "unit"}` : (zh ? "按订单确认" : "Confirm by order")],
   ];
   const gallery = images.length
@@ -1143,7 +1225,7 @@ async function productPage(env, slug, tenant = TENANTS.toumyou) {
     <div class="notice" style="margin-top:34px">
       <p><strong>${zh ? "价格" : "Price"}:</strong> ${escapeHtml(product.price_cents > 0 ? money(product.price_cents, product.currency) : (zh ? "需要询价" : "Quote required"))}</p>
       <p><strong>${zh ? "库存" : "Inventory"}:</strong> ${escapeHtml(product.inventory || (zh ? "请确认库存" : "Confirm availability"))}</p>
-      <p><strong>${zh ? "交付" : "Delivery"}:</strong> ${zh ? "交付方式、周期和运费会根据产品、数量和地址确认；批量采购建议先提交询价。" : "Standard 7 to 14 business days or Express 3 to 7 business days. Freight is calculated in Stripe Checkout; duties and import taxes are normally payable by the recipient."}</p>
+      <p><strong>${zh ? "交付" : "Delivery"}:</strong> ${escapeHtml(product.shipping_note || (zh ? "交付方式、周期和运费会根据产品、数量和地址确认；批量采购建议先提交询价。" : "Standard 7 to 14 business days or Express 3 to 7 business days. Freight is calculated in Stripe Checkout; duties and import taxes are normally payable by the recipient."))}</p>
     </div>
     <div class="notice" style="margin-top:18px">
       <h3>${zh ? "规格参数" : "Specifications"}</h3>
@@ -1215,11 +1297,11 @@ async function productPage(env, slug, tenant = TENANTS.toumyou) {
 function adminHeader(tenant = TENANTS.toumyou, active = "articles") {
   const zh = tenant.lang === "zh-CN";
   const labels = zh
-    ? { articles: "文章", products: "商品", orders: "订单", support: "客服", shop: "查看商城" }
-    : { articles: "Articles", products: "Products", orders: "Orders", support: "Support", shop: "Open shop" };
+    ? { articles: "文章", products: "商品", orders: "订单", customers: "客户", media: "媒体库", settings: "设置", support: "客服", shop: "查看商城" }
+    : { articles: "Articles", products: "Products", orders: "Orders", customers: "Customers", media: "Media", settings: "Settings", support: "Support", shop: "Open shop" };
   const tab = (key, href) => `<a class="admin-tab ${active === key ? "active" : ""}" href="${href}">${labels[key]}</a>`;
   return `<div class="admin-hero"><div><p class="eyebrow">${zh ? "运营后台" : "Operations console"}</p><h1>${zh ? "内容与商品管理。" : "Content and commerce."}</h1><p class="lead">${zh ? "统一管理文章、商品、订单与客户咨询，让前台内容保持实时、清楚、可信。" : "Manage articles, products, orders, and customer conversations from one cleaner workspace."}</p></div><a class="btn secondary" href="/shop" target="_blank">${labels.shop}</a></div>
-    <nav class="admin-tabs" aria-label="Admin sections">${tab("articles", "/admin")}${tab("products", "/admin/products")}${tab("orders", "/admin/orders")}${tab("support", "/admin/support")}</nav>`;
+    <nav class="admin-tabs" aria-label="Admin sections">${tab("products", "/admin/products")}${tab("articles", "/admin")}${tab("orders", "/admin/orders")}${tab("customers", "/admin/customers")}${tab("media", "/admin/media")}${tab("settings", "/admin/settings")}${tab("support", "/admin/support")}</nav>`;
 }
 
 function adminPage(tenant = TENANTS.toumyou) {
@@ -1242,6 +1324,7 @@ function adminPage(tenant = TENANTS.toumyou) {
         excerpt: "摘要",
         body: "正文",
         category: "分类",
+        publishDate: "发布时间",
         coverImage: "封面图 URL",
         uploadCover: "上传文章封面",
         uploadButton: "上传封面",
@@ -1271,6 +1354,7 @@ function adminPage(tenant = TENANTS.toumyou) {
         excerpt: "Excerpt",
         body: "Body",
         category: "Category",
+        publishDate: "Publish date",
         coverImage: "Cover image URL",
         uploadCover: "Upload article cover",
         uploadButton: "Upload cover",
@@ -1291,13 +1375,14 @@ function adminPage(tenant = TENANTS.toumyou) {
       async function api(url, options={}){const r=await fetch(url,{cache:'no-store',headers:{'content-type':'application/json'},...options}); if(!r.ok) throw new Error(await r.text()); return r.json();}
       function login(){app.className='notice';app.innerHTML='<label>'+copy.password+'</label><input id="pw" type="password" autocomplete="current-password"><div class="toolbar"><button class="btn" id="go">'+copy.login+'</button></div>';document.getElementById('go').onclick=async()=>{try{await api('/api/admin/login',{method:'POST',body:JSON.stringify({password:document.getElementById('pw').value})});load()}catch(e){alert('Login failed')}}}
       function coverPreview(p={}){return p.cover_image?'<div class="admin-preview-grid"><div class="image-chip"><img src="'+esc(p.cover_image)+'" alt=""><span>Cover</span></div></div>':''}
-      function form(p={}){const currentStatus=p.status||'published';return coverPreview(p)+'<div class="field-grid"><div><label>'+copy.title+'</label><input id="title" value="'+esc(p.title||'')+'"></div><div><label>'+copy.slug+'</label><input id="slug" value="'+esc(p.slug||'')+'"></div></div><label>'+copy.excerpt+'</label><textarea id="excerpt">'+esc(p.excerpt||'')+'</textarea><label>'+copy.body+'</label><textarea id="body" style="min-height:320px">'+esc(p.body||'')+'</textarea><div class="field-grid"><div><label>'+copy.category+'</label><input id="category" value="'+esc(p.category||'Insights')+'"></div><div><label>'+copy.status+'</label><select id="status"><option value="published" '+(currentStatus==='published'?'selected':'')+'>published</option><option value="draft" '+(currentStatus==='draft'?'selected':'')+'>draft</option></select></div></div><label>'+copy.coverImage+'</label><input id="cover_image" value="'+esc(p.cover_image||'')+'"><label>'+copy.uploadCover+'</label><input id="cover_file" type="file" accept="image/*"><div class="toolbar"><button class="btn secondary" id="upload_cover" type="button">'+copy.uploadButton+'</button><span id="upload_status" class="muted">'+copy.uploadHint+'</span></div><div class="field-grid"><div><label>'+copy.seoTitle+'</label><input id="seo_title" value="'+esc(p.seo_title||'')+'" placeholder="'+esc(p.title||'')+'"></div><div><label>'+copy.seoDescription+'</label><textarea id="seo_description" style="min-height:92px">'+esc(p.seo_description||'')+'</textarea></div></div><div class="editor-actions"><button class="btn" id="save">'+copy.save+'</button>'+(p.id?'<button class="btn danger" id="delete">'+copy.delete+'</button>':'')+'<a class="btn secondary" href="/" target="_blank">'+copy.openHome+'</a><a class="btn secondary" href="/articles" target="_blank">'+copy.openArticles+'</a></div><p id="saved" class="status"></p>'}
+      function postDate(p={}){return p.published_at?new Date(Number(p.published_at)*1000).toISOString().slice(0,10):''}
+      function form(p={}){const currentStatus=p.status||'published';return coverPreview(p)+'<div class="field-grid"><div><label>'+copy.title+'</label><input id="title" value="'+esc(p.title||'')+'"></div><div><label>'+copy.slug+'</label><input id="slug" value="'+esc(p.slug||'')+'"></div></div><label>'+copy.excerpt+'</label><textarea id="excerpt">'+esc(p.excerpt||'')+'</textarea><label>'+copy.body+'</label><textarea id="body" style="min-height:320px">'+esc(p.body||'')+'</textarea><div class="field-grid"><div><label>'+copy.category+'</label><input id="category" value="'+esc(p.category||'Insights')+'"></div><div><label>'+copy.status+'</label><select id="status"><option value="published" '+(currentStatus==='published'?'selected':'')+'>published</option><option value="draft" '+(currentStatus==='draft'?'selected':'')+'>draft</option></select></div></div><label>'+copy.publishDate+'</label><input id="published_at" type="date" value="'+esc(postDate(p))+'"><label>'+copy.coverImage+'</label><input id="cover_image" value="'+esc(p.cover_image||'')+'"><label>'+copy.uploadCover+'</label><input id="cover_file" type="file" accept="image/*"><div class="toolbar"><button class="btn secondary" id="upload_cover" type="button">'+copy.uploadButton+'</button><span id="upload_status" class="muted">'+copy.uploadHint+'</span></div><div class="field-grid"><div><label>'+copy.seoTitle+'</label><input id="seo_title" value="'+esc(p.seo_title||'')+'" placeholder="'+esc(p.title||'')+'"></div><div><label>'+copy.seoDescription+'</label><textarea id="seo_description" style="min-height:92px">'+esc(p.seo_description||'')+'</textarea></div></div><div class="editor-actions"><button class="btn" id="save">'+copy.save+'</button>'+(p.id?'<button class="btn danger" id="delete">'+copy.delete+'</button>':'')+'<a class="btn secondary" href="/" target="_blank">'+copy.openHome+'</a><a class="btn secondary" href="/articles" target="_blank">'+copy.openArticles+'</a></div><p id="saved" class="status"></p>'}
       function stats(posts){const published=posts.filter(p=>String(p.status).toLowerCase()==='published').length;const draft=posts.filter(p=>String(p.status).toLowerCase()==='draft').length;return '<div class="mini-dashboard"><div><strong>'+posts.length+'</strong><span>Total</span></div><div><strong>'+published+'</strong><span>'+copy.published+'</span></div><div><strong>'+draft+'</strong><span>'+copy.draft+'</span></div></div>'}
       function listItem(p){const thumb=p.cover_image?'<img class="admin-thumb" src="'+esc(p.cover_image)+'" alt="">':'<div class="admin-thumb"></div>';return '<a class="article-link" data-id="'+esc(p.id)+'" data-status="'+esc(String(p.status||'').toLowerCase())+'" data-search="'+esc([p.title,p.slug,p.category,p.excerpt,p.seo_title,p.seo_description].filter(Boolean).join(' ').toLowerCase())+'"><div class="admin-thumb-row">'+thumb+'<div><div class="meta"><span class="status-badge '+esc(String(p.status||'draft').toLowerCase())+'">'+esc(p.status||'draft')+'</span> / '+esc(p.category||'Insights')+'</div><h3>'+esc(p.title||'Untitled article')+'</h3><p>'+esc(p.slug||'no-slug')+'</p></div></div></a>'}
       function wireFilter(){const q=document.getElementById('adminSearch');const f=document.getElementById('adminStatus');const empty=document.getElementById('adminEmpty');const items=[...document.querySelectorAll('[data-id]')];function apply(){const text=(q?.value||'').trim().toLowerCase();const status=f?.value||'';let shown=0;items.forEach(item=>{const ok=(!text||(item.dataset.search||'').includes(text))&&(!status||item.dataset.status===status);item.hidden=!ok;if(ok)shown++});if(empty)empty.hidden=shown>0}q&&q.addEventListener('input',apply);f&&f.addEventListener('input',apply);apply()}
       async function load(){try{const s=await api('/api/admin/session'); if(!s.authenticated)return login(); const posts=await api('/api/admin/posts'); app.className='editor'; app.innerHTML='<aside><button class="btn" id="new">'+copy.newArticle+'</button>'+stats(posts)+'<div class="admin-list-tools"><input id="adminSearch" type="search" placeholder="'+copy.search+'"><select id="adminStatus"><option value="">'+copy.all+'</option><option value="published">'+copy.published+'</option><option value="draft">'+copy.draft+'</option></select></div><div class="articles">'+posts.map(listItem).join('')+'<div id="adminEmpty" class="admin-list-empty" hidden>'+copy.empty+'</div></div></aside><section id="edit">'+form()+'</section>'; const edit=document.getElementById('edit'); document.getElementById('new').onclick=()=>{edit.innerHTML=form(); wireSave()}; document.querySelectorAll('[data-id]').forEach(a=>a.onclick=()=>{const p=posts.find(x=>x.id===a.dataset.id); edit.innerHTML=form(p); wireSave(p.id)}); wireFilter(); wireSave()}catch(e){app.className='notice';app.textContent=e.message}}
       async function uploadCover(){const input=document.getElementById('cover_file');const status=document.getElementById('upload_status');if(!input?.files?.length){status.textContent='Choose an image first.';return}const form=new FormData();form.append('files',input.files[0]);status.textContent='Uploading...';const r=await fetch('/api/admin/upload',{method:'POST',body:form});const data=await r.json().catch(()=>({}));if(!r.ok){status.textContent=data.error||'Upload failed';return}const url=data.files?.[0]?.url;if(!url){status.textContent='No image URL returned.';return}document.getElementById('cover_image').value=url;status.textContent='Uploaded. Save article to publish the cover.'}
-      function wireSave(id){const uploader=document.getElementById('upload_cover');if(uploader)uploader.onclick=uploadCover;document.getElementById('save').onclick=async()=>{const payload={title:document.getElementById('title').value,slug:document.getElementById('slug').value,excerpt:document.getElementById('excerpt').value,body:document.getElementById('body').value,category:document.getElementById('category').value,status:document.getElementById('status').value,cover_image:document.getElementById('cover_image').value,seo_title:document.getElementById('seo_title').value,seo_description:document.getElementById('seo_description').value}; const result=await api(id?'/api/admin/posts/'+id:'/api/admin/posts',{method:id?'PUT':'POST',body:JSON.stringify(payload)}); const slug=result.slug||payload.slug; document.getElementById('saved').innerHTML='Saved. <a class="text-link" target="_blank" href="/articles/'+encodeURIComponent(slug)+'?fresh='+Date.now()+'">Open article</a> or <a class="text-link" target="_blank" href="/?fresh='+Date.now()+'">check home</a>.'; if(!id)setTimeout(load,700)}; const del=document.getElementById('delete'); if(del)del.onclick=async()=>{if(!confirm(copy.deleteConfirm))return; await api('/api/admin/posts/'+id,{method:'DELETE'}); load()}}
+      function wireSave(id){const uploader=document.getElementById('upload_cover');if(uploader)uploader.onclick=uploadCover;document.getElementById('save').onclick=async()=>{const payload={title:document.getElementById('title').value,slug:document.getElementById('slug').value,excerpt:document.getElementById('excerpt').value,body:document.getElementById('body').value,category:document.getElementById('category').value,status:document.getElementById('status').value,published_at:document.getElementById('published_at').value,cover_image:document.getElementById('cover_image').value,seo_title:document.getElementById('seo_title').value,seo_description:document.getElementById('seo_description').value}; const result=await api(id?'/api/admin/posts/'+id:'/api/admin/posts',{method:id?'PUT':'POST',body:JSON.stringify(payload)}); const slug=result.slug||payload.slug; document.getElementById('saved').innerHTML='Saved. <a class="text-link" target="_blank" href="/articles/'+encodeURIComponent(slug)+'?fresh='+Date.now()+'">Open article</a> or <a class="text-link" target="_blank" href="/?fresh='+Date.now()+'">check home</a>.'; if(!id)setTimeout(load,700)}; const del=document.getElementById('delete'); if(del)del.onclick=async()=>{if(!confirm(copy.deleteConfirm))return; await api('/api/admin/posts/'+id,{method:'DELETE'}); load()}}
       load();
     </script></main>`;
   return html(shell({ title: `${tenant.lang === "zh-CN" ? "后台" : "Admin"} | ${tenant.name}`, description: `${tenant.name} admin.`, path: "/admin", content, tenant }), { cache: "no-store" });
@@ -1327,6 +1412,9 @@ function adminProductsPage(tenant = TENANTS.toumyou) {
         material: "材质",
         size: "规格尺寸",
         specs: "详细规格",
+        packageInfo: "包装说明",
+        leadTime: "交期",
+        shippingNote: "运输/关税说明",
         moq: "起订量",
         weight: "单件重量（克）",
         mainImage: "主图 URL",
@@ -1367,6 +1455,9 @@ function adminProductsPage(tenant = TENANTS.toumyou) {
         material: "Material",
         size: "Size",
         specs: "Detailed specifications",
+        packageInfo: "Packaging",
+        leadTime: "Lead time",
+        shippingNote: "Shipping / duties note",
         moq: "MOQ",
         weight: "Weight grams / unit",
         mainImage: "Main image URL",
@@ -1399,17 +1490,106 @@ function adminProductsPage(tenant = TENANTS.toumyou) {
       function priceFromAmount(v,currency){const scale=currencyScale(currency); return ((Number(v)||0)/scale).toFixed(scale===1?0:2)}
       function imageList(p={}){return [p.image_url,...String(p.image_urls||'').split(/\\n|,/)].map(x=>String(x||'').trim()).filter(Boolean)}
       function imagePreview(p={}){const imgs=imageList(p).slice(0,6);return imgs.length?'<div class="admin-preview-grid">'+imgs.map((src,i)=>'<div class="image-chip"><img src="'+esc(src)+'" alt=""><span>'+(i===0?'Main':'Gallery '+i)+'</span></div>').join('')+'</div>':'<div class="notice">'+copy.noImage+'</div>'}
-      function form(p={}){const status=p.status||'draft'; const checkout=Number(p.allow_checkout||0)===1; const currency=p.currency||'JPY'; return imagePreview(p)+'<div class="field-grid"><div><label>'+copy.name+'</label><input id="name" value="'+esc(p.name||'')+'"></div><div><label>'+copy.slug+'</label><input id="slug" value="'+esc(p.slug||'')+'"></div></div><div class="field-grid"><div><label>'+copy.sku+'</label><input id="sku" value="'+esc(p.sku||'')+'"></div><div><label>'+copy.category+'</label><input id="category" value="'+esc(p.category||'Fasteners')+'"></div></div><label>'+copy.excerpt+'</label><textarea id="excerpt">'+esc(p.excerpt||'')+'</textarea><label>'+copy.description+'</label><textarea id="description">'+esc(p.description||'')+'</textarea><div class="field-grid"><div><label>'+copy.material+'</label><input id="material" value="'+esc(p.material||'')+'"></div><div><label>'+copy.size+'</label><input id="size" value="'+esc(p.size||'')+'"></div></div><label>'+copy.specs+'</label><textarea id="specs" placeholder="Standards, finish, thread pitch, packaging, drawing notes...">'+esc(p.specs||'')+'</textarea><div class="field-grid"><div><label>'+copy.moq+'</label><input id="moq" type="number" min="1" value="'+esc(p.moq||1)+'"></div><div><label>'+copy.weight+'</label><input id="weight_grams" type="number" min="0" value="'+esc(p.weight_grams||0)+'"></div></div><label>'+copy.mainImage+'</label><input id="image_url" value="'+esc(p.image_url||'')+'"><label>'+copy.gallery+'</label><textarea id="image_urls" placeholder="One image URL per line. Upload images below or paste CDN URLs here.">'+esc(p.image_urls||'')+'</textarea><label>'+copy.upload+'</label><input id="image_files" type="file" accept="image/*" multiple><div class="toolbar"><button class="btn secondary" id="upload_images" type="button">'+copy.uploadButton+'</button><span id="upload_status" class="muted">'+copy.uploadHint+'</span></div><div class="field-grid"><div><label>'+copy.price+'</label><input id="price" inputmode="decimal" value="'+esc(priceFromAmount(p.price_cents,currency))+'"></div><div><label>'+copy.currency+'</label><input id="currency" value="'+esc(currency)+'"></div></div><div class="field-grid"><div><label>'+copy.inventory+'</label><input id="inventory" type="number" min="0" value="'+esc(p.inventory||0)+'"></div><div><label>'+copy.status+'</label><select id="status"><option value="draft" '+(status==='draft'?'selected':'')+'>draft</option><option value="published" '+(status==='published'?'selected':'')+'>published</option></select></div></div><label><input id="allow_checkout" type="checkbox" style="width:auto" '+(checkout?'checked':'')+'> '+copy.checkout+'</label><div class="editor-actions"><button class="btn" id="save">'+copy.save+'</button>'+(p.id?'<button class="btn danger" id="delete">'+copy.delete+'</button>':'')+'<a class="btn secondary" href="/shop" target="_blank">'+copy.openShop+'</a><a class="btn secondary" href="/admin/orders">'+copy.orders+'</a></div><p id="saved" class="status"></p>'}
+      function form(p={}){const status=p.status||'draft'; const checkout=Number(p.allow_checkout||0)===1; const currency=p.currency||'JPY'; return imagePreview(p)+'<div class="field-grid"><div><label>'+copy.name+'</label><input id="name" value="'+esc(p.name||'')+'"></div><div><label>'+copy.slug+'</label><input id="slug" value="'+esc(p.slug||'')+'"></div></div><div class="field-grid"><div><label>'+copy.sku+'</label><input id="sku" value="'+esc(p.sku||'')+'"></div><div><label>'+copy.category+'</label><input id="category" value="'+esc(p.category||'Fasteners')+'"></div></div><label>'+copy.excerpt+'</label><textarea id="excerpt">'+esc(p.excerpt||'')+'</textarea><label>'+copy.description+'</label><textarea id="description">'+esc(p.description||'')+'</textarea><div class="field-grid"><div><label>'+copy.material+'</label><input id="material" value="'+esc(p.material||'')+'"></div><div><label>'+copy.size+'</label><input id="size" value="'+esc(p.size||'')+'"></div></div><label>'+copy.specs+'</label><textarea id="specs" placeholder="Standards, finish, thread pitch, packaging, drawing notes...">'+esc(p.specs||'')+'</textarea><div class="field-grid"><div><label>'+copy.packageInfo+'</label><input id="package_info" value="'+esc(p.package_info||'')+'"></div><div><label>'+copy.leadTime+'</label><input id="lead_time" value="'+esc(p.lead_time||'')+'"></div></div><label>'+copy.shippingNote+'</label><textarea id="shipping_note" style="min-height:92px">'+esc(p.shipping_note||'')+'</textarea><div class="field-grid"><div><label>'+copy.moq+'</label><input id="moq" type="number" min="1" value="'+esc(p.moq||1)+'"></div><div><label>'+copy.weight+'</label><input id="weight_grams" type="number" min="0" value="'+esc(p.weight_grams||0)+'"></div></div><label>'+copy.mainImage+'</label><input id="image_url" value="'+esc(p.image_url||'')+'"><label>'+copy.gallery+'</label><textarea id="image_urls" placeholder="One image URL per line. Upload images below or paste CDN URLs here.">'+esc(p.image_urls||'')+'</textarea><label>'+copy.upload+'</label><input id="image_files" type="file" accept="image/*" multiple><div class="toolbar"><button class="btn secondary" id="upload_images" type="button">'+copy.uploadButton+'</button><span id="upload_status" class="muted">'+copy.uploadHint+'</span></div><div class="field-grid"><div><label>'+copy.price+'</label><input id="price" inputmode="decimal" value="'+esc(priceFromAmount(p.price_cents,currency))+'"></div><div><label>'+copy.currency+'</label><input id="currency" value="'+esc(currency)+'"></div></div><div class="field-grid"><div><label>'+copy.inventory+'</label><input id="inventory" type="number" min="0" value="'+esc(p.inventory||0)+'"></div><div><label>'+copy.status+'</label><select id="status"><option value="draft" '+(status==='draft'?'selected':'')+'>draft</option><option value="published" '+(status==='published'?'selected':'')+'>published</option></select></div></div><label><input id="allow_checkout" type="checkbox" style="width:auto" '+(checkout?'checked':'')+'> '+copy.checkout+'</label><div class="editor-actions"><button class="btn" id="save">'+copy.save+'</button>'+(p.id?'<button class="btn danger" id="delete">'+copy.delete+'</button>':'')+'<a class="btn secondary" href="/shop" target="_blank">'+copy.openShop+'</a><a class="btn secondary" href="/admin/orders">'+copy.orders+'</a></div><p id="saved" class="status"></p>'}
       function stats(products){const published=products.filter(p=>String(p.status).toLowerCase()==='published').length;const buy=products.filter(p=>Number(p.allow_checkout||0)===1).length;const low=products.filter(p=>Number(p.inventory||0)>0&&Number(p.inventory||0)<=5).length;return '<div class="mini-dashboard"><div><strong>'+products.length+'</strong><span>Total</span></div><div><strong>'+published+'</strong><span>'+copy.published+'</span></div><div><strong>'+buy+'</strong><span>'+copy.checkoutOn+'</span></div><div><strong>'+low+'</strong><span>Low stock</span></div></div>'}
       function listItem(p){const imgs=imageList(p);const thumb=imgs[0]?'<img class="admin-thumb" src="'+esc(imgs[0])+'" alt="">':'<div class="admin-thumb"></div>';return '<a class="article-link" data-id="'+esc(p.id)+'" data-status="'+esc(String(p.status||'').toLowerCase())+'" data-search="'+esc([p.name,p.slug,p.sku,p.category,p.material,p.size].filter(Boolean).join(' ').toLowerCase())+'"><div class="admin-thumb-row">'+thumb+'<div><div class="meta"><span class="status-badge '+esc(String(p.status||'draft').toLowerCase())+'">'+esc(p.status||'draft')+'</span> / '+(Number(p.allow_checkout||0)===1?copy.checkoutOn:copy.checkoutOff)+'</div><h3>'+esc(p.name||'Untitled product')+'</h3><p>'+esc(p.sku||p.slug||'No SKU')+' · '+esc(priceFromAmount(p.price_cents,p.currency))+' '+esc(p.currency||'JPY')+' · Stock '+esc(p.inventory||0)+'</p></div></div></a>'}
       function wireFilter(){const q=document.getElementById('adminSearch');const f=document.getElementById('adminStatus');const empty=document.getElementById('adminEmpty');const items=[...document.querySelectorAll('[data-id]')];function apply(){const text=(q?.value||'').trim().toLowerCase();const status=f?.value||'';let shown=0;items.forEach(item=>{const ok=(!text||(item.dataset.search||'').includes(text))&&(!status||item.dataset.status===status);item.hidden=!ok;if(ok)shown++});if(empty)empty.hidden=shown>0}q&&q.addEventListener('input',apply);f&&f.addEventListener('input',apply);apply()}
       async function load(){try{const s=await api('/api/admin/session'); if(!s.authenticated)return login(); const products=await api('/api/admin/products'); app.className='editor'; app.innerHTML='<aside><button class="btn" id="new">'+copy.newProduct+'</button>'+stats(products)+'<div class="admin-list-tools"><input id="adminSearch" type="search" placeholder="'+copy.search+'"><select id="adminStatus"><option value="">'+copy.all+'</option><option value="published">'+copy.published+'</option><option value="draft">'+copy.draft+'</option></select></div><div class="articles">'+products.map(listItem).join('')+'<div id="adminEmpty" class="admin-list-empty" hidden>'+copy.empty+'</div></div></aside><section id="edit">'+form()+'</section>'; const edit=document.getElementById('edit'); document.getElementById('new').onclick=()=>{edit.innerHTML=form(); wireSave()}; document.querySelectorAll('[data-id]').forEach(a=>a.onclick=()=>{const p=products.find(x=>x.id===a.dataset.id); edit.innerHTML=form(p); wireSave(p.id)}); wireFilter(); wireSave()}catch(e){app.className='notice';app.textContent=e.message}}
       async function uploadImages(){const input=document.getElementById('image_files'); const status=document.getElementById('upload_status'); if(!input?.files?.length){status.textContent='Choose one or more image files first.';return} const form=new FormData(); [...input.files].forEach(file=>form.append('files',file)); status.textContent='Uploading...'; const r=await fetch('/api/admin/upload',{method:'POST',body:form}); const data=await r.json().catch(()=>({})); if(!r.ok){status.textContent=data.error||'Upload failed';return} const urls=(data.files||[]).map(f=>f.url).filter(Boolean); if(!urls.length){status.textContent='No image URL returned.';return} const main=document.getElementById('image_url'); const gallery=document.getElementById('image_urls'); if(!main.value)main.value=urls[0]; const existing=gallery.value.trim(); gallery.value=[existing,...urls.slice(main.value===urls[0]?1:0)].filter(Boolean).join('\\n'); status.textContent='Uploaded '+urls.length+' image(s). Save product to publish them.'}
-      function payload(){const currency=document.getElementById('currency').value; return {name:document.getElementById('name').value,slug:document.getElementById('slug').value,sku:document.getElementById('sku').value,excerpt:document.getElementById('excerpt').value,description:document.getElementById('description').value,category:document.getElementById('category').value,material:document.getElementById('material').value,size:document.getElementById('size').value,specs:document.getElementById('specs').value,moq:Number(document.getElementById('moq').value||1),weight_grams:Number(document.getElementById('weight_grams').value||0),image_url:document.getElementById('image_url').value,image_urls:document.getElementById('image_urls').value,price_cents:amountFromPrice(document.getElementById('price').value,currency),currency,inventory:Number(document.getElementById('inventory').value||0),status:document.getElementById('status').value,allow_checkout:document.getElementById('allow_checkout').checked?1:0}}
+      function payload(){const currency=document.getElementById('currency').value; return {name:document.getElementById('name').value,slug:document.getElementById('slug').value,sku:document.getElementById('sku').value,excerpt:document.getElementById('excerpt').value,description:document.getElementById('description').value,category:document.getElementById('category').value,material:document.getElementById('material').value,size:document.getElementById('size').value,specs:document.getElementById('specs').value,package_info:document.getElementById('package_info').value,lead_time:document.getElementById('lead_time').value,shipping_note:document.getElementById('shipping_note').value,moq:Number(document.getElementById('moq').value||1),weight_grams:Number(document.getElementById('weight_grams').value||0),image_url:document.getElementById('image_url').value,image_urls:document.getElementById('image_urls').value,price_cents:amountFromPrice(document.getElementById('price').value,currency),currency,inventory:Number(document.getElementById('inventory').value||0),status:document.getElementById('status').value,allow_checkout:document.getElementById('allow_checkout').checked?1:0}}
       function wireSave(id){const uploader=document.getElementById('upload_images'); if(uploader)uploader.onclick=uploadImages; document.getElementById('save').onclick=async()=>{const p=payload(); const result=await api(id?'/api/admin/products/'+id:'/api/admin/products',{method:id?'PUT':'POST',body:JSON.stringify(p)}); const slug=result.slug||p.slug; document.getElementById('saved').innerHTML='Saved. <a class="text-link" target="_blank" href="/shop/products/'+encodeURIComponent(slug)+'?fresh='+Date.now()+'">Open product</a> or <a class="text-link" target="_blank" href="/shop?fresh='+Date.now()+'">check shop</a>.'; if(!id)setTimeout(load,700)}; const del=document.getElementById('delete'); if(del)del.onclick=async()=>{if(!confirm(copy.deleteConfirm))return; await api('/api/admin/products/'+id,{method:'DELETE'}); load()}}
       load();
     </script></main>`;
   return html(shell({ title: `${tenant.lang === "zh-CN" ? "产品后台" : "Product Admin"} | ${tenant.name}`, description: `${tenant.name} product admin.`, path: "/admin/products", content, tenant }), { cache: "no-store" });
+}
+
+function adminMediaPage(tenant = TENANTS.toumyou) {
+  const zh = tenant.lang === "zh-CN";
+  const copy = zh
+    ? {
+      loading: "正在加载媒体库...",
+      password: "后台密码",
+      login: "登录",
+      upload: "上传图片到媒体库",
+      choose: "选择图片",
+      uploadButton: "上传",
+      search: "搜索文件名或路径...",
+      empty: "媒体库为空。上传文章封面或商品图片后会显示在这里。",
+      copy: "复制 URL",
+      open: "打开",
+      delete: "删除",
+      more: "加载更多",
+      copied: "已复制",
+      confirm: "确定删除这张图片？如果文章或商品正在使用它，前台图片会失效。",
+    }
+    : {
+      loading: "Loading media library...",
+      password: "Password",
+      login: "Log in",
+      upload: "Upload images to media library",
+      choose: "Choose images",
+      uploadButton: "Upload",
+      search: "Search file name or path...",
+      empty: "No media yet. Article covers and product images will appear here after upload.",
+      copy: "Copy URL",
+      open: "Open",
+      delete: "Delete",
+      more: "Load more",
+      copied: "Copied",
+      confirm: "Delete this image? If an article or product still uses it, the frontend image will break.",
+    };
+  const content = `<main class="admin-wrap">${adminHeader(tenant, "media")}
+    <div id="app" class="notice">${escapeHtml(copy.loading)}</div>
+    <script>
+      const app=document.getElementById('app');
+      const copy=${JSON.stringify(copy)};
+      const esc=(v='')=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
+      async function api(url,options={}){const r=await fetch(url,{cache:'no-store',headers:{'content-type':'application/json'},...options});if(!r.ok)throw new Error(await r.text());return r.json()}
+      function login(){app.className='notice';app.innerHTML='<label>'+copy.password+'</label><input id="pw" type="password" autocomplete="current-password"><div class="toolbar"><button class="btn" id="go">'+copy.login+'</button></div>';document.getElementById('go').onclick=async()=>{try{await api('/api/admin/login',{method:'POST',body:JSON.stringify({password:document.getElementById('pw').value})});load()}catch(e){alert('Login failed')}}}
+      let files=[];let cursor='';
+      function size(n){n=Number(n)||0;if(n>1024*1024)return (n/1024/1024).toFixed(1)+' MB';if(n>1024)return Math.round(n/1024)+' KB';return n+' B'}
+      function render(){app.className='';app.innerHTML='<section class="notice"><p class="eyebrow">Media library</p><h2>'+copy.upload+'</h2><label>'+copy.choose+'</label><input id="mediaFiles" type="file" accept="image/*" multiple><div class="toolbar"><button class="btn" id="upload">'+copy.uploadButton+'</button><input id="mediaSearch" type="search" placeholder="'+copy.search+'" style="max-width:360px"></div><p id="mediaStatus" class="status"></p></section><div id="grid" class="media-grid"></div><div class="toolbar">'+(cursor?'<button class="btn secondary" id="more">'+copy.more+'</button>':'')+'</div>';document.getElementById('upload').onclick=upload;const q=document.getElementById('mediaSearch');q.oninput=draw;const more=document.getElementById('more');if(more)more.onclick=()=>loadPage(cursor);draw()}
+      function draw(){const grid=document.getElementById('grid');if(!grid)return;const q=(document.getElementById('mediaSearch')?.value||'').trim().toLowerCase();const visible=files.filter(f=>!q||String(f.key).toLowerCase().includes(q));grid.innerHTML=visible.length?visible.map(card).join(''):'<div class="notice">'+copy.empty+'</div>';grid.querySelectorAll('[data-copy]').forEach(b=>b.onclick=async()=>{const url=new URL(b.dataset.copy,location.origin).toString();await navigator.clipboard.writeText(url).catch(()=>{});b.textContent=copy.copied});grid.querySelectorAll('[data-delete]').forEach(b=>b.onclick=async()=>{if(!confirm(copy.confirm))return;await api('/api/admin/media/'+encodeURIComponent(b.dataset.delete),{method:'DELETE'});files=files.filter(f=>f.key!==b.dataset.delete);draw()})}
+      function card(f){return '<article class="media-card"><img src="'+esc(f.url)+'" alt="" loading="lazy"><div><code title="'+esc(f.key)+'">'+esc(f.key)+'</code><p class="muted">'+esc(size(f.size))+' · '+esc((f.uploaded||'').slice(0,10))+'</p><div class="toolbar"><button class="btn secondary" data-copy="'+esc(f.url)+'">'+copy.copy+'</button><a class="btn secondary" href="'+esc(f.url)+'" target="_blank">'+copy.open+'</a><button class="btn danger" data-delete="'+esc(f.key)+'">'+copy.delete+'</button></div></div></article>'}
+      async function upload(){const input=document.getElementById('mediaFiles');const status=document.getElementById('mediaStatus');if(!input.files.length){status.textContent='Choose image files first.';return}const form=new FormData();[...input.files].forEach(file=>form.append('files',file));status.textContent='Uploading...';const r=await fetch('/api/admin/upload',{method:'POST',body:form});const data=await r.json().catch(()=>({}));if(!r.ok){status.textContent=data.error||'Upload failed';return}files=[...(data.files||[]),...files];status.textContent='Uploaded '+(data.files||[]).length+' image(s).';input.value='';draw()}
+      async function loadPage(next=''){const data=await api('/api/admin/media'+(next?'?cursor='+encodeURIComponent(next):''));files=[...files,...(data.files||[])];cursor=data.cursor||'';render()}
+      async function load(){try{const s=await api('/api/admin/session');if(!s.authenticated)return login();await loadPage('')}catch(e){app.className='notice';app.textContent=e.message}}
+      load();
+    </script></main>`;
+  return html(shell({ title: `${zh ? "媒体库" : "Media library"} | ${tenant.name}`, description: `${tenant.name} media library.`, path: "/admin/media", content, tenant }), { cache: "no-store" });
+}
+
+function adminCustomersPage(tenant = TENANTS.toumyou) {
+  const zh = tenant.lang === "zh-CN";
+  const content = `<main class="admin-wrap">${adminHeader(tenant, "customers")}
+    <div id="app" class="notice">${zh ? "正在加载客户..." : "Loading customers..."}</div>
+    <script>
+      const app=document.getElementById('app');
+      const esc=(v='')=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
+      async function api(url,options={}){const r=await fetch(url,{cache:'no-store',headers:{'content-type':'application/json'},...options});if(!r.ok)throw new Error(await r.text());return r.json()}
+      function login(){app.className='notice';app.innerHTML='<label>${zh ? "后台密码" : "Password"}</label><input id="pw" type="password" autocomplete="current-password"><div class="toolbar"><button class="btn" id="go">${zh ? "登录" : "Log in"}</button></div>';document.getElementById('go').onclick=async()=>{try{await api('/api/admin/login',{method:'POST',body:JSON.stringify({password:document.getElementById('pw').value})});load()}catch(e){alert('Login failed')}}}
+      function dt(v){return v?new Date(Number(v)*1000).toLocaleString():'-'}
+      function card(c){return '<article class="article-card"><div class="meta">Customer / '+esc(c.google_sub?'Google':'Email')+'</div><h3>'+esc(c.name||c.email||'Customer')+'</h3><p>'+esc(c.email||'')+'</p><div class="order-meta"><span>${zh ? "订单数" : "Orders"}<br>'+esc(c.order_count||0)+'</span><span>${zh ? "已支付合计" : "Paid total"}<br>'+esc(c.paid_total||0)+'</span><span>${zh ? "创建" : "Created"}<br>'+esc(dt(c.created_at))+'</span><span>${zh ? "更新" : "Updated"}<br>'+esc(dt(c.updated_at))+'</span></div></article>'}
+      async function load(){try{const s=await api('/api/admin/session');if(!s.authenticated)return login();const customers=await api('/api/admin/customers');app.className='';app.innerHTML='<section class="section" style="padding:0"><p class="eyebrow">${zh ? "客户系统" : "Customer system"}</p><h2>${zh ? "客户、登录与订单记录。" : "Customers, login, and order history."}</h2><div class="order-filter"><input id="q" type="search" placeholder="${zh ? "搜索客户邮箱或姓名..." : "Search customer email or name..."}"></div><div id="grid" class="article-grid">'+(customers.length?customers.map(card).join(''):'<div class="notice">${zh ? "暂无客户。客户 Google 登录或下单后会显示在这里。" : "No customers yet. Google sign-ins and orders will appear here."}</div>')+'</div></section>';document.getElementById('q')?.addEventListener('input',e=>{const q=e.target.value.toLowerCase();document.querySelectorAll('.article-card').forEach(card=>card.hidden=q&&!card.textContent.toLowerCase().includes(q))})}catch(e){app.className='notice';app.textContent=e.message}}
+      load();
+    </script></main>`;
+  return html(shell({ title: `${zh ? "客户后台" : "Customers"} | ${tenant.name}`, description: `${tenant.name} customers.`, path: "/admin/customers", content, tenant }), { cache: "no-store" });
+}
+
+function adminSettingsPage(tenant = TENANTS.toumyou) {
+  const zh = tenant.lang === "zh-CN";
+  const content = `<main class="admin-wrap">${adminHeader(tenant, "settings")}
+    <div id="app" class="notice">${zh ? "正在加载设置..." : "Loading settings..."}</div>
+    <script>
+      const app=document.getElementById('app');
+      const esc=(v='')=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
+      async function api(url,options={}){const r=await fetch(url,{cache:'no-store',headers:{'content-type':'application/json'},...options});if(!r.ok)throw new Error(await r.text());return r.json()}
+      function login(){app.className='notice';app.innerHTML='<label>${zh ? "后台密码" : "Password"}</label><input id="pw" type="password" autocomplete="current-password"><div class="toolbar"><button class="btn" id="go">${zh ? "登录" : "Log in"}</button></div>';document.getElementById('go').onclick=async()=>{try{await api('/api/admin/login',{method:'POST',body:JSON.stringify({password:document.getElementById('pw').value})});load()}catch(e){alert('Login failed')}}}
+      function form(s){return '<section class="notice"><p class="eyebrow">Payload CMS</p><h2>${zh ? "Payload 接入准备。" : "Payload integration readiness."}</h2><label><input id="payload_articles_enabled" type="checkbox" style="width:auto" '+(s.payload_articles_enabled==='true'?'checked':'')+'> ${zh ? "用 Payload 管理 articles" : "Use Payload to manage articles"}</label><label><input id="payload_products_enabled" type="checkbox" style="width:auto" '+(s.payload_products_enabled==='true'?'checked':'')+'> ${zh ? "用 Payload 管理 products" : "Use Payload to manage products"}</label><label>${zh ? "Payload API 地址" : "Payload API base URL"}</label><input id="payload_api_base" value="'+esc(s.payload_api_base||'')+'" placeholder="https://cms.example.com/api"><label>${zh ? "Payload 迁移备注" : "Payload migration notes"}</label><textarea id="payload_notes">'+esc(s.payload_notes||'')+'</textarea><label>${zh ? "默认 B2B 运输说明" : "Default B2B shipping note"}</label><textarea id="b2b_shipping_default">'+esc(s.b2b_shipping_default||'')+'</textarea><div class="toolbar"><button class="btn" id="save">${zh ? "保存设置" : "Save settings"}</button><a class="btn secondary" href="/admin/media">${zh ? "媒体库" : "Media library"}</a></div><p id="status" class="status"></p></section>'}
+      async function load(){try{const s=await api('/api/admin/session');if(!s.authenticated)return login();const settings=await api('/api/admin/settings');app.className='';app.innerHTML=form(settings);document.getElementById('save').onclick=async()=>{const payload={payload_articles_enabled:String(document.getElementById('payload_articles_enabled').checked),payload_products_enabled:String(document.getElementById('payload_products_enabled').checked),payload_api_base:document.getElementById('payload_api_base').value,payload_notes:document.getElementById('payload_notes').value,b2b_shipping_default:document.getElementById('b2b_shipping_default').value};await api('/api/admin/settings',{method:'PUT',body:JSON.stringify(payload)});document.getElementById('status').textContent='${zh ? "已保存。" : "Saved."}'}}catch(e){app.className='notice';app.textContent=e.message}}
+      load();
+    </script></main>`;
+  return html(shell({ title: `${zh ? "设置" : "Settings"} | ${tenant.name}`, description: `${tenant.name} settings.`, path: "/admin/settings", content, tenant }), { cache: "no-store" });
 }
 
 function adminOrdersPage(tenant = TENANTS.toumyou) {
@@ -1995,6 +2175,9 @@ async function handleApi(request, env, pathname) {
   if (pathname === "/api/admin/posts" && request.method === "GET") return json(await listAll(env));
   if (pathname === "/api/admin/products" && request.method === "GET") return json(await listProducts(env, { admin: true }));
   if (pathname === "/api/admin/orders" && request.method === "GET") return json(await listOrders(env));
+  if (pathname === "/api/admin/customers" && request.method === "GET") return json(await listCustomers(env));
+  if (pathname === "/api/admin/settings" && request.method === "GET") return json(await getSiteSettings(env, tenant));
+  if (pathname === "/api/admin/settings" && (request.method === "PUT" || request.method === "PATCH")) return json(await saveSiteSettings(env, await request.json().catch(() => ({}))));
   if (pathname === "/api/admin/inquiries" && request.method === "GET") return json(await listInquiries(env));
   if (pathname === "/api/admin/support" && request.method === "GET") return json(await listSupportMessages(env));
   const supportReplyFormMatch = pathname.match(/^\/api\/admin\/support\/([^/]+)\/reply-form$/);
@@ -2002,14 +2185,20 @@ async function handleApi(request, env, pathname) {
   const supportReplyMatch = pathname.match(/^\/api\/admin\/support\/([^/]+)\/reply$/);
   if (supportReplyMatch && request.method === "POST") return adminSupportReply(request, env, decodeURIComponent(supportReplyMatch[1]));
   if (pathname === "/api/admin/upload" && request.method === "POST") return uploadMedia(request, env);
+  if (pathname === "/api/admin/media" && request.method === "GET") {
+    const url = new URL(request.url);
+    return listMedia(env, url.searchParams.get("cursor") || "");
+  }
+  const mediaMatch = pathname.match(/^\/api\/admin\/media\/(.+)$/);
+  if (mediaMatch && request.method === "DELETE") return deleteMedia(env, decodeURIComponent(mediaMatch[1]));
   if (pathname === "/api/admin/products" && request.method === "POST") {
     const raw = await request.json();
     const now = Math.floor(Date.now() / 1000);
     const id = crypto.randomUUID();
     const p = normalizeProduct(raw, id);
     await ensureCommerce(env);
-    await env.DB.prepare("INSERT INTO products (id,slug,name,sku,excerpt,description,category,material,size,image_url,image_urls,specs,moq,weight_grams,price_cents,currency,inventory,status,allow_checkout,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
-      .bind(id, p.slug, p.name, p.sku, p.excerpt, p.description, p.category, p.material, p.size, p.image_url, p.image_urls, p.specs, p.moq, p.weight_grams, p.price_cents, p.currency, p.inventory, p.status, p.allow_checkout, now, now).run();
+    await env.DB.prepare("INSERT INTO products (id,slug,name,sku,excerpt,description,category,material,size,image_url,image_urls,specs,package_info,lead_time,shipping_note,moq,weight_grams,price_cents,currency,inventory,status,allow_checkout,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
+      .bind(id, p.slug, p.name, p.sku, p.excerpt, p.description, p.category, p.material, p.size, p.image_url, p.image_urls, p.specs, p.package_info, p.lead_time, p.shipping_note, p.moq, p.weight_grams, p.price_cents, p.currency, p.inventory, p.status, p.allow_checkout, now, now).run();
     return json({ ok: true, id, slug: p.slug });
   }
   const productMatch = pathname.match(/^\/api\/admin\/products\/([^/]+)$/);
@@ -2018,8 +2207,8 @@ async function handleApi(request, env, pathname) {
     if (!existing) return json({ error: "Product not found" }, { status: 404 });
     const p = normalizeProduct(await request.json(), existing.id);
     const now = Math.floor(Date.now() / 1000);
-    await env.DB.prepare("UPDATE products SET slug=?,name=?,sku=?,excerpt=?,description=?,category=?,material=?,size=?,image_url=?,image_urls=?,specs=?,moq=?,weight_grams=?,price_cents=?,currency=?,inventory=?,status=?,allow_checkout=?,updated_at=? WHERE id=?")
-      .bind(p.slug, p.name, p.sku, p.excerpt, p.description, p.category, p.material, p.size, p.image_url, p.image_urls, p.specs, p.moq, p.weight_grams, p.price_cents, p.currency, p.inventory, p.status, p.allow_checkout, now, existing.id).run();
+    await env.DB.prepare("UPDATE products SET slug=?,name=?,sku=?,excerpt=?,description=?,category=?,material=?,size=?,image_url=?,image_urls=?,specs=?,package_info=?,lead_time=?,shipping_note=?,moq=?,weight_grams=?,price_cents=?,currency=?,inventory=?,status=?,allow_checkout=?,updated_at=? WHERE id=?")
+      .bind(p.slug, p.name, p.sku, p.excerpt, p.description, p.category, p.material, p.size, p.image_url, p.image_urls, p.specs, p.package_info, p.lead_time, p.shipping_note, p.moq, p.weight_grams, p.price_cents, p.currency, p.inventory, p.status, p.allow_checkout, now, existing.id).run();
     return json({ ok: true, slug: p.slug });
   }
   if (productMatch && request.method === "DELETE") {
@@ -2054,8 +2243,9 @@ async function handleApi(request, env, pathname) {
     const now = Math.floor(Date.now() / 1000);
     const id = crypto.randomUUID();
     const slug = slugify(p.slug || p.title || id);
+    const publishedAt = p.status === "published" ? parsePublishDate(p.published_at, now) : null;
     await env.DB.prepare("INSERT INTO posts (id,slug,title,excerpt,body,category,status,cover_image,seo_title,seo_description,published_at,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)")
-      .bind(id, slug, p.title || "Untitled", p.excerpt || "", p.body || "", p.category || "Insights", p.status || "draft", p.cover_image || "", p.seo_title || "", p.seo_description || "", p.status === "published" ? now : null, now, now).run();
+      .bind(id, slug, p.title || "Untitled", p.excerpt || "", p.body || "", p.category || "Insights", p.status || "draft", p.cover_image || "", p.seo_title || "", p.seo_description || "", publishedAt, now, now).run();
     return json({ ok: true, id, slug });
   }
   const match = pathname.match(/^\/api\/admin\/posts\/([^/]+)$/);
@@ -2064,7 +2254,7 @@ async function handleApi(request, env, pathname) {
     const p = await request.json();
     const now = Math.floor(Date.now() / 1000);
     const existing = await env.DB.prepare("SELECT published_at FROM posts WHERE id=?").bind(match[1]).first();
-    const publishedAt = p.status === "published" ? (existing?.published_at || now) : null;
+    const publishedAt = p.status === "published" ? parsePublishDate(p.published_at, existing?.published_at || now) : null;
     await env.DB.prepare("UPDATE posts SET slug=?,title=?,excerpt=?,body=?,category=?,status=?,cover_image=?,seo_title=?,seo_description=?,published_at=?,updated_at=? WHERE id=?")
       .bind(slugify(p.slug || p.title || match[1]), p.title || "Untitled", p.excerpt || "", p.body || "", p.category || "Insights", p.status || "draft", p.cover_image || "", p.seo_title || "", p.seo_description || "", publishedAt, now, match[1]).run();
     return json({ ok: true, slug: slugify(p.slug || p.title || match[1]) });
@@ -2107,7 +2297,10 @@ export default {
     if (url.pathname.startsWith("/articles/")) return article(env, decodeURIComponent(url.pathname.split("/").pop()), tenant);
     if (url.pathname === "/admin") return adminPage(tenant);
     if (url.pathname === "/admin/products") return adminProductsPage(tenant);
+    if (url.pathname === "/admin/media") return adminMediaPage(tenant);
     if (url.pathname === "/admin/orders") return adminOrdersPage(tenant);
+    if (url.pathname === "/admin/customers") return adminCustomersPage(tenant);
+    if (url.pathname === "/admin/settings") return adminSettingsPage(tenant);
     if (url.pathname === "/admin/support") return adminSupportPage(tenant);
     return html(shell({ title: tenant.lang === "zh-CN" ? "页面未找到 | 西缈科技" : "Not found | Toumyou", description: tenant.lang === "zh-CN" ? "页面未找到。" : "Page not found.", content: tenant.lang === "zh-CN" ? "<main><h1>页面未找到</h1></main>" : "<main><h1>Page not found</h1></main>", tenant }), { status: 404 });
   },
