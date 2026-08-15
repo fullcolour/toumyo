@@ -36,6 +36,14 @@ Set a strong secret:
 npx wrangler secret put PAYLOAD_SECRET
 ```
 
+## Initialize the Payload D1 database
+
+The first deployment needs the initial Payload tables in D1:
+
+```bash
+npm run d1:apply-schema
+```
+
 ## Local validation
 
 ```bash
@@ -43,7 +51,6 @@ npm install
 npx tsc --noEmit
 npm run generate:types
 npm run migrate:create
-npm run migrate
 ```
 
 ## Deploy flow
@@ -54,9 +61,10 @@ Before deploying:
 
 1. Replace the D1 placeholder in `wrangler.jsonc`.
 2. Set `PAYLOAD_SECRET`.
-3. Run `npm run generate:types`.
-4. Run `npm run build:cloudflare`.
-5. Deploy with `npm run deploy`.
+3. Run `npm run d1:apply-schema` once for a fresh D1 database.
+4. Run `npm run generate:types`.
+5. Run `npm run build:cloudflare`.
+6. Deploy with `npm run deploy`.
 
 If local `next build` runs slowly on a desktop workspace, validate with `npx tsc --noEmit` and `npm run generate:types`, then run the production build in Cloudflare/CI. The CMS uses Next/OpenNext and can be heavy locally.
 
