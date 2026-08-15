@@ -1,6 +1,8 @@
-# Payload CMS migration plan
+# Payload CMS migration plan — deferred
 
-Goal: use Payload CMS for `articles`, `products`, and media management while keeping the existing Cloudflare D1/R2 storefront, Stripe Checkout, cart, customers, and orders stable.
+Payload CMS was evaluated for managing `articles`, `products`, and media while keeping the existing Cloudflare D1/R2 storefront, Stripe Checkout, cart, customers, and orders stable.
+
+Decision: defer Payload for production. The generated Payload/OpenNext Worker can exceed Cloudflare Workers Free bundle-size limits, so the production site now uses the lightweight D1 + R2 CMS already built into `_worker.js`.
 
 ## Current production source
 
@@ -10,22 +12,32 @@ Goal: use Payload CMS for `articles`, `products`, and media management while kee
 - Checkout: existing Stripe Checkout endpoints
 - Cart/customers/orders: existing D1 tables and Google login
 
-## Target source
+## Deferred target source
 
 - Payload collection: `articles`
 - Payload collection: `products`
 - Payload upload collection: `media`, backed by R2
-- Frontend read mode:
-  - Phase 1: D1 remains primary, Payload API support is available but disabled by default
-  - Phase 2: frontend reads Payload API directly when `payload_articles_enabled` and `payload_products_enabled` are enabled in `/admin/settings`
-  - If Payload is unavailable or returns no documents, the storefront falls back to D1
+- Frontend read mode, if revived later:
+  - Keep D1 as the stable primary source during migration
+  - Add a deliberate feature flag only after the Payload deployment target is known
+  - Keep a D1 fallback until content parity is verified
 
-## Implemented in this repository
+## Implemented but not production-enabled
 
-- Storefront Payload API reader for articles and products
-- `/admin/settings` switches for Payload article/product reads
-- Product snapshot sync into D1 before cart/Stripe Checkout, so existing cart/order tables keep working
+- Payload API normalization helpers for articles and products
 - `payload-cms/` config package with `articles`, `products`, `media`, and `users` collections
+
+## Production behavior after deferral
+
+- Frontend articles read Cloudflare D1 `posts`
+- Frontend products read Cloudflare D1 `products`
+- Media is uploaded and served from Cloudflare R2 through `/admin/media` and `/media/*`
+- `/admin/settings` shows the lightweight CMS status and no longer exposes Payload switches
+- Stripe Checkout, cart, customer login, orders, and webhook handling remain unchanged
+
+## Historical implementation notes
+
+- Product snapshot sync into D1 before cart/Stripe Checkout, so existing cart/order tables keep working
 
 ## Collections
 

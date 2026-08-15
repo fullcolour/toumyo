@@ -203,8 +203,6 @@ function customerCookie(token) {
 }
 
 async function listPublished(env) {
-  const payloadPosts = await listPayloadArticles(env);
-  if (payloadPosts?.length) return payloadPosts;
   const db = env.DB;
   if (!db) return [];
   await ensureContent(env);
@@ -223,88 +221,11 @@ async function listAll(env) {
 }
 
 async function getPost(env, slug) {
-  const payloadPost = await getPayloadArticle(env, slug);
-  if (payloadPost) return payloadPost;
   await ensureContent(env);
   return await env.DB
     .prepare("SELECT slug,title,excerpt,body,category,status,cover_image,seo_title,seo_description,published_at,updated_at FROM posts WHERE slug=?")
     .bind(slug)
     .first();
-}
-
-async function getPayloadSettings(env, tenant = TENANTS.toumyou) {
-  if (!env.DB) return {};
-  return await getSiteSettings(env, tenant).catch(() => ({}));
-}
-
-function payloadImageUrl(value) {
-  if (!value) return "";
-  if (typeof value === "string") return value;
-  return value.url || value.filename && `/media/${value.filename}` || value.sizes?.card?.url || value.sizes?.thumbnail?.url || "";
-}
-
-function payloadText(value = "") {
-  if (typeof value === "string") return value;
-  if (!value) return "";
-  if (Array.isArray(value)) return value.map(payloadText).filter(Boolean).join("\n\n");
-  if (value.root) return payloadText(value.root.children || []);
-  if (value.children) return payloadText(value.children);
-  return value.text || "";
-}
-
-function payloadTime(value) {
-  if (!value) return null;
-  const stamp = Date.parse(value);
-  return Number.isFinite(stamp) ? Math.floor(stamp / 1000) : null;
-}
-
-async function fetchPayloadCollection(env, collection, { enabledKey, slug = "" } = {}) {
-  const settings = await getPayloadSettings(env);
-  if (settings[enabledKey] !== "true" || !settings.payload_api_base) return null;
-  try {
-    const base = new URL(settings.payload_api_base);
-    const path = base.pathname.replace(/\/$/, "");
-    base.pathname = `${path}/${collection}`;
-    base.searchParams.set("limit", slug ? "1" : "100");
-    base.searchParams.set("depth", "2");
-    if (slug) base.searchParams.set("where[slug][equals]", slug);
-    const res = await fetch(base.toString(), { headers: { accept: "application/json" } });
-    if (!res.ok) return null;
-    const data = await res.json();
-    return data.docs || data.items || [];
-  } catch {
-    return null;
-  }
-}
-
-function normalizePayloadArticle(doc = {}) {
-  const status = doc.status || doc._status || "published";
-  return {
-    id: doc.id || doc.slug,
-    slug: doc.slug || doc.id,
-    title: doc.title || "Untitled",
-    excerpt: doc.excerpt || doc.summary || "",
-    body: payloadText(doc.body || doc.content || ""),
-    category: doc.category || "Insights",
-    status,
-    cover_image: payloadImageUrl(doc.coverImage || doc.cover_image || doc.image),
-    seo_title: doc.seoTitle || doc.seo_title || doc.meta?.title || "",
-    seo_description: doc.seoDescription || doc.seo_description || doc.meta?.description || "",
-    published_at: payloadTime(doc.publishedAt || doc.published_at || doc.createdAt),
-    updated_at: payloadTime(doc.updatedAt),
-  };
-}
-
-async function listPayloadArticles(env) {
-  const docs = await fetchPayloadCollection(env, "articles", { enabledKey: "payload_articles_enabled" });
-  if (!docs) return null;
-  return docs.map(normalizePayloadArticle).filter((post) => post.slug && String(post.status).toLowerCase() === "published");
-}
-
-async function getPayloadArticle(env, slug) {
-  const docs = await fetchPayloadCollection(env, "articles", { enabledKey: "payload_articles_enabled", slug });
-  if (!docs?.length) return null;
-  return normalizePayloadArticle(docs[0]);
 }
 
 async function ensureContent(env) {
@@ -519,54 +440,7 @@ function productImages(product = {}) {
   return [...new Set(urls)].slice(0, 12);
 }
 
-function normalizePayloadProduct(doc = {}) {
-  const images = Array.isArray(doc.images) ? doc.images.map((item) => payloadImageUrl(item?.image || item)).filter(Boolean) : [payloadImageUrl(doc.image || doc.imageUrl || doc.image_url)].filter(Boolean);
-  const priceCents = Number.parseInt(doc.priceCents ?? doc.price_cents ?? 0, 10) || 0;
-  return {
-    id: doc.id || doc.slug,
-    slug: doc.slug || doc.id,
-    name: doc.name || doc.title || "Untitled product",
-    sku: doc.sku || "",
-    excerpt: doc.excerpt || doc.summary || "",
-    description: payloadText(doc.description || doc.body || ""),
-    category: doc.category || "Fasteners",
-    material: doc.material || "",
-    size: doc.size || "",
-    image_url: images[0] || "",
-    image_urls: images.slice(1).join("\n"),
-    specs: payloadText(doc.specs || ""),
-    package_info: doc.packageInfo || doc.package_info || "",
-    lead_time: doc.leadTime || doc.lead_time || "",
-    shipping_note: doc.shippingNote || doc.shipping_note || "",
-    moq: Math.max(1, Number.parseInt(doc.moq || 1, 10) || 1),
-    weight_grams: Math.max(0, Number.parseInt(doc.weightGrams ?? doc.weight_grams ?? 0, 10) || 0),
-    price_cents: Math.max(0, priceCents),
-    currency: String(doc.currency || "JPY").toUpperCase().slice(0, 3),
-    inventory: Math.max(0, Number.parseInt(doc.inventory || 0, 10) || 0),
-    status: doc.status || doc._status || "published",
-    allow_checkout: doc.allowCheckout || doc.allow_checkout ? 1 : 0,
-    updated_at: payloadTime(doc.updatedAt),
-  };
-}
-
-async function listPayloadProducts(env) {
-  const docs = await fetchPayloadCollection(env, "products", { enabledKey: "payload_products_enabled" });
-  if (!docs) return null;
-  return docs.map(normalizePayloadProduct).filter((product) => product.slug && String(product.status).toLowerCase() === "published");
-}
-
-async function getPayloadProduct(env, slugOrId) {
-  const docs = await fetchPayloadCollection(env, "products", { enabledKey: "payload_products_enabled", slug: slugOrId });
-  if (docs?.length) return normalizePayloadProduct(docs[0]);
-  const all = await listPayloadProducts(env);
-  return all?.find((product) => product.id === slugOrId || product.slug === slugOrId) || null;
-}
-
 async function listProducts(env, { admin = false } = {}) {
-  if (!admin) {
-    const payloadProducts = await listPayloadProducts(env);
-    if (payloadProducts?.length) return payloadProducts;
-  }
   await ensureCommerce(env);
   if (!env.DB) return [];
   const sql = admin
@@ -577,8 +451,6 @@ async function listProducts(env, { admin = false } = {}) {
 }
 
 async function getProduct(env, slugOrId) {
-  const payloadProduct = await getPayloadProduct(env, slugOrId);
-  if (payloadProduct) return payloadProduct;
   await ensureCommerce(env);
   if (!env.DB) return null;
   return await env.DB.prepare("SELECT * FROM products WHERE slug=? OR id=?").bind(slugOrId, slugOrId).first();
@@ -612,10 +484,10 @@ async function listCustomers(env) {
 async function getSiteSettings(env, tenant = TENANTS.toumyou) {
   await ensureCommerce(env);
   const defaults = {
-    payload_articles_enabled: "false",
-    payload_products_enabled: "false",
-    payload_api_base: "",
-    payload_notes: "Payload CMS is planned as the next backend layer. Current production reads D1 and R2.",
+    cms_mode: "lightweight_d1_r2",
+    cms_notes: tenant.lang === "zh-CN"
+      ? "当前生产后台使用 Cloudflare D1 管理文章、商品、订单、客户与设置，使用 R2 管理图片媒体库。Payload 已暂缓，避免 Workers 免费版体积限制影响部署。"
+      : "Production CMS uses Cloudflare D1 for articles, products, orders, customers, and settings, with R2 as the media library. Payload is deferred to avoid Workers Free bundle-size limits.",
     b2b_shipping_default: tenant.lang === "zh-CN" ? "运费、交期、关税根据数量和目的地确认。" : "Freight, lead time, duties, and import taxes are confirmed by quantity and destination.",
   };
   const result = await env.DB.prepare("SELECT key,value FROM site_settings").all().catch(() => ({ results: [] }));
@@ -625,7 +497,7 @@ async function getSiteSettings(env, tenant = TENANTS.toumyou) {
 
 async function saveSiteSettings(env, values = {}) {
   await ensureCommerce(env);
-  const allowed = ["payload_articles_enabled", "payload_products_enabled", "payload_api_base", "payload_notes", "b2b_shipping_default"];
+  const allowed = ["cms_notes", "b2b_shipping_default"];
   const now = Math.floor(Date.now() / 1000);
   for (const key of allowed) {
     if (!(key in values)) continue;
@@ -1722,8 +1594,8 @@ function adminSettingsPage(tenant = TENANTS.toumyou) {
       const esc=(v='')=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
       async function api(url,options={}){const r=await fetch(url,{cache:'no-store',headers:{'content-type':'application/json'},...options});if(!r.ok)throw new Error(await r.text());return r.json()}
       function login(){app.className='notice';app.innerHTML='<label>${zh ? "后台密码" : "Password"}</label><input id="pw" type="password" autocomplete="current-password"><div class="toolbar"><button class="btn" id="go">${zh ? "登录" : "Log in"}</button></div>';document.getElementById('go').onclick=async()=>{try{await api('/api/admin/login',{method:'POST',body:JSON.stringify({password:document.getElementById('pw').value})});load()}catch(e){alert('Login failed')}}}
-      function form(s){return '<section class="notice"><p class="eyebrow">Payload CMS</p><h2>${zh ? "Payload 接入准备。" : "Payload integration readiness."}</h2><label><input id="payload_articles_enabled" type="checkbox" style="width:auto" '+(s.payload_articles_enabled==='true'?'checked':'')+'> ${zh ? "用 Payload 管理 articles" : "Use Payload to manage articles"}</label><label><input id="payload_products_enabled" type="checkbox" style="width:auto" '+(s.payload_products_enabled==='true'?'checked':'')+'> ${zh ? "用 Payload 管理 products" : "Use Payload to manage products"}</label><label>${zh ? "Payload API 地址" : "Payload API base URL"}</label><input id="payload_api_base" value="'+esc(s.payload_api_base||'')+'" placeholder="https://cms.example.com/api"><label>${zh ? "Payload 迁移备注" : "Payload migration notes"}</label><textarea id="payload_notes">'+esc(s.payload_notes||'')+'</textarea><label>${zh ? "默认 B2B 运输说明" : "Default B2B shipping note"}</label><textarea id="b2b_shipping_default">'+esc(s.b2b_shipping_default||'')+'</textarea><div class="toolbar"><button class="btn" id="save">${zh ? "保存设置" : "Save settings"}</button><a class="btn secondary" href="/admin/media">${zh ? "媒体库" : "Media library"}</a></div><p id="status" class="status"></p></section>'}
-      async function load(){try{const s=await api('/api/admin/session');if(!s.authenticated)return login();const settings=await api('/api/admin/settings');app.className='';app.innerHTML=form(settings);document.getElementById('save').onclick=async()=>{const payload={payload_articles_enabled:String(document.getElementById('payload_articles_enabled').checked),payload_products_enabled:String(document.getElementById('payload_products_enabled').checked),payload_api_base:document.getElementById('payload_api_base').value,payload_notes:document.getElementById('payload_notes').value,b2b_shipping_default:document.getElementById('b2b_shipping_default').value};await api('/api/admin/settings',{method:'PUT',body:JSON.stringify(payload)});document.getElementById('status').textContent='${zh ? "已保存。" : "Saved."}'}}catch(e){app.className='notice';app.textContent=e.message}}
+      function form(s){return '<section class="notice"><p class="eyebrow">${zh ? "轻量 CMS" : "Lightweight CMS"}</p><h2>${zh ? "Cloudflare 免费版可用的生产后台正在运行。" : "A Cloudflare Free-compatible production admin is active."}</h2><p class="muted">${zh ? "文章、商品、订单、客户与设置读取 D1；图片媒体库读取 R2。Payload 已暂缓，不再影响主站部署。" : "Articles, products, orders, customers, and settings read from D1; image media reads from R2. Payload is deferred and no longer affects production deployment."}</p><div class="order-dashboard"><a class="metric-card" href="/admin"><strong>D1</strong><span>${zh ? "Articles / 文章" : "Articles"}</span></a><a class="metric-card" href="/admin/products"><strong>D1</strong><span>${zh ? "Products / 商品" : "Products"}</span></a><a class="metric-card" href="/admin/media"><strong>R2</strong><span>${zh ? "Media / 图片" : "Media"}</span></a><a class="metric-card" href="/admin/orders"><strong>Stripe</strong><span>${zh ? "Orders / 订单" : "Orders"}</span></a><a class="metric-card" href="/admin/customers"><strong>Login</strong><span>${zh ? "Customers / 客户" : "Customers"}</span></a></div><label>${zh ? "后台备注" : "CMS notes"}</label><textarea id="cms_notes">'+esc(s.cms_notes||'')+'</textarea><label>${zh ? "默认 B2B 运输说明" : "Default B2B shipping note"}</label><textarea id="b2b_shipping_default">'+esc(s.b2b_shipping_default||'')+'</textarea><div class="toolbar"><button class="btn" id="save">${zh ? "保存设置" : "Save settings"}</button><a class="btn secondary" href="/shop" target="_blank">${zh ? "打开商店" : "Open shop"}</a><a class="btn secondary" href="/admin/media">${zh ? "媒体库" : "Media library"}</a></div><p id="status" class="status"></p></section>'}
+      async function load(){try{const s=await api('/api/admin/session');if(!s.authenticated)return login();const settings=await api('/api/admin/settings');app.className='';app.innerHTML=form(settings);document.getElementById('save').onclick=async()=>{const payload={cms_notes:document.getElementById('cms_notes').value,b2b_shipping_default:document.getElementById('b2b_shipping_default').value};await api('/api/admin/settings',{method:'PUT',body:JSON.stringify(payload)});document.getElementById('status').textContent='${zh ? "已保存。" : "Saved."}'}}catch(e){app.className='notice';app.textContent=e.message}}
       load();
     </script></main>`;
   return html(shell({ title: `${zh ? "设置" : "Settings"} | ${tenant.name}`, description: `${tenant.name} settings.`, path: "/admin/settings", content, tenant }), { cache: "no-store" });
