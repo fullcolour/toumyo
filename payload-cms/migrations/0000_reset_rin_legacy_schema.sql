@@ -1,0 +1,14 @@
+PRAGMA foreign_keys=OFF;
+
+DROP TABLE IF EXISTS `comments`;
+DROP TABLE IF EXISTS `visits`;
+DROP TABLE IF EXISTS `feed_hashtags`;
+DROP TABLE IF EXISTS `feeds`;
+DROP TABLE IF EXISTS `friends`;
+DROP TABLE IF EXISTS `hashtags`;
+DROP TABLE IF EXISTS `info`;
+DROP TABLE IF EXISTS `moments`;
+DROP TABLE IF EXISTS `_cf_KV`;
+DROP TABLE IF EXISTS `users`;
+
+PRAGMA foreign_keys=ON;

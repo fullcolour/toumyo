@@ -25,6 +25,8 @@ Payload uses the existing approved D1 database `rin` in the `sunflyer` Cloudflar
 "database_id": "11cb37d5-b65a-4101-8fea-2c5d6a4c1ae2"
 ```
 
+The `rin` database is dedicated to Payload from this point forward. The first D1 migration resets legacy `rin` tables before creating the Payload schema.
+
 R2 uses the existing `image` bucket in the `sunflyer` Cloudflare account.
 
 If deployment fails with Cloudflare API code `10042`, Wrangler is probably using the wrong Cloudflare account. Open **Cloudflare Dashboard > R2 Object Storage** and confirm the selected account is `sunflyer`, where the bucket named `image` exists.
