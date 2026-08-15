@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "next build",
+    "build": "next build --webpack",
     "build:cloudflare": "opennextjs-cloudflare build",
     "dev": "next dev",
     "preview": "npm run build:cloudflare && opennextjs-cloudflare preview",

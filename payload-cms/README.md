@@ -60,6 +60,15 @@ Before deploying:
 
 If local `next build` runs slowly on a desktop workspace, validate with `npx tsc --noEmit` and `npm run generate:types`, then run the production build in Cloudflare/CI. The CMS uses Next/OpenNext and can be heavy locally.
 
+This project uses webpack for `next build` because Turbopack can be slow in the larger Codex workspace:
+
+```bash
+npm run build
+npm run build:cloudflare
+```
+
+If `wrangler deploy --dry-run` reports a conflict with an outer `.wrangler/deploy/config.json`, run Wrangler from a clean checkout of this repository or remove the stale outer deploy config. The CMS project itself uses `payload-cms/wrangler.jsonc`.
+
 Before production deployment, also replace the D1 placeholder in `wrangler.jsonc`:
 
 ```jsonc

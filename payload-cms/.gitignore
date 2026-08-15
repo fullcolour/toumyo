@@ -1,8 +1,10 @@
 node_modules
+next-env.d.ts
 .wrangler
 .open-next
 .next
 dist
+*.tsbuildinfo
 .env
 .env.*
 !.env.example
