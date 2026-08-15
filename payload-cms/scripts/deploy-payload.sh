@@ -26,6 +26,15 @@ if ! npx wrangler secret list | grep -q "PAYLOAD_SECRET"; then
   exit 1
 fi
 
+if ! npx wrangler r2 bucket list >/tmp/toumyou-payload-r2-check.log 2>&1; then
+  echo "Cloudflare R2 is not available for this account yet."
+  echo "Open Cloudflare Dashboard > R2 Object Storage and enable R2 for the toumyou account."
+  echo "Then create or confirm the bucket named: image"
+  echo "R2 check output:"
+  cat /tmp/toumyou-payload-r2-check.log
+  exit 1
+fi
+
 npm run check
 npm run build:cloudflare
 npx opennextjs-cloudflare deploy --config wrangler.jsonc

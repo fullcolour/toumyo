@@ -28,6 +28,8 @@ Then replace `REPLACE_WITH_PAYLOAD_D1_DATABASE_ID` in `wrangler.jsonc`.
 
 R2 uses the existing `image` bucket.
 
+If deployment fails with Cloudflare API code `10042`, R2 has not been enabled for the selected Cloudflare account yet. Open **Cloudflare Dashboard > R2 Object Storage**, enable R2 for the `toumyou` account, then create or confirm the bucket named `image`.
+
 ## Required environment variables
 
 Set a strong secret:
@@ -79,6 +81,12 @@ The guided deploy command checks Cloudflare login, D1 configuration, and `PAYLOA
 
 ```bash
 npm run deploy:guide
+```
+
+You can also check R2 availability before a full deploy:
+
+```bash
+npm run r2:check
 ```
 
 The guide pins the Cloudflare account to `toumyou` and writes Wrangler logs to `/tmp/toumyou-payload-wrangler.log` by default:
