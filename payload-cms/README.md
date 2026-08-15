@@ -24,7 +24,7 @@ Create a separate D1 database for Payload, for example:
 npx wrangler d1 create toumyou_payload_cms
 ```
 
-Then replace `REPLACE_WITH_PAYLOAD_D1_DATABASE_ID` in `wrangler.toml`.
+Then replace `REPLACE_WITH_PAYLOAD_D1_DATABASE_ID` in `wrangler.jsonc`.
 
 R2 uses the existing `image` bucket.
 
@@ -65,6 +65,12 @@ This project uses webpack for `next build` because Turbopack can be slow in the 
 ```bash
 npm run build
 npm run build:cloudflare
+```
+
+The guided deploy command checks Cloudflare login, D1 configuration, and `PAYLOAD_SECRET` before deploying:
+
+```bash
+npm run deploy:guide
 ```
 
 If `wrangler deploy --dry-run` reports a conflict with an outer `.wrangler/deploy/config.json`, run Wrangler from a clean checkout of this repository or remove the stale outer deploy config. The CMS project itself uses `payload-cms/wrangler.jsonc`.
