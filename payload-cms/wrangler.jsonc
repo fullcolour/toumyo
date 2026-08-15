@@ -1,7 +1,7 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "toumyou-payload-cms",
-  "account_id": "1c9ff8f2024e236353e989faba3a9a24",
+  "account_id": "9bbf527fc892e63a600961322cc8cb39",
   "main": ".open-next/worker.js",
   "compatibility_date": "2026-08-16",
   "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
@@ -19,7 +19,7 @@
     {
       "binding": "D1",
       "database_name": "toumyou_payload_cms",
-      "database_id": "eb38208d-70d3-4607-addf-97e1ecfb74ea",
+      "database_id": "REPLACE_WITH_SUNFLYER_PAYLOAD_D1_DATABASE_ID",
       "remote": true
     }
   ],

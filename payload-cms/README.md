@@ -21,14 +21,14 @@ It is intentionally separate from the current storefront Worker:
 Create a separate D1 database for Payload, for example:
 
 ```bash
-npx wrangler d1 create toumyou_payload_cms
+CLOUDFLARE_ACCOUNT_ID=9bbf527fc892e63a600961322cc8cb39 npx wrangler d1 create toumyou_payload_cms
 ```
 
-Then replace `REPLACE_WITH_PAYLOAD_D1_DATABASE_ID` in `wrangler.jsonc`.
+Then replace `REPLACE_WITH_SUNFLYER_PAYLOAD_D1_DATABASE_ID` in `wrangler.jsonc`.
 
-R2 uses the existing `image` bucket.
+R2 uses the existing `image` bucket in the `sunflyer` Cloudflare account.
 
-If deployment fails with Cloudflare API code `10042`, R2 has not been enabled for the selected Cloudflare account yet. Open **Cloudflare Dashboard > R2 Object Storage**, enable R2 for the `toumyou` account, then create or confirm the bucket named `image`.
+If deployment fails with Cloudflare API code `10042`, Wrangler is probably using the wrong Cloudflare account. Open **Cloudflare Dashboard > R2 Object Storage** and confirm the selected account is `sunflyer`, where the bucket named `image` exists.
 
 ## Required environment variables
 
@@ -61,12 +61,13 @@ This folder is now structured as a Next + Payload + OpenNext Cloudflare app.
 
 Before deploying:
 
-1. Replace the D1 placeholder in `wrangler.jsonc`.
-2. Set `PAYLOAD_SECRET`.
-3. Run `npm run d1:apply-schema` once for a fresh D1 database.
-4. Run `npm run generate:types`.
-5. Run `npm run build:cloudflare`.
-6. Deploy with `npm run deploy`.
+1. Log Wrangler into the Cloudflare account that can see `sunflyer`.
+2. Replace the D1 placeholder in `wrangler.jsonc`.
+3. Set `PAYLOAD_SECRET`.
+4. Run `npm run d1:apply-schema` once for a fresh D1 database.
+5. Run `npm run generate:types`.
+6. Run `npm run build:cloudflare`.
+7. Deploy with `npm run deploy`.
 
 If local `next build` runs slowly on a desktop workspace, validate with `npx tsc --noEmit` and `npm run generate:types`, then run the production build in Cloudflare/CI. The CMS uses Next/OpenNext and can be heavy locally.
 
@@ -89,10 +90,10 @@ You can also check R2 availability before a full deploy:
 npm run r2:check
 ```
 
-The guide pins the Cloudflare account to `toumyou` and writes Wrangler logs to `/tmp/toumyou-payload-wrangler.log` by default:
+The guide pins the Cloudflare account to `sunflyer` and writes Wrangler logs to `/tmp/toumyou-payload-wrangler.log` by default:
 
 ```bash
-CLOUDFLARE_ACCOUNT_ID=1c9ff8f2024e236353e989faba3a9a24
+CLOUDFLARE_ACCOUNT_ID=9bbf527fc892e63a600961322cc8cb39
 WRANGLER_LOG_PATH=/tmp/toumyou-payload-wrangler.log
 ```
 
@@ -101,7 +102,7 @@ If `wrangler deploy --dry-run` reports a conflict with an outer `.wrangler/deplo
 Before production deployment, also replace the D1 placeholder in `wrangler.jsonc`:
 
 ```jsonc
-"database_id": "REPLACE_WITH_PAYLOAD_D1_DATABASE_ID"
+"database_id": "REPLACE_WITH_SUNFLYER_PAYLOAD_D1_DATABASE_ID"
 ```
 
 The old `wrangler.toml` format is intentionally not used; this app follows the current Cloudflare JSONC config structure.

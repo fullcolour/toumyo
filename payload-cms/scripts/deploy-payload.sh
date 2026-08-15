@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-export CLOUDFLARE_ACCOUNT_ID="${CLOUDFLARE_ACCOUNT_ID:-1c9ff8f2024e236353e989faba3a9a24}"
+export CLOUDFLARE_ACCOUNT_ID="${CLOUDFLARE_ACCOUNT_ID:-9bbf527fc892e63a600961322cc8cb39}"
 export WRANGLER_LOG_PATH="${WRANGLER_LOG_PATH:-/tmp/toumyou-payload-wrangler.log}"
 
 if ! npx wrangler whoami >/dev/null; then
@@ -12,7 +12,7 @@ if ! npx wrangler whoami >/dev/null; then
   exit 1
 fi
 
-if grep -q "REPLACE_WITH_PAYLOAD_D1_DATABASE_ID" wrangler.jsonc; then
+if grep -q "REPLACE_WITH_.*PAYLOAD_D1_DATABASE_ID" wrangler.jsonc; then
   echo "D1 database_id is still a placeholder in wrangler.jsonc."
   echo "Create/find the database first:"
   echo "  CLOUDFLARE_ACCOUNT_ID=${CLOUDFLARE_ACCOUNT_ID} npx wrangler d1 create toumyou_payload_cms"
@@ -28,7 +28,8 @@ fi
 
 if ! npx wrangler r2 bucket list >/tmp/toumyou-payload-r2-check.log 2>&1; then
   echo "Cloudflare R2 is not available for this account yet."
-  echo "Open Cloudflare Dashboard > R2 Object Storage and enable R2 for the toumyou account."
+  echo "Make sure Wrangler is logged into the sunflyer Cloudflare account."
+  echo "Open Cloudflare Dashboard > R2 Object Storage and confirm R2 for the sunflyer account."
   echo "Then create or confirm the bucket named: image"
   echo "R2 check output:"
   cat /tmp/toumyou-payload-r2-check.log
