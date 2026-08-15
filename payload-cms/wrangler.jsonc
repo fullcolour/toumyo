@@ -18,8 +18,8 @@
   "d1_databases": [
     {
       "binding": "D1",
-      "database_name": "toumyou_payload_cms",
-      "database_id": "REPLACE_WITH_SUNFLYER_PAYLOAD_D1_DATABASE_ID",
+      "database_name": "rin",
+      "database_id": "11cb37d5-b65a-4101-8fea-2c5d6a4c1ae2",
       "remote": true
     }
   ],

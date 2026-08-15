@@ -18,13 +18,12 @@ It is intentionally separate from the current storefront Worker:
 
 ## Required Cloudflare resources
 
-Create a separate D1 database for Payload, for example:
+Payload uses the existing approved D1 database `rin` in the `sunflyer` Cloudflare account:
 
-```bash
-CLOUDFLARE_ACCOUNT_ID=9bbf527fc892e63a600961322cc8cb39 npx wrangler d1 create toumyou_payload_cms
+```jsonc
+"database_name": "rin",
+"database_id": "11cb37d5-b65a-4101-8fea-2c5d6a4c1ae2"
 ```
-
-Then replace `REPLACE_WITH_SUNFLYER_PAYLOAD_D1_DATABASE_ID` in `wrangler.jsonc`.
 
 R2 uses the existing `image` bucket in the `sunflyer` Cloudflare account.
 
@@ -62,12 +61,11 @@ This folder is now structured as a Next + Payload + OpenNext Cloudflare app.
 Before deploying:
 
 1. Log Wrangler into the Cloudflare account that can see `sunflyer`.
-2. Replace the D1 placeholder in `wrangler.jsonc`.
-3. Set `PAYLOAD_SECRET`.
-4. Run `npm run d1:apply-schema` once for a fresh D1 database.
-5. Run `npm run generate:types`.
-6. Run `npm run build:cloudflare`.
-7. Deploy with `npm run deploy`.
+2. Set `PAYLOAD_SECRET`.
+3. Run `npm run d1:apply-schema` once for the `rin` D1 database.
+4. Run `npm run generate:types`.
+5. Run `npm run build:cloudflare`.
+6. Deploy with `npm run deploy`.
 
 If local `next build` runs slowly on a desktop workspace, validate with `npx tsc --noEmit` and `npm run generate:types`, then run the production build in Cloudflare/CI. The CMS uses Next/OpenNext and can be heavy locally.
 
@@ -99,10 +97,11 @@ WRANGLER_LOG_PATH=/tmp/toumyou-payload-wrangler.log
 
 If `wrangler deploy --dry-run` reports a conflict with an outer `.wrangler/deploy/config.json`, run Wrangler from a clean checkout of this repository or remove the stale outer deploy config. The CMS project itself uses `payload-cms/wrangler.jsonc`.
 
-Before production deployment, also replace the D1 placeholder in `wrangler.jsonc`:
+Before production deployment, also confirm `wrangler.jsonc` points to the approved `rin` D1 database:
 
 ```jsonc
-"database_id": "REPLACE_WITH_SUNFLYER_PAYLOAD_D1_DATABASE_ID"
+"database_name": "rin",
+"database_id": "11cb37d5-b65a-4101-8fea-2c5d6a4c1ae2"
 ```
 
 The old `wrangler.toml` format is intentionally not used; this app follows the current Cloudflare JSONC config structure.

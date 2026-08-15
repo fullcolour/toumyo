@@ -14,9 +14,9 @@ fi
 
 if grep -q "REPLACE_WITH_.*PAYLOAD_D1_DATABASE_ID" wrangler.jsonc; then
   echo "D1 database_id is still a placeholder in wrangler.jsonc."
-  echo "Create/find the database first:"
-  echo "  CLOUDFLARE_ACCOUNT_ID=${CLOUDFLARE_ACCOUNT_ID} npx wrangler d1 create toumyou_payload_cms"
-  echo "Then paste the returned database_id into wrangler.jsonc."
+  echo "Use the approved sunflyer D1 database:"
+  echo "  database_name: rin"
+  echo "  database_id: 11cb37d5-b65a-4101-8fea-2c5d6a4c1ae2"
   exit 1
 fi
 
