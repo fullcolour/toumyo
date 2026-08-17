@@ -103,6 +103,33 @@ function redirect(location, status = 302, headers = {}) {
   return new Response(null, { status, headers: h });
 }
 
+function canonicalRedirect(url, tenant = TENANTS.toumyou) {
+  const target = new URL(url.toString());
+  const canonical = new URL(tenant.url);
+  let changed = false;
+
+  if (target.protocol !== "https:") {
+    target.protocol = "https:";
+    changed = true;
+  }
+  if (target.hostname !== canonical.hostname) {
+    target.hostname = canonical.hostname;
+    changed = true;
+  }
+  if (target.pathname === "/index.html" || target.pathname === "/index.htm") {
+    target.pathname = "/";
+    target.search = "";
+    changed = true;
+  }
+  if (target.pathname.startsWith("/post/")) {
+    target.pathname = "/articles";
+    target.search = "";
+    changed = true;
+  }
+  if (!changed) return null;
+  return redirect(target.toString(), 301);
+}
+
 function escapeHtml(value = "") {
   return String(value)
     .replaceAll("&", "&amp;")
@@ -2281,8 +2308,18 @@ async function handleApi(request, env, pathname) {
 async function sitemap(env, tenant = TENANTS.toumyou) {
   const posts = await listPublished(env);
   const products = await listProducts(env);
-  const urls = ["/", "/shop", ...(tenant.showDigital ? ["/digital"] : []), "/articles", ...products.map((p) => `/shop/products/${p.slug}`), ...posts.map((p) => `/articles/${p.slug}`)];
-  return new Response(`<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${urls.map((u) => `<url><loc>${tenant.url}${u}</loc></url>`).join("")}</urlset>`, {
+  const today = new Date().toISOString().slice(0, 10);
+  const toDate = (stamp) => (stamp ? new Date(Number(stamp) * 1000).toISOString().slice(0, 10) : today);
+  const urls = [
+    { path: "/", priority: "1.0", changefreq: "weekly", lastmod: today },
+    { path: "/shop", priority: "0.9", changefreq: "weekly", lastmod: today },
+    ...(tenant.showDigital ? [{ path: "/digital", priority: "0.5", changefreq: "monthly", lastmod: today }] : []),
+    { path: "/articles", priority: "0.8", changefreq: "weekly", lastmod: today },
+    ...products.map((p) => ({ path: `/shop/products/${p.slug}`, priority: "0.8", changefreq: "weekly", lastmod: toDate(p.updated_at || p.created_at) })),
+    ...posts.map((p) => ({ path: `/articles/${p.slug}`, priority: "0.7", changefreq: "monthly", lastmod: toDate(p.updated_at || p.published_at) })),
+  ];
+  const body = urls.map((u) => `<url><loc>${tenant.url}${u.path}</loc><lastmod>${u.lastmod}</lastmod><changefreq>${u.changefreq}</changefreq><priority>${u.priority}</priority></url>`).join("");
+  return new Response(`<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${body}</urlset>`, {
     headers: { "content-type": "application/xml; charset=utf-8", "cache-control": "no-store, no-cache, must-revalidate" },
   });
 }
@@ -2291,6 +2328,8 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
     const tenant = tenantFromRequest(request);
+    const canonical = canonicalRedirect(url, tenant);
+    if (canonical) return canonical;
     if (url.pathname === "/robots.txt") return new Response(`User-agent: *\nAllow: /\nSitemap: ${tenant.url}/sitemap.xml\n`, { headers: { "content-type": "text/plain; charset=utf-8" } });
     if (url.pathname === "/sitemap.xml") return sitemap(env, tenant);
     if (url.pathname.startsWith("/media/")) return mediaFile(request, env, decodeURIComponent(url.pathname.slice("/media/".length)));
