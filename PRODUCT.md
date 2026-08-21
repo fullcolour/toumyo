@@ -27,7 +27,8 @@ Visitors evaluate the company from a browser before contacting it. The site must
 - Toumyou front-facing pages should remove fastener/anchor/hardware positioning.
 - Ximiaokeji remains a separate Chinese fastener business and should not be unintentionally changed.
 - Current stack is a Cloudflare Worker in `_worker.js`.
-- Existing admin, D1, R2, customer, cart, and Stripe systems may remain in the codebase, but Toumyou public navigation should focus on media operations and growth services.
+- Existing admin, D1, R2, customer, cart, and Stripe systems remain available.
+- Toumyou public navigation should focus on media operations and growth services, while `/shop` remains available as Japanese files / paid digital products with the original test link and payment flow.
 - Claims must stay strategic and capability-based; do not invent real client names, revenue numbers, or case results without evidence.
 
 ## Brand Commitments

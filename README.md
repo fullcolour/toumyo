@@ -6,7 +6,7 @@ The site is built as a Cloudflare Pages Worker in `_worker.js`. It includes:
 
 - `toumyou.com`: media operations, content growth, short-video production, website production, software development, traffic acquisition, and commercial IP growth
 - `ximiaokeji.com`: Chinese fastener and industrial accessory storefront
-- Toumyou public redirects from old shop/cart/product paths to `/services`
+- Toumyou keeps `/shop`, `/cart`, `/account`, `/login`, Stripe checkout, and the original test product link as a paid digital-product area named Japanese files
 - Ximiaokeji `/shop` fastener storefront and quote flow
 - Product admin at `/admin/products`
 - Product pages and Stripe Checkout handoff
@@ -39,8 +39,10 @@ Do not commit secret values to GitHub.
 
 ## Public site direction
 
-- Toumyou public pages should not use fastener, anchor, hardware, procurement, SKU, shop, cart, or checkout positioning.
-- Toumyou sitemap includes `/`, `/services`, `/articles`, and the built-in media-operations articles.
+- Toumyou public pages should not use fastener, anchor, hardware, or procurement positioning.
+- Toumyou main navigation focuses on media operations and growth services; `/shop` remains available for Japanese files and paid digital products with the original cart and payment flow.
+- Toumyou articles include the built-in media-operations articles plus existing published D1 articles.
+- Toumyou sitemap includes `/`, `/services`, `/shop`, product URLs, `/articles`, the built-in media-operations articles, and existing published D1 articles.
 - Ximiaokeji keeps the fastener storefront, product catalog, cart, Stripe checkout, and quote flow.
 
 ## Ximiaokeji shop operations
@@ -58,4 +60,4 @@ Production now uses the lightweight Cloudflare-native CMS built into `_worker.js
 
 ## Commerce direction
 
-See `SHOP_PLAN.md` for the deferred mature shop backend direction. Commerce now applies to Ximiaokeji and any future storefront tenant, not the Toumyou media-operations public site.
+See `SHOP_PLAN.md` for the deferred mature shop backend direction. Ximiaokeji remains the fastener storefront. Toumyou keeps a lighter commerce surface for Japanese files and paid digital products, preserving the original test link, cart, account, and Stripe payment flow.

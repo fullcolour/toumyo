@@ -28,6 +28,7 @@ Persuade. First-time visitors should know within seconds that Toumyou sells medi
 
 ## Anti-patterns
 
-- Do not use fastener, hardware, anchor, procurement, SKU, or shop language on Toumyou public pages.
+- Do not use fastener, hardware, anchor, or procurement language on Toumyou public pages.
+- Toumyou `/shop` is allowed, but it should read as a clean Japanese files / paid digital-products area rather than a hardware storefront.
 - Do not present fake client logos, testimonials, or revenue numbers.
 - Avoid generic “digital agency” stock phrasing; the site should sound like an operator, not a brochure.

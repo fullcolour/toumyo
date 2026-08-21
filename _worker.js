@@ -906,7 +906,7 @@ function shell({ title, description, path = "/", content, schema, image, tenant 
 }
 
 async function home(env, tenant = TENANTS.toumyou) {
-  const posts = (tenant.key === "toumyou" ? MEDIA_ARTICLES : await listPublished(env)).slice(0, 3);
+  const posts = (await publicArticles(env, tenant)).slice(0, 3);
   const products = tenant.key === "toumyou" ? [] : (await listProducts(env)).slice(0, 3);
   if (tenant.key === "ximiaokeji") {
     const categoryCards = SHOP.categories.map((item) => `<article class="article-card"><div class="meta">产品目录 / ${escapeHtml(item.slug)}</div><h3>${escapeHtml(zhCategoryName(item.name))}</h3><p>${escapeHtml(zhCategorySummary(item.summary))}</p><b>询价采购</b></article>`).join("");
@@ -1100,8 +1100,16 @@ function articleLink(post, tenant = TENANTS.toumyou) {
   return `<a class="article-card" href="/articles/${escapeHtml(post.slug)}">${cover}<div class="meta">${escapeHtml(post.category || fallbackCategory)} / ${date}</div><h3>${escapeHtml(post.title)}</h3><p>${escapeHtml(post.excerpt)}</p><b>${cta}</b></a>`;
 }
 
+async function publicArticles(env, tenant = TENANTS.toumyou) {
+  const posts = await listPublished(env);
+  if (tenant.key !== "toumyou") return posts;
+  const mediaPosts = MEDIA_ARTICLES.map((post) => ({ ...post, status: "published" }));
+  const mediaSlugs = new Set(mediaPosts.map((post) => post.slug));
+  return [...mediaPosts, ...posts.filter((post) => !mediaSlugs.has(post.slug))];
+}
+
 async function articles(env, tenant = TENANTS.toumyou) {
-  const posts = tenant.key === "toumyou" ? MEDIA_ARTICLES : await listPublished(env);
+  const posts = await publicArticles(env, tenant);
   const zh = tenant.lang === "zh-CN";
   return html(shell({
     title: zh ? "紧固件文章 | 上海西缈科技有限公司" : "Insights | Toumyou Media Operations",
@@ -1118,7 +1126,7 @@ async function article(env, slug, tenant = TENANTS.toumyou) {
   const staticPost = tenant.key === "toumyou" ? MEDIA_ARTICLES.find((item) => item.slug === slug) : null;
   const post = staticPost || await getPost(env, slug);
   const zh = tenant.lang === "zh-CN";
-  if (!post || post.status !== "published") return html(shell({ title: zh ? "未找到文章 | 西缈科技" : "Not found | Toumyou", description: zh ? "未找到文章。" : "Article not found.", content: zh ? "<main><h1>未找到文章</h1></main>" : "<main><h1>Article not found</h1></main>", tenant }), { status: 404 });
+  if (!post || (!staticPost && post.status !== "published")) return html(shell({ title: zh ? "未找到文章 | 西缈科技" : "Not found | Toumyou", description: zh ? "未找到文章。" : "Article not found.", content: zh ? "<main><h1>未找到文章</h1></main>" : "<main><h1>Article not found</h1></main>", tenant }), { status: 404 });
   const pageTitle = post.seo_title || `${post.title} | ${tenant.name}`;
   const pageDescription = post.seo_description || post.excerpt;
   const cover = post.cover_image ? `<img class="gallery-main" src="${escapeHtml(post.cover_image)}" alt="${escapeHtml(post.title)}" loading="eager">` : "";
@@ -1142,11 +1150,38 @@ async function article(env, slug, tenant = TENANTS.toumyou) {
   }));
 }
 
+function publicProduct(product = {}, tenant = TENANTS.toumyou) {
+  if (tenant.key !== "toumyou") return product;
+  const isLegacyTest =
+    String(product.slug || "").toLowerCase() === "ewe" ||
+    String(product.name || "").toLowerCase() === "test001" ||
+    String(product.sku || "").toLowerCase() === "00001";
+  if (!isLegacyTest) return product;
+  return {
+    ...product,
+    name: "Japanese files",
+    category: "Digital product",
+    material: "",
+    size: "",
+    excerpt: product.excerpt && !/good|test/i.test(product.excerpt)
+      ? product.excerpt
+      : "A paid Japanese digital file product kept from the original shop test link.",
+    description: product.description && !/good|test/i.test(product.description)
+      ? product.description
+      : "Japanese files is the preserved paid test product for Toumyou. The original product link and Stripe payment flow remain available.",
+    specs: product.specs || "Digital delivery / Japanese content file / Checkout enabled",
+    package_info: product.package_info || "Digital delivery",
+    lead_time: product.lead_time || "Delivered or confirmed after payment",
+    shipping_note: product.shipping_note || "No physical shipping is required for digital files.",
+  };
+}
+
 function productCard(product, env, tenant = TENANTS.toumyou) {
+  product = publicProduct(product, tenant);
   const zh = tenant.lang === "zh-CN";
   const canCheckout = product.allow_checkout && product.price_cents > 0 && (env.STRIPE_SECRET_KEY || env.STRIPE_RESTRICTED_KEY);
   const price = product.price_cents > 0 ? money(product.price_cents, product.currency) : (zh ? "询价" : "Quote");
-  const meta = [product.category, product.material, product.size].filter(Boolean).join(" / ") || (zh ? "紧固件" : "Fastener");
+  const meta = [product.category, product.material, product.size].filter(Boolean).join(" / ") || (zh ? "紧固件" : "Digital product");
   const moq = Number(product.moq || 1) > 1 ? `, ${zh ? "起订量" : "MOQ"} ${escapeHtml(product.moq)}` : "";
   const minQty = Math.max(1, Number.parseInt(product.moq || 1, 10) || 1);
   const searchText = [product.name, product.sku, product.slug, product.category, product.material, product.size, product.excerpt, product.description, product.specs].filter(Boolean).join(" ").toLowerCase();
@@ -1159,14 +1194,14 @@ function productCard(product, env, tenant = TENANTS.toumyou) {
     ${image}
     <div class="meta">${escapeHtml(meta)}</div>
     <h3>${escapeHtml(product.name)}</h3>
-    <p>${escapeHtml(product.excerpt || product.description || (zh ? "适用于企业采购的紧固件及工业配件产品。" : "Industrial supply item available for cross-border sourcing."))}</p>
+    <p>${escapeHtml(product.excerpt || product.description || (zh ? "适用于企业采购的紧固件及工业配件产品。" : "Digital product available through Toumyou checkout."))}</p>
     <p class="muted">SKU: ${escapeHtml(product.sku || product.slug)}<br>${escapeHtml(price)}${moq}${product.inventory ? `, ${zh ? "库存" : "stock"} ${escapeHtml(product.inventory)}` : ""}</p>
     <div class="toolbar" style="margin-top:auto">
       <a class="btn secondary" href="/shop/products/${escapeHtml(product.slug)}">${zh ? "查看详情" : "Details"}</a>
       ${
         canCheckout
           ? `<form method="post" action="/api/cart/add"><input type="hidden" name="product_id" value="${escapeHtml(product.id)}"><input type="hidden" name="quantity" value="${escapeHtml(minQty)}"><button class="btn secondary" type="submit">${zh ? "加入购物车" : "Add to cart"}</button></form><form method="post" action="/api/checkout"><input type="hidden" name="product_id" value="${escapeHtml(product.id)}"><input type="hidden" name="quantity" value="${escapeHtml(minQty)}"><button class="btn buy" type="submit">${zh ? "立即购买" : "Buy now"}</button></form>`
-          : `<a class="btn" href="mailto:${escapeHtml(tenant.email)}?subject=${encodeURIComponent(`${zh ? "紧固件询价" : "Quote request"}: ${product.name}`)}">${zh ? "发送询价" : "Request quote"}</a>`
+          : `<a class="btn" href="mailto:${escapeHtml(tenant.email)}?subject=${encodeURIComponent(`${zh ? "紧固件询价" : "Product inquiry"}: ${product.name}`)}">${zh ? "发送询价" : "Request quote"}</a>`
       }
     </div>
   </article>`;
@@ -1177,28 +1212,31 @@ async function shopPage(env, tenant = TENANTS.toumyou) {
   const medusaUrl = env.MEDUSA_BACKEND_URL || "";
   const checkoutStatus = env.STRIPE_SECRET_KEY || env.STRIPE_RESTRICTED_KEY ? (zh ? "已配置在线支付，可用于支持购买的产品。" : "Secure checkout is available for listed paid products.") : (zh ? "在线支付正在配置中，可先提交询价。" : "Checkout is pending merchant configuration.");
   const products = await listProducts(env);
-  const categories = [...new Set(products.map((p) => String(p.category || (zh ? "紧固件" : "Fasteners")).trim()).filter(Boolean))].sort();
-  const categoryCards = SHOP.categories
-    .map(
-      (item) => `<article class="article-card"><div class="meta">${zh ? "产品目录" : "Catalog"} / ${escapeHtml(item.slug)}</div><h3>${escapeHtml(zh ? zhCategoryName(item.name) : item.name)}</h3><p>${escapeHtml(zh ? zhCategorySummary(item.summary) : item.summary)}</p><b>${zh ? "询价采购" : "Request quote"}</b></article>`,
-    )
-    .join("");
+  const displayProducts = products.map((p) => publicProduct(p, tenant));
+  const categories = [...new Set(displayProducts.map((p) => String(p.category || (zh ? "紧固件" : "Digital product")).trim()).filter(Boolean))].sort();
+  const categoryCards = zh
+    ? SHOP.categories
+      .map(
+        (item) => `<article class="article-card"><div class="meta">产品目录 / ${escapeHtml(item.slug)}</div><h3>${escapeHtml(zhCategoryName(item.name))}</h3><p>${escapeHtml(zhCategorySummary(item.summary))}</p><b>询价采购</b></article>`,
+      )
+      .join("")
+    : `<article class="article-card"><div class="meta">Shop / japanese-files</div><h3>Japanese files</h3><p>Paid Japanese files and lightweight digital products from Toumyou. The original test product link and checkout flow are preserved.</p><b>Open product</b></article>`;
   const content = `<main>
     <section id="catalog" class="section catalog-first">
-      <p class="eyebrow">${zh ? "紧固件产品中心" : "International fastener shop"}</p>
-      <h1>${zh ? "紧固件、五金件<br>与工业配件供应。" : "Fasteners, hardware,<br>and sourcing support."}</h1>
+      <p class="eyebrow">${zh ? "紧固件产品中心" : "Toumyou shop"}</p>
+      <h1>${zh ? "紧固件、五金件<br>与工业配件供应。" : "Japanese files<br>and paid digital products."}</h1>
       <div class="intro-strip">
-        <p>${zh ? "浏览已上架 SKU，支持购物车和在线购买；特殊材质、图纸件、批量采购和组合清单可提交询价。" : "Browse live SKUs, pay online when checkout is enabled, or request a quotation for special materials, drawings, bulk quantities, and mixed procurement lists."}</p>
+        <p>${zh ? "浏览已上架 SKU，支持购物车和在线购买；特殊材质、图纸件、批量采购和组合清单可提交询价。" : "The original test product remains available as Japanese files. Checkout, cart, account, and Stripe payment flows are preserved."}</p>
         <ul>
-          <li>${zh ? "螺丝、螺栓、螺母、垫圈、锚固件和配套工业五金" : "Metric screws, bolts, nuts, washers, anchors, and accessory parts"}</li>
-          <li>${zh ? "适合维修、样品、经销、工程项目和 OEM 采购需求" : "Small-batch supply for repair, prototype, distributor, and OEM needs"}</li>
-          <li>${zh ? "支持账户、购物车、订单记录和支付状态查询" : "Stripe Checkout with address collection, freight options, and local payment methods where eligible"}</li>
+          <li>${zh ? "螺丝、螺栓、螺母、垫圈、锚固件和配套工业五金" : "Original test product link stays live."}</li>
+          <li>${zh ? "适合维修、样品、经销、工程项目和 OEM 采购需求" : "Stripe checkout and cart payment remain enabled for eligible products."}</li>
+          <li>${zh ? "支持账户、购物车、订单记录和支付状态查询" : "This shop supports paid digital files while the main site focuses on media operations."}</li>
         </ul>
       </div>
       ${
         products.length
           ? `<div class="shop-filter">
-              <input id="shopSearch" type="search" placeholder="${zh ? "按 SKU、规格、材质、标准或表面处理搜索..." : "Search by SKU, size, material, standard, or finish..."}">
+              <input id="shopSearch" type="search" placeholder="${zh ? "按 SKU、规格、材质、标准或表面处理搜索..." : "Search by product name, SKU, file type, or status..."}">
               <select id="shopCategory"><option value="">${zh ? "全部分类" : "All categories"}</option>${categories.map((c) => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join("")}</select>
               <select id="shopAvailability"><option value="">${zh ? "全部采购方式" : "All ordering types"}</option><option value="stock">${zh ? "可在线购买" : "Online checkout"}</option><option value="quote">${zh ? "需要询价" : "Quote required"}</option></select>
             </div>
@@ -1206,7 +1244,7 @@ async function shopPage(env, tenant = TENANTS.toumyou) {
           : ""
       }
       <div class="article-grid">${products.length ? products.map((p) => productCard(p, env, tenant)).join("") : categoryCards}</div>
-      ${products.length ? "" : `<div class="notice" style="margin-top:24px">${zh ? '暂无已发布产品。可在 <a class="text-link" href="/admin/products">产品后台</a> 发布第一个 SKU。' : 'No live products have been published yet. Use <a class="text-link" href="/admin/products">Product Admin</a> to publish the first SKUs.'}</div>`}
+      ${products.length ? "" : `<div class="notice" style="margin-top:24px">${zh ? '暂无已发布产品。可在 <a class="text-link" href="/admin/products">产品后台</a> 发布第一个 SKU。' : 'No public products yet. Use <a class="text-link" href="/admin/products">Product Admin</a> to publish Japanese files or other paid digital products.'}</div>`}
       ${
         products.length
           ? `<script>
@@ -1238,37 +1276,37 @@ async function shopPage(env, tenant = TENANTS.toumyou) {
       }
     </section>
     <section class="section">
-      <p class="eyebrow">${zh ? "下单与交付" : "Ordering and delivery"}</p>
-      <h2>${zh ? "下单前清楚确认<br>规格、数量和交付。" : "Clear terms before<br>you place the order."}</h2>
+      <p class="eyebrow">${zh ? "下单与交付" : "Checkout and delivery"}</p>
+      <h2>${zh ? "下单前清楚确认<br>规格、数量和交付。" : "Clear checkout<br>for paid files."}</h2>
       <div class="service-grid">
-        <article><span>${zh ? "产品信息" : "Product details"}</span><h3>${zh ? "每个可购买 SKU 会显示价格、起订量、库存和规格。" : "Each paid SKU shows price, MOQ, stock, and specifications."}</h3><p>${zh ? "特殊尺寸、材料、表面处理或图纸件，建议先提交询价再确认。" : "For special sizes, materials, coatings, or drawings, send a quote request before payment."}</p></article>
-        <article><span>${zh ? "配送" : "Shipping"}</span><h3>${zh ? "订单配送和交付方式会根据地址与产品确认。" : "Standard and express freight are shown at checkout."}</h3><p>${zh ? "如需批量采购或指定物流，可在询价时备注目的地和交期要求。" : "Checkout collects the destination address. Import duties, VAT, and local customs fees are normally paid by the recipient."}</p></article>
+        <article><span>${zh ? "产品信息" : "Product details"}</span><h3>${zh ? "每个可购买 SKU 会显示价格、起订量、库存和规格。" : "Each paid item shows name, price, availability, and checkout status."}</h3><p>${zh ? "特殊尺寸、材料、表面处理或图纸件，建议先提交询价再确认。" : "Japanese files keeps the original test product online while the main site serves Toumyou's media operations business."}</p></article>
+        <article><span>${zh ? "配送" : "Delivery"}</span><h3>${zh ? "订单配送和交付方式会根据地址与产品确认。" : "Digital delivery or follow-up is confirmed after payment."}</h3><p>${zh ? "如需批量采购或指定物流，可在询价时备注目的地和交期要求。" : "No physical shipping is required unless a specific product page says otherwise."}</p></article>
         <article><span>${zh ? "支付" : "Payment"}</span><h3>${escapeHtml(checkoutStatus)}</h3><p>${zh ? "支持的支付方式会根据账户配置、币种和订单条件显示；批量采购也可先沟通确认。" : "Stripe may show cards, Alipay, WeChat Pay, Apple Pay, or other methods depending on buyer location, currency, and Stripe eligibility."}</p></article>
       </div>
-      <div class="notice" style="margin-top:34px"><strong>${zh ? "采购提示：" : "Shipping note:"}</strong> ${zh ? "请尽量提供规格、材质、表面处理、数量、用途、交付城市和图纸/照片，便于更快确认报价。" : "Standard delivery is normally 7 to 14 business days. Express delivery is normally 3 to 7 business days. The exact charge and estimate are shown by Stripe Checkout before payment."}</div>
+      <div class="notice" style="margin-top:34px"><strong>${zh ? "采购提示：" : "Digital product note:"}</strong> ${zh ? "请尽量提供规格、材质、表面处理、数量、用途、交付城市和图纸/照片，便于更快确认报价。" : "No physical shipping is required for Japanese files unless a product page says otherwise."}</div>
     </section>
     <section class="contact">
       <div class="contact-grid">
-        <div><p class="eyebrow">${zh ? "开始采购" : "Start procurement"}</p><h2>${zh ? "发送规格、材质<br>和采购数量。" : "Send the size,<br>material and quantity."}</h2><a href="mailto:${escapeHtml(tenant.email)}?subject=${encodeURIComponent(zh ? "紧固件询价" : "Fastener quote request")}" class="contact-mail">${escapeHtml(tenant.email)}</a></div>
+        <div><p class="eyebrow">${zh ? "开始采购" : "Shop contact"}</p><h2>${zh ? "发送规格、材质<br>和采购数量。" : "Need a custom media asset<br>or Japanese file?"}</h2><a href="mailto:${escapeHtml(tenant.email)}?subject=${encodeURIComponent(zh ? "紧固件询价" : "Japanese files inquiry")}" class="contact-mail">${escapeHtml(tenant.email)}</a></div>
         <ul class="contact-list">
-          <li><span>${zh ? "范围" : "Examples"}</span><p class="address">${zh ? "螺丝、螺栓、螺母、垫圈、锚固件、销钉、铆钉、卡扣、支架及非标五金件。" : "M3 to M24 screws, stainless bolts, nuts, washers, anchors, pins, rivets, clips, brackets, and custom hardware."}</p></li>
-          <li><span>${zh ? "电话" : "Markets"}</span><p class="address">${zh ? `<a href="tel:${escapeHtml(tenant.telHref)}">${escapeHtml(tenant.phone)}</a>` : "Japan, Asia, North America, Europe, and cross-border B2B buyers."}</p></li>
-          <li><span>${zh ? "询价信息" : "Quote details"}</span><p class="address">${zh ? "请发送标准、尺寸、材质、表面处理、数量、交付地，以及图纸或参考照片。" : "Send standard, size, material, finish, quantity, destination country, and any drawing or reference photo."}</p></li>
+          <li><span>${zh ? "范围" : "Examples"}</span><p class="address">${zh ? "螺丝、螺栓、螺母、垫圈、锚固件、销钉、铆钉、卡扣、支架及非标五金件。" : "Japanese files, digital assets, media operation templates, and lightweight paid resources."}</p></li>
+          <li><span>${zh ? "电话" : "Market"}</span><p class="address">${zh ? `<a href="tel:${escapeHtml(tenant.telHref)}">${escapeHtml(tenant.phone)}</a>` : "Toumyou media operations shop."}</p></li>
+          <li><span>${zh ? "询价信息" : "Quote details"}</span><p class="address">${zh ? "请发送标准、尺寸、材质、表面处理、数量、交付地，以及图纸或参考照片。" : "Send the file name, usage, delivery email, and any required format."}</p></li>
         </ul>
       </div>
     </section>
   </main>`;
   return html(shell({
-    title: zh ? "紧固件产品 | 上海西缈科技有限公司" : "Fastener Shop | Toumyou",
-    description: zh ? "上海西缈科技有限公司紧固件产品中心，提供螺丝、螺栓、螺母、垫圈和工业配件销售与询价。" : SHOP.description,
+    title: zh ? "紧固件产品 | 上海西缈科技有限公司" : "Japanese files | Toumyou Shop",
+    description: zh ? "上海西缈科技有限公司紧固件产品中心，提供螺丝、螺栓、螺母、垫圈和工业配件销售与询价。" : "Toumyou shop for Japanese files and paid digital products, with cart and Stripe checkout preserved.",
     path: "/shop",
     content,
     schema: {
       "@context": "https://schema.org",
       "@type": "Store",
-      name: zh ? "上海西缈科技紧固件产品中心" : SHOP.name,
+      name: zh ? "上海西缈科技紧固件产品中心" : "Toumyou Japanese files",
       url: `${tenant.url}/shop`,
-      description: zh ? "紧固件、工业五金和配件销售。" : SHOP.description,
+      description: zh ? "紧固件、工业五金和配件销售。" : "Japanese files and paid digital products from Toumyou.",
       email: tenant.email,
       parentOrganization: { "@type": "Organization", name: tenant.legalName },
       makesOffer: (products.length ? products : SHOP.categories).map((item) => ({
@@ -1285,10 +1323,11 @@ async function shopPage(env, tenant = TENANTS.toumyou) {
 
 async function productPage(env, slug, tenant = TENANTS.toumyou) {
   const zh = tenant.lang === "zh-CN";
-  const product = await getProduct(env, slug);
+  let product = await getProduct(env, slug);
   if (!product || product.status !== "published") {
     return html(shell({ title: zh ? "产品未找到 | 西缈科技" : "Product not found | Toumyou", description: zh ? "产品未找到。" : "Product not found.", content: zh ? "<main><h1>产品未找到</h1></main>" : "<main><h1>Product not found</h1></main>", tenant }), { status: 404 });
   }
+  product = publicProduct(product, tenant);
   const canCheckout = product.allow_checkout && product.price_cents > 0 && (env.STRIPE_SECRET_KEY || env.STRIPE_RESTRICTED_KEY);
   const images = productImages(product);
   const specs = String(product.specs || "").trim();
@@ -1296,12 +1335,12 @@ async function productPage(env, slug, tenant = TENANTS.toumyou) {
   const maxQty = product.inventory ? Math.max(minQty, Math.min(999, Number.parseInt(product.inventory, 10) || 999)) : 999;
   const specRows = [
     ["SKU", product.sku || product.slug],
-    [zh ? "分类" : "Category", product.category || (zh ? "紧固件" : "Fasteners")],
-    [zh ? "材质" : "Material", product.material || (zh ? "按订单确认" : "Confirm by order")],
-    [zh ? "规格" : "Size", product.size || (zh ? "按订单确认" : "Confirm by order")],
-    [zh ? "包装" : "Packaging", product.package_info || (zh ? "标准出口包装，可按订单确认" : "Standard export packaging, confirmed by order")],
+    [zh ? "分类" : "Category", product.category || (zh ? "紧固件" : "Digital product")],
+    [zh ? "材质" : "Material", product.material || (zh ? "按订单确认" : "Digital file")],
+    [zh ? "规格" : "Size", product.size || (zh ? "按订单确认" : "Digital delivery")],
+    [zh ? "包装" : "Packaging", product.package_info || (zh ? "标准出口包装，可按订单确认" : "Digital delivery")],
     [zh ? "起订量" : "MOQ", product.moq || 1],
-    [zh ? "交期" : "Lead time", product.lead_time || (zh ? "常规 7-14 个工作日，急单另行确认" : "Usually 7-14 business days; urgent orders confirmed case by case")],
+    [zh ? "交期" : "Lead time", product.lead_time || (zh ? "常规 7-14 个工作日，急单另行确认" : "Delivered or confirmed after payment")],
     [zh ? "重量" : "Weight", product.weight_grams ? `${product.weight_grams} g / ${zh ? "件" : "unit"}` : (zh ? "按订单确认" : "Confirm by order")],
   ];
   const gallery = images.length
@@ -1318,15 +1357,15 @@ async function productPage(env, slug, tenant = TENANTS.toumyou) {
       </script>`
     : "";
   const content = `<main class="article-page article"><article>
-    <div class="meta">${escapeHtml(product.category || (zh ? "紧固件" : "Fasteners"))} / ${escapeHtml(product.sku || product.slug)}</div>
+    <div class="meta">${escapeHtml(product.category || (zh ? "紧固件" : "Digital product"))} / ${escapeHtml(product.sku || product.slug)}</div>
     <h1>${escapeHtml(product.name)}</h1>
-    <p class="article-dek">${escapeHtml(product.excerpt || (zh ? "紧固件与工业配件供应产品。" : "Cross-border fastener and industrial accessory supply."))}</p>
+    <p class="article-dek">${escapeHtml(product.excerpt || (zh ? "紧固件与工业配件供应产品。" : "Digital product available through Toumyou checkout."))}</p>
     ${gallery}
     <div class="post-body">${escapeHtml(product.description || "")}</div>
     <div class="notice" style="margin-top:34px">
       <p><strong>${zh ? "价格" : "Price"}:</strong> ${escapeHtml(product.price_cents > 0 ? money(product.price_cents, product.currency) : (zh ? "需要询价" : "Quote required"))}</p>
       <p><strong>${zh ? "库存" : "Inventory"}:</strong> ${escapeHtml(product.inventory || (zh ? "请确认库存" : "Confirm availability"))}</p>
-      <p><strong>${zh ? "交付" : "Delivery"}:</strong> ${escapeHtml(product.shipping_note || (zh ? "交付方式、周期和运费会根据产品、数量和地址确认；批量采购建议先提交询价。" : "Standard 7 to 14 business days or Express 3 to 7 business days. Freight is calculated in Stripe Checkout; duties and import taxes are normally payable by the recipient."))}</p>
+      <p><strong>${zh ? "交付" : "Delivery"}:</strong> ${escapeHtml(product.shipping_note || (zh ? "交付方式、周期和运费会根据产品、数量和地址确认；批量采购建议先提交询价。" : "No physical shipping is required for digital files."))}</p>
     </div>
     <div class="notice" style="margin-top:18px">
       <h3>${zh ? "规格参数" : "Specifications"}</h3>
@@ -1338,7 +1377,7 @@ async function productPage(env, slug, tenant = TENANTS.toumyou) {
     ${
       canCheckout
         ? `<form class="product-buy" method="post" action="/api/cart/add"><input type="hidden" name="product_id" value="${escapeHtml(product.id)}"><div><label>${zh ? "数量" : "Quantity"}</label><input name="quantity" type="number" min="${escapeHtml(minQty)}" max="${escapeHtml(maxQty)}" value="${escapeHtml(minQty)}"></div><button class="btn secondary" type="submit">${zh ? "加入购物车" : "Add to cart"}</button><span class="muted">${zh ? "起订量" : "MOQ"} ${escapeHtml(minQty)}${product.inventory ? `, ${zh ? "当前最多" : "max"} ${escapeHtml(maxQty)}` : ""}</span></form><form class="product-buy" method="post" action="/api/checkout"><input type="hidden" name="product_id" value="${escapeHtml(product.id)}"><input name="quantity" type="hidden" value="${escapeHtml(minQty)}"><button class="btn buy" type="submit">${zh ? "立即购买" : "Buy now"}</button></form>`
-        : `<a class="btn" href="mailto:${escapeHtml(tenant.email)}?subject=${encodeURIComponent(`${zh ? "紧固件询价" : "Quote request"}: ${product.name}`)}">${zh ? "发送询价" : "Request quote"}</a>`
+        : `<a class="btn" href="mailto:${escapeHtml(tenant.email)}?subject=${encodeURIComponent(`${zh ? "紧固件询价" : "Product inquiry"}: ${product.name}`)}">${zh ? "发送询价" : "Request quote"}</a>`
     }
     <a class="btn secondary" href="/shop">${zh ? "返回产品页" : "Back to shop"}</a>
   </div></main>`;
@@ -1351,7 +1390,7 @@ async function productPage(env, slug, tenant = TENANTS.toumyou) {
     <label>${zh ? "数量" : "Quantity"}</label><input name="quantity" placeholder="${zh ? "例如：500 件 / 20 箱" : "Example: 500 pcs / 20 boxes"}">
     <label>${zh ? "规格" : "Specifications"}</label><textarea name="specs" placeholder="${zh ? "材质、尺寸、标准、表面处理、图纸链接、包装要求..." : "Material, size, standard, finish, drawing link, packaging..."}"></textarea>
     <label>${zh ? "备注" : "Message"}</label><textarea name="message" placeholder="${zh ? "交付城市、目标日期或其他特殊要求。" : "Tell us delivery country, target date, or anything special."}"></textarea>
-    <div class="toolbar"><button class="btn" type="submit">${zh ? "提交询价" : "Submit quote request"}</button><a class="btn secondary" href="mailto:${escapeHtml(tenant.email)}?subject=${encodeURIComponent(`${zh ? "紧固件询价" : "Quote request"}: ${product.name}`)}">${zh ? "改用邮件发送" : "Email instead"}</a></div>
+    <div class="toolbar"><button class="btn" type="submit">${zh ? "提交询价" : "Submit quote request"}</button><a class="btn secondary" href="mailto:${escapeHtml(tenant.email)}?subject=${encodeURIComponent(`${zh ? "紧固件询价" : "Product inquiry"}: ${product.name}`)}">${zh ? "改用邮件发送" : "Email instead"}</a></div>
     <p id="quoteStatus" class="status"></p>
   </form></div>
   <script>
@@ -1368,7 +1407,7 @@ async function productPage(env, slug, tenant = TENANTS.toumyou) {
   </script></section>`;
   return html(shell({
     title: `${product.name} | ${zh ? "上海西缈科技有限公司" : "Toumyou Shop"}`,
-    description: product.excerpt || product.description || (zh ? "紧固件与工业配件产品详情。" : SHOP.description),
+    description: product.excerpt || product.description || (zh ? "紧固件与工业配件产品详情。" : "Digital product details from Toumyou."),
     path: `/shop/products/${product.slug}`,
     content: content.replace("</main>", `${quoteForm}</main>`),
     schema: {
@@ -1377,7 +1416,7 @@ async function productPage(env, slug, tenant = TENANTS.toumyou) {
       name: product.name,
       sku: product.sku || product.slug,
       mpn: product.sku || product.slug,
-      brand: { "@type": "Brand", name: zh ? "上海西缈科技有限公司" : "Toumyou Fastener Supply" },
+      brand: { "@type": "Brand", name: zh ? "上海西缈科技有限公司" : "Toumyou" },
       description: product.excerpt || product.description,
       image: images.length ? images : undefined,
       offers: {
@@ -1764,6 +1803,7 @@ async function stripeCheckout(request, env) {
   if (!product || product.status !== "published" || !product.allow_checkout || product.price_cents <= 0) {
     return json({ error: "Product is not available for checkout" }, { status: 400 });
   }
+  const checkoutProduct = publicProduct(product, tenant);
   const minQty = Math.max(1, Number.parseInt(product.moq || 1, 10) || 1);
   const inventory = Math.max(0, Number.parseInt(product.inventory || 0, 10) || 0);
   if (requestedQuantity < minQty) return json({ error: `Minimum order quantity is ${minQty}` }, { status: 400 });
@@ -1815,8 +1855,8 @@ async function stripeCheckout(request, env) {
   params.set("line_items[0][quantity]", String(quantity));
   params.set("line_items[0][price_data][currency]", String(product.currency || "USD").toLowerCase());
   params.set("line_items[0][price_data][unit_amount]", String(product.price_cents));
-  params.set("line_items[0][price_data][product_data][name]", product.name);
-  params.set("line_items[0][price_data][product_data][description]", product.excerpt || product.description || product.sku || product.slug);
+  params.set("line_items[0][price_data][product_data][name]", checkoutProduct.name);
+  params.set("line_items[0][price_data][product_data][description]", checkoutProduct.excerpt || checkoutProduct.description || checkoutProduct.sku || checkoutProduct.slug);
   if (product.image_url) params.set("line_items[0][price_data][product_data][images][0]", product.image_url);
   params.set("metadata[product_id]", product.id);
   params.set("metadata[product_slug]", product.slug);
@@ -1838,7 +1878,7 @@ async function stripeCheckout(request, env) {
   if (!response.ok || !data.url) return json({ error: "Stripe checkout failed", details: data.error?.message || "Unknown error" }, { status: 502 });
   if (env.DB) {
     await env.DB.prepare("INSERT INTO orders (id,stripe_session_id,product_id,product_slug,product_name,sku,quantity,amount_total,currency,payment_status,fulfillment_status,customer_id,customer_email,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
-      .bind(orderId, data.id || "", product.id, product.slug, product.name, product.sku || "", quantity, product.price_cents * quantity, product.currency, "checkout_created", "new", customer?.id || "", customer?.email || "", now, now).run()
+      .bind(orderId, data.id || "", product.id, product.slug, checkoutProduct.name, product.sku || "", quantity, product.price_cents * quantity, product.currency, "checkout_created", "new", customer?.id || "", customer?.email || "", now, now).run()
       .catch(() => {});
   }
   return Response.redirect(data.url, 303);
@@ -1878,7 +1918,8 @@ async function stripeCartCheckout(request, env) {
   params.set("shipping_options[1][shipping_rate_data][display_name]", "Express international shipping");
   params.set("shipping_options[1][shipping_rate_data][fixed_amount][amount]", String(expressShipping));
   params.set("shipping_options[1][shipping_rate_data][fixed_amount][currency]", shippingCurrency);
-  items.forEach((item, index) => {
+  const checkoutItems = items.map((item) => publicProduct(item, tenant));
+  checkoutItems.forEach((item, index) => {
     params.set(`line_items[${index}][quantity]`, String(Math.max(1, Number(item.quantity || 1))));
     params.set(`line_items[${index}][price_data][currency]`, String(item.currency || "JPY").toLowerCase());
     params.set(`line_items[${index}][price_data][unit_amount]`, String(item.price_cents));
@@ -2122,14 +2163,17 @@ async function accountPage(request, env) {
   const customer = await currentCustomer(request, env);
   if (!customer) return loginPage(new Request(`${tenant.url}/login?next=/account`), env);
   const orders = await listCustomerOrders(env, customer);
-  const cards = orders.map((o) => `<article class="article-card">
+  const cards = orders.map((order) => {
+    const o = { ...order, product_name: publicProduct({ slug: order.product_slug, name: order.product_name, sku: order.sku }, tenant).name || order.product_name };
+    return `<article class="article-card">
     <div class="meta">${escapeHtml(o.payment_status || "pending")} / ${escapeHtml(o.fulfillment_status || "new")}</div>
     <h3>${escapeHtml(o.product_name || o.product_slug || (zh ? "西缈订单" : "Toumyou order"))}</h3>
     <p>${escapeHtml(o.sku || "Order")}<br>${escapeHtml(money(o.amount_total, o.currency))}</p>
     <p class="muted">${zh ? "数量" : "Quantity"} ${escapeHtml(o.quantity || 1)}. ${zh ? "创建时间" : "Created"} ${escapeHtml(o.created_at ? new Date(Number(o.created_at) * 1000).toLocaleString() : "-")}.</p>
     <p class="muted">Stripe session: ${escapeHtml(o.stripe_session_id || "-")}</p>
     ${o.stripe_payment_intent ? `<a class="btn secondary" href="https://dashboard.stripe.com/payments/${escapeHtml(o.stripe_payment_intent)}" target="_blank">${zh ? "支付记录" : "Payment record"}</a>` : ""}
-  </article>`).join("");
+  </article>`;
+  }).join("");
   return html(shell({
     title: zh ? "我的账户 | 上海西缈科技有限公司" : "My account | Toumyou",
     description: zh ? "客户账户与订单历史。" : "Toumyou customer account and order history.",
@@ -2150,15 +2194,18 @@ async function cartPage(request, env) {
   const items = await listCart(env, customer.id);
   const subtotal = items.reduce((sum, item) => sum + (Number(item.price_cents || 0) * Number(item.quantity || 1)), 0);
   const currency = items[0]?.currency || "JPY";
-  const cards = items.map((item) => `<article class="article-card">
-    <div class="meta">${escapeHtml(item.category || (zh ? "紧固件" : "Fasteners"))} / ${escapeHtml(item.sku || item.slug)}</div>
+  const cards = items.map((cartItem) => {
+    const item = publicProduct(cartItem, tenant);
+    return `<article class="article-card">
+    <div class="meta">${escapeHtml(item.category || (zh ? "紧固件" : "Digital product"))} / ${escapeHtml(item.sku || item.slug)}</div>
     <h3>${escapeHtml(item.name)}</h3>
     <p>${escapeHtml(money(item.price_cents, item.currency))}<br>${zh ? "数量" : "Quantity"} ${escapeHtml(item.quantity || 1)}</p>
     <div class="toolbar">
       <form method="post" action="/api/cart/update"><input type="hidden" name="cart_id" value="${escapeHtml(item.cart_id)}"><input name="quantity" type="number" min="1" value="${escapeHtml(item.quantity || 1)}"><button class="btn secondary" type="submit">${zh ? "更新" : "Update"}</button></form>
       <form method="post" action="/api/cart/remove"><input type="hidden" name="cart_id" value="${escapeHtml(item.cart_id)}"><button class="btn secondary" type="submit">${zh ? "移除" : "Remove"}</button></form>
     </div>
-  </article>`).join("");
+  </article>`;
+  }).join("");
   return html(shell({
     title: zh ? "购物车 | 上海西缈科技有限公司" : "Cart | Toumyou",
     description: zh ? "西缈科技购物车。" : "Toumyou shopping cart.",
@@ -2371,15 +2418,17 @@ async function handleApi(request, env, pathname) {
 }
 
 async function sitemap(env, tenant = TENANTS.toumyou) {
-  const posts = tenant.key === "toumyou" ? MEDIA_ARTICLES : await listPublished(env);
-  const products = tenant.key === "toumyou" ? [] : await listProducts(env);
+  const posts = await publicArticles(env, tenant);
+  const products = await listProducts(env);
   const today = new Date().toISOString().slice(0, 10);
   const toDate = (stamp) => (stamp ? new Date(Number(stamp) * 1000).toISOString().slice(0, 10) : today);
   const urls = tenant.key === "toumyou"
     ? [
         { path: "/", priority: "1.0", changefreq: "weekly", lastmod: today },
         { path: "/services", priority: "0.9", changefreq: "weekly", lastmod: today },
+        { path: "/shop", priority: "0.7", changefreq: "weekly", lastmod: today },
         { path: "/articles", priority: "0.8", changefreq: "weekly", lastmod: today },
+        ...products.map((p) => ({ path: `/shop/products/${p.slug}`, priority: "0.6", changefreq: "weekly", lastmod: toDate(p.updated_at || p.created_at) })),
         ...posts.map((p) => ({ path: `/articles/${p.slug}`, priority: "0.7", changefreq: "monthly", lastmod: toDate(p.updated_at || p.published_at) })),
       ]
     : [
@@ -2406,8 +2455,7 @@ export default {
     if (url.pathname.startsWith("/media/")) return mediaFile(request, env, decodeURIComponent(url.pathname.slice("/media/".length)));
     if (url.pathname.startsWith("/api/")) return handleApi(request, env, url.pathname);
     if (url.pathname === "/") return home(env, tenant);
-    if (tenant.key === "toumyou" && ["/shop", "/cart", "/account", "/login", "/shop/success", "/digital"].includes(url.pathname)) return redirect(`${tenant.url}/services`, 301);
-    if (tenant.key === "toumyou" && url.pathname.startsWith("/shop/products/")) return redirect(`${tenant.url}/services`, 301);
+    if (tenant.key === "toumyou" && url.pathname === "/digital") return redirect(`${tenant.url}/services`, 301);
     if (url.pathname === "/login") return loginPage(request, env);
     if (url.pathname === "/cart") return cartPage(request, env);
     if (url.pathname === "/account") return accountPage(request, env);
