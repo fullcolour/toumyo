@@ -1,13 +1,13 @@
-# Toumyou Studio
+# Toumyou Media Operations
 
-Cloudflare Pages site for Toumyou LLC.
+Cloudflare Pages Worker for the Toumyou and Ximiaokeji sites.
 
 The site is built as a Cloudflare Pages Worker in `_worker.js`. It includes:
 
-- English-first public homepage
-- Portfolio, history, team, and contact content migrated from the original site
-- VPN content removed
-- `/shop` fastener and industrial accessory storefront entry
+- `toumyou.com`: media operations, content growth, short-video production, website production, software development, traffic acquisition, and commercial IP growth
+- `ximiaokeji.com`: Chinese fastener and industrial accessory storefront
+- Toumyou public redirects from old shop/cart/product paths to `/services`
+- Ximiaokeji `/shop` fastener storefront and quote flow
 - Product admin at `/admin/products`
 - Product pages and Stripe Checkout handoff
 - Articles, products, orders, customers, and settings backed by Cloudflare D1
@@ -37,7 +37,13 @@ Configure these in Cloudflare Pages project settings:
 
 Do not commit secret values to GitHub.
 
-## Shop operations
+## Public site direction
+
+- Toumyou public pages should not use fastener, anchor, hardware, procurement, SKU, shop, cart, or checkout positioning.
+- Toumyou sitemap includes `/`, `/services`, `/articles`, and the built-in media-operations articles.
+- Ximiaokeji keeps the fastener storefront, product catalog, cart, Stripe checkout, and quote flow.
+
+## Ximiaokeji shop operations
 
 - Open `/admin/products` with the existing admin password.
 - Add products with name, SKU, category, material, size, price, inventory, images, and status.
@@ -52,4 +58,4 @@ Production now uses the lightweight Cloudflare-native CMS built into `_worker.js
 
 ## Commerce direction
 
-See `SHOP_PLAN.md`. The recommended mature open-source shop backend is Medusa. This Pages site should remain the public storefront, while Medusa handles catalog, admin, orders, carts, checkout, and payment configuration.
+See `SHOP_PLAN.md` for the deferred mature shop backend direction. Commerce now applies to Ximiaokeji and any future storefront tenant, not the Toumyou media-operations public site.

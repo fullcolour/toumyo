@@ -2,7 +2,7 @@ const SITE = {
   name: "Toumyou",
   url: "https://toumyou.com",
   description:
-    "Toumyou LLC supplies fasteners, hardware, and industrial accessories for cross-border buyers from Japan and Asia.",
+    "Toumyou is a media operations and digital growth company for content systems, short-video production, websites, software development, traffic acquisition, and commercial IP growth.",
 };
 
 const SHOP = {
@@ -33,6 +33,62 @@ const SHOP = {
   ],
 };
 
+const MEDIA_ARTICLES = [
+  {
+    slug: "content-growth-operating-system",
+    title: "A content growth operating system is not a posting calendar",
+    excerpt: "How brands turn scattered publishing into a repeatable loop of narrative, production, distribution, conversion, and learning.",
+    category: "Content Growth",
+    published_at: 1792627200,
+    updated_at: 1792627200,
+    body: `A content calendar tells a team what to publish. A content growth operating system tells a business why the content exists, who it moves, where it travels, what action it earns, and how the next cycle becomes sharper.
+
+The difference matters because most teams do not fail from a lack of posts. They fail from a lack of architecture. The brand story lives in one document, short videos live in another workflow, paid traffic is outsourced, the website is updated after everything else, and customer questions never return to the content team as insight.
+
+Toumyou treats content as infrastructure. The system starts with a narrative spine: the market problem, the buyer's language, the founder or brand's point of view, and the conversion path. From there, production turns one strategic idea into platform-native assets: short videos, landing pages, articles, social posts, search content, email follow-up, and sales materials.
+
+Distribution is planned before filming begins. A video for awareness is not edited the same way as a video meant to convert a warm lead. A search article is not written like a social caption. A landing page is not a storage room for slogans; it is the place where attention becomes intent.
+
+The operating system closes with measurement. Not vanity metrics alone, but useful signals: which hook created qualified attention, which page explained the offer, which channel created the right conversation, and which customer question should become the next content asset.
+
+This is how content becomes a business function rather than a creative expense.`,
+  },
+  {
+    slug: "short-video-production-for-commercial-ip",
+    title: "Short-video production for commercial IP needs a sharper machine",
+    excerpt: "Commercial IP is built by repeated recognition: a clear role, a repeatable point of view, and formats that compound over time.",
+    category: "Commercial IP",
+    published_at: 1792540800,
+    updated_at: 1792540800,
+    body: `Short video is often treated as a creative task. For commercial IP, it is closer to product operations. The output is not only a clip; it is a repeated market signal that tells the audience what this person or brand stands for.
+
+A strong commercial IP system starts with role clarity. The audience should know whether they are watching a content growth leader, a traffic acquisition expert, a brand digital marketing operator, a vertical content director, or an AI-driven growth officer. When the role is vague, every video must start from zero.
+
+The second layer is format architecture. A founder can have diagnostic videos, opinion videos, case breakdowns, behind-the-scenes production notes, offer explanations, and live conversion clips. Each format has a job. Each job has a rhythm. Each rhythm reduces the cost of producing the next asset.
+
+The third layer is production discipline. Good short-video production is not only camera and editing. It is topic mining, hook writing, narrative compression, visual pacing, platform adaptation, title testing, landing-page alignment, and response capture.
+
+Toumyou builds short-video systems so the brand does not depend on random inspiration. The goal is recognizability, conversion, and compounding trust.`,
+  },
+  {
+    slug: "website-as-growth-infrastructure",
+    title: "The website is the growth infrastructure behind every channel",
+    excerpt: "Traffic without a conversion surface leaks value. A serious website turns search, social, video, and referrals into measurable business intent.",
+    category: "Web & Software",
+    published_at: 1792454400,
+    updated_at: 1792454400,
+    body: `A website is often judged by how it looks. That is only the surface. For growth teams, the website is where attention becomes evidence, trust, action, and data.
+
+Every channel needs a destination. Search needs structured answers. Short video needs a page that continues the argument. Paid traffic needs message match. Sales conversations need proof. Customer support needs clear routing. Software tools and lead forms need a stable place to live.
+
+This is why Toumyou approaches websites as growth infrastructure. The work includes positioning, information architecture, conversion paths, SEO structure, analytics readiness, content management, performance, and operational handoff. The site should not only impress a visitor; it should help the team learn what visitors need next.
+
+The same principle applies to software development. A lightweight internal tool, customer portal, media library, content dashboard, or AI workflow can remove friction that keeps a team from publishing, selling, or responding quickly.
+
+The strongest digital presence is not a single beautiful page. It is a connected operating layer: content brings attention, the website organizes belief, software reduces operational drag, and data feeds the next decision.`,
+  },
+];
+
 const TENANTS = {
   toumyou: {
     key: "toumyou",
@@ -45,7 +101,7 @@ const TENANTS = {
     phone: "+81 070 1846 1357",
     telHref: "+8107018461357",
     addressHtml: "2-1-35 Sugimoto, Sumiyoshi-ku<br>Osaka City, Japan",
-    footer: "Cross-border fastener supply and practical procurement support from Japan.",
+    footer: "Media operations, content growth, digital production, and AI-assisted traffic systems.",
     showDigital: true,
     tawkSrc: "https://embed.tawk.to/6a7deb5d9b88671d449028d5/1jvttupc1",
   },
@@ -782,7 +838,7 @@ function shell({ title, description, path = "/", content, schema, image, tenant 
   const absoluteImage = image ? new URL(image, tenant.url).toString() : "";
   const nav = tenant.lang === "zh-CN"
     ? `<a class="nav" href="/#supply">供应</a><a class="nav" href="/shop">产品</a><a class="nav" href="/cart">购物车</a><a class="nav" href="/account">账户</a><a class="nav" href="/articles">文章</a><a class="nav nav-admin" href="/admin">后台</a>`
-    : `<a class="nav" href="/#supply">Supply</a><a class="nav" href="/shop">Shop</a><a class="nav" href="/cart">Cart</a><a class="nav" href="/account">Account</a>${tenant.showDigital ? '<a class="nav" href="/digital">Digital</a>' : ""}<a class="nav" href="/articles">Insights</a><a class="nav nav-admin" href="/admin">Admin</a>`;
+    : `<a class="nav" href="/#growth-os">Growth OS</a><a class="nav" href="/services">Services</a><a class="nav" href="/#content-engine">Content Engine</a><a class="nav" href="/articles">Insights</a><a class="nav" href="/#contact">Contact</a><a class="nav nav-admin" href="/admin">Admin</a>`;
   return `<!doctype html>
 <html lang="${escapeHtml(tenant.lang)}">
 <head>
@@ -800,30 +856,31 @@ function shell({ title, description, path = "/", content, schema, image, tenant 
   ${absoluteImage ? `<meta name="twitter:image" content="${escapeHtml(absoluteImage)}">` : ""}
   <style>
     :root{color-scheme:light;--ink:#121417;--paper:#f6f7f8;--panel:#eceff2;--acid:#dce7ff;--accent:#2457ff;--line:#d4d8dd;--muted:#5f6670;--soft:#ffffff;--focus:#2457ff}
-    *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.55 Arial,Helvetica,sans-serif}
+    *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.55 "Avenir Next",Avenir,"Helvetica Neue","Segoe UI",Helvetica,sans-serif}
     a{color:inherit;text-decoration:none}header{height:76px;padding:0 4vw;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line);position:sticky;top:0;background:rgba(244,241,233,.9);backdrop-filter:blur(18px);z-index:2}
     nav{display:flex;gap:26px;align-items:center}.brand{font-size:21px;font-weight:850;letter-spacing:-1.6px}.brand span{font-size:9px;vertical-align:top;margin-left:2px}.nav{font-size:13px;color:#343630}.nav-admin{border:1px solid var(--ink);padding:8px 12px;border-radius:6px}
     main{overflow:hidden}.hero{min-height:calc(100dvh - 76px);padding:92px 8vw 52px;position:relative;border-bottom:1px solid var(--line);display:grid;align-content:center}
     .hero:after{content:"";position:absolute;right:8vw;top:118px;width:min(34vw,430px);height:min(34vw,430px);background:linear-gradient(135deg,var(--acid),transparent 70%);border-radius:28px;z-index:-1}
-    .eyebrow{font-size:11px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;margin:0 0 22px}.hero h1,.section h2,.contact h2,.listing h1,.article h1{font-family:Arial,Helvetica,sans-serif;font-weight:850;letter-spacing:-.055em;line-height:.92;margin:0}
+    .eyebrow{font-size:11px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;margin:0 0 22px}.hero h1,.section h2,.contact h2,.listing h1,.article h1{font-family:"Avenir Next",Avenir,"Helvetica Neue","Segoe UI",Helvetica,sans-serif;font-weight:850;letter-spacing:-.055em;line-height:.92;margin:0}
     .hero h1{font-size:clamp(54px,8vw,118px);max-width:920px}.lead{font-size:clamp(18px,2vw,22px);line-height:1.45;max-width:560px;margin:36px 0 30px;color:#303740}
     .btn{position:relative;isolation:isolate;display:inline-flex;align-items:center;justify-content:center;gap:12px;background:var(--ink);color:#fff;border:1px solid var(--ink);border-radius:6px;padding:14px 17px;font-weight:780;line-height:1;white-space:nowrap;cursor:pointer;box-shadow:0 10px 24px rgba(18,20,23,.12);transform:translateY(0);transition:transform .24s cubic-bezier(.16,1,.3,1),box-shadow .24s cubic-bezier(.16,1,.3,1),background .24s cubic-bezier(.16,1,.3,1),border-color .24s cubic-bezier(.16,1,.3,1),color .24s cubic-bezier(.16,1,.3,1)}.btn:before{content:"";position:absolute;inset:1px;border-radius:5px;background:linear-gradient(120deg,transparent 0%,rgba(255,255,255,.22) 45%,transparent 62%);opacity:0;transform:translateX(-28%);transition:opacity .24s cubic-bezier(.16,1,.3,1),transform .5s cubic-bezier(.16,1,.3,1);z-index:-1}.btn:hover{transform:translateY(-2px);box-shadow:0 16px 34px rgba(18,20,23,.16)}.btn:hover:before{opacity:1;transform:translateX(28%)}.btn:active{transform:translateY(1px) scale(.985);box-shadow:0 6px 14px rgba(18,20,23,.13)}.btn.secondary{background:rgba(255,255,255,.42);color:var(--ink);border:1px solid var(--ink);box-shadow:none}.btn.secondary:hover{background:var(--soft);box-shadow:0 12px 26px rgba(18,20,23,.08)}.btn.buy{background:var(--accent);border-color:var(--accent);color:#fff;box-shadow:0 14px 30px rgba(36,87,255,.22)}.btn.buy:hover{box-shadow:0 18px 38px rgba(36,87,255,.26)}
     .toolbar{display:flex;gap:12px;flex-wrap:wrap;margin:18px 0}.hero-note{position:absolute;right:8vw;bottom:38px;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#4d5048}
     .section{padding:104px 8vw;border-bottom:1px solid var(--line)}.section h2,.contact h2{font-size:clamp(44px,6.1vw,92px);max-width:850px}.intro-strip{display:grid;grid-template-columns:1.2fr .8fr;gap:9vw;margin-top:46px;align-items:end}.intro-strip p{font-size:20px;line-height:1.55;color:#343630;margin:0;max-width:620px}.intro-strip ul{list-style:none;padding:0;margin:0;display:grid;gap:12px}.intro-strip li{border-top:1px solid var(--line);padding-top:12px;color:var(--muted)}
     .service-grid{display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:0;margin-top:72px;border-top:1px solid var(--ink)}
     .service-grid article{min-height:268px;padding:24px 26px 24px 0;border-right:1px solid var(--line)}.service-grid article+article{padding-left:26px}.service-grid article:last-child{border-right:0}.service-grid span,.meta{font-size:11px;letter-spacing:.8px;text-transform:uppercase;color:var(--muted)}
-    h3{font-family:Arial,Helvetica,sans-serif;font-size:29px;letter-spacing:-.04em;line-height:1.08;font-weight:780;margin:54px 0 16px}.service-grid p,.muted{color:var(--muted);max-width:320px}.insights-head{display:flex;justify-content:space-between;align-items:end;gap:24px}.text-link{text-decoration:underline;text-underline-offset:4px;font-size:13px}
+    h3{font-family:"Avenir Next",Avenir,"Helvetica Neue","Segoe UI",Helvetica,sans-serif;font-size:29px;letter-spacing:-.04em;line-height:1.08;font-weight:780;margin:54px 0 16px}.service-grid p,.muted{color:var(--muted);max-width:320px}.insights-head{display:flex;justify-content:space-between;align-items:end;gap:24px}.text-link{text-decoration:underline;text-underline-offset:4px;font-size:13px}
     .portfolio-grid{display:grid;grid-template-columns:1.15fr .85fr 1fr;grid-auto-rows:minmax(330px,auto);gap:16px;margin-top:70px}.work-card{position:relative;overflow:hidden;border-radius:10px;background:var(--panel);min-height:330px;display:flex;align-items:flex-end}.work-card.large{grid-row:span 2}.work-card img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:saturate(.82) contrast(1.02)}.work-card:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(23,24,21,.03),rgba(23,24,21,.78))}.work-copy{position:relative;z-index:1;color:#fff;padding:26px}.work-copy span{font-size:11px;text-transform:uppercase;letter-spacing:.9px;color:#d8dccf}.work-copy h3{margin:16px 0 8px;color:#fff}.work-copy p{margin:0;color:#eceee7;max-width:300px}
     .timeline{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0;margin-top:72px;border-top:1px solid var(--ink)}.timeline article{padding:26px 26px 0 0;min-height:300px;border-right:1px solid var(--line)}.timeline article+article{padding-left:26px}.timeline article:last-child{border-right:0}.timeline img{width:100%;height:135px;object-fit:cover;border-radius:10px;margin-bottom:28px;filter:saturate(.85)}.timeline strong{font-size:13px;text-transform:uppercase;letter-spacing:.8px}.timeline h3{margin:18px 0 12px}.team-panel{margin-top:70px;display:grid;grid-template-columns:.9fr 1.1fr;gap:16px}.team-note{background:var(--ink);color:var(--paper);border-radius:10px;padding:32px;display:flex;flex-direction:column;justify-content:space-between;min-height:420px}.team-note p{font-size:24px;line-height:1.35;margin:0;color:#f2f0e8}.team-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}.person{background:var(--panel);border-radius:10px;overflow:hidden}.person img{width:100%;height:260px;object-fit:cover;display:block;filter:saturate(.85)}.person div{padding:20px}.person h3{margin:0 0 8px;font-size:28px}.person p{margin:0;color:var(--muted)}.logo-row{display:flex;gap:24px;flex-wrap:wrap;align-items:center;margin-top:50px}.logo-row img{max-height:44px;max-width:132px;object-fit:contain;filter:grayscale(1) contrast(.95);opacity:.72}
     .article-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-top:62px}.article-card{min-height:275px;padding:24px;background:var(--panel);display:flex;flex-direction:column;border-radius:6px;transition:transform .2s,background .2s}.article-card:hover{transform:translateY(-3px);background:var(--acid)}.article-cover{width:100%;height:170px;object-fit:cover;border-radius:8px;margin:0 0 18px;background:var(--soft);filter:saturate(.92)}
-    .commerce-panel{display:grid;grid-template-columns:1.15fr .85fr;gap:18px;margin-top:50px;align-items:stretch}.commerce-card{background:var(--soft);border:1px solid var(--line);border-radius:10px;padding:26px}.commerce-card strong{display:block;font-size:14px;text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px}.commerce-list{list-style:none;margin:0;padding:0;display:grid;gap:12px}.commerce-list li{border-top:1px solid var(--line);padding-top:12px;color:var(--muted)}.metric-strip{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:34px}.metric-strip div{border:1px solid var(--line);border-radius:10px;background:var(--soft);padding:18px}.metric-strip strong{display:block;font-size:28px;line-height:1;letter-spacing:-.04em}.metric-strip span{display:block;margin-top:8px;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px}.shop-filter{display:grid;grid-template-columns:1.3fr .7fr .7fr;gap:12px;margin:34px 0 0}.catalog-first{padding-top:58px}.catalog-first h1{font-family:Arial,Helvetica,sans-serif;font-size:clamp(48px,6.4vw,96px);font-weight:850;letter-spacing:-.055em;line-height:.94;margin:0;max-width:940px}.product-card{position:relative;overflow:hidden;background:var(--soft);border:1px solid var(--line)}.product-card:hover{background:var(--soft);border-color:#aeb6c0}.product-card[hidden]{display:none}.card-tag{position:absolute;top:16px;right:16px;border:1px solid var(--ink);border-radius:999px;padding:7px 10px;background:rgba(255,255,255,.94);font-size:11px;font-weight:850;letter-spacing:.5px;text-transform:uppercase}.card-tag.pay{background:var(--accent);color:#fff;border-color:var(--accent)}.pill-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.pill{border:1px solid var(--line);border-radius:999px;padding:6px 10px;font-size:12px;background:rgba(255,255,255,.82)}.status-badge{display:inline-flex;border:1px solid var(--line);border-radius:999px;padding:6px 10px;font-size:11px;font-weight:850;letter-spacing:.5px;text-transform:uppercase;background:var(--soft)}.status-badge.paid{background:#dff7df;border-color:#3d7d3d}.status-badge.failed,.status-badge.expired{background:#ffe2dc}.status-badge.open,.status-badge.unpaid,.status-badge.checkout_created{background:#fff4bd}.product-buy{display:flex;gap:12px;align-items:end;flex-wrap:wrap}.product-buy input{max-width:130px}.gallery-main{width:100%;max-height:500px;object-fit:cover;border-radius:10px;margin:10px 0 16px;background:var(--panel);transition:opacity .28s cubic-bezier(.16,1,.3,1),transform .28s cubic-bezier(.16,1,.3,1)}.gallery-main.is-swapping{opacity:.62;transform:scale(.992)}.gallery-thumbs{display:grid;grid-template-columns:repeat(auto-fit,minmax(76px,96px));gap:10px;margin:0 0 18px}.gallery-thumb{display:block;width:100%;height:72px;border:1px solid var(--line);border-radius:8px;padding:0;background:var(--soft);overflow:hidden;cursor:pointer;transition:transform .2s cubic-bezier(.16,1,.3,1),border-color .2s cubic-bezier(.16,1,.3,1),box-shadow .2s cubic-bezier(.16,1,.3,1)}.gallery-thumb img{width:100%;height:100%;object-fit:cover;display:block}.gallery-thumb:hover,.gallery-thumb.active{border-color:var(--accent);box-shadow:0 10px 22px rgba(36,87,255,.14);transform:translateY(-2px)}.order-meta{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:14px 0}.order-meta span{display:block;border-top:1px solid var(--line);padding-top:8px;color:var(--muted);font-size:13px}.order-dashboard{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:26px 0}.metric-card{border:1px solid var(--line);border-radius:6px;background:var(--soft);padding:16px}.metric-card strong{display:block;font-size:32px;line-height:1;letter-spacing:-.04em}.metric-card span{display:block;margin-top:6px;color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.7px}.order-filter{display:grid;grid-template-columns:1fr 180px;gap:12px;margin:20px 0}.order-card[hidden]{display:none}
+    .media-hero{background:radial-gradient(circle at 78% 22%,rgba(36,87,255,.18),transparent 30%),linear-gradient(135deg,#f7f8fb 0%,#eef2f8 58%,#e7ecf4 100%)}.media-hero:before{content:"";position:absolute;right:8vw;top:122px;width:min(38vw,520px);height:min(38vw,520px);border:1px solid rgba(18,20,23,.18);border-radius:32px;background:linear-gradient(135deg,rgba(255,255,255,.8),rgba(255,255,255,.12));box-shadow:0 30px 80px rgba(18,20,23,.08);z-index:-1}.media-hero:after{background:linear-gradient(135deg,rgba(36,87,255,.20),rgba(18,20,23,.02) 72%)}.media-signal{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:1px;margin-top:56px;max-width:980px;background:var(--line);border:1px solid var(--line)}.media-signal span{display:block;background:rgba(255,255,255,.68);padding:14px;font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:#303740}.growth-map{display:grid;grid-template-columns:1.1fr .9fr;gap:18px;margin-top:54px}.growth-board{background:var(--ink);color:#fff;border-radius:14px;padding:30px;min-height:420px;display:grid;align-content:space-between;box-shadow:0 28px 80px rgba(18,20,23,.18)}.growth-board h3{color:#fff;margin:0;font-size:clamp(34px,4vw,58px)}.growth-board p{max-width:560px;color:#d7dbe4}.growth-stack{display:grid;gap:12px}.growth-stack div{display:grid;grid-template-columns:120px 1fr;gap:16px;align-items:start;background:var(--soft);border:1px solid var(--line);border-radius:12px;padding:18px}.growth-stack strong{font-size:12px;text-transform:uppercase;letter-spacing:.8px;color:var(--accent)}.growth-stack p{margin:0;color:var(--muted);max-width:520px}.service-ledger{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);margin-top:64px}.service-ledger article{background:var(--soft);padding:30px;min-height:245px}.service-ledger h3{margin:28px 0 12px}.tag-cloud{display:flex;gap:10px;flex-wrap:wrap;margin-top:34px}.tag-cloud span{border:1px solid var(--line);background:rgba(255,255,255,.72);border-radius:999px;padding:8px 12px;font-size:12px;color:#343b45}.proof-strip{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:42px}.proof-strip div{background:var(--soft);border:1px solid var(--line);border-radius:12px;padding:20px}.proof-strip strong{display:block;font-size:13px;text-transform:uppercase;letter-spacing:.8px}.proof-strip span{display:block;margin-top:10px;color:var(--muted);font-size:13px}
+    .commerce-panel{display:grid;grid-template-columns:1.15fr .85fr;gap:18px;margin-top:50px;align-items:stretch}.commerce-card{background:var(--soft);border:1px solid var(--line);border-radius:10px;padding:26px}.commerce-card strong{display:block;font-size:14px;text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px}.commerce-list{list-style:none;margin:0;padding:0;display:grid;gap:12px}.commerce-list li{border-top:1px solid var(--line);padding-top:12px;color:var(--muted)}.metric-strip{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:34px}.metric-strip div{border:1px solid var(--line);border-radius:10px;background:var(--soft);padding:18px}.metric-strip strong{display:block;font-size:28px;line-height:1;letter-spacing:-.04em}.metric-strip span{display:block;margin-top:8px;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px}.shop-filter{display:grid;grid-template-columns:1.3fr .7fr .7fr;gap:12px;margin:34px 0 0}.catalog-first{padding-top:58px}.catalog-first h1{font-family:"Avenir Next",Avenir,"Helvetica Neue","Segoe UI",Helvetica,sans-serif;font-size:clamp(48px,6.4vw,96px);font-weight:850;letter-spacing:-.055em;line-height:.94;margin:0;max-width:940px}.product-card{position:relative;overflow:hidden;background:var(--soft);border:1px solid var(--line)}.product-card:hover{background:var(--soft);border-color:#aeb6c0}.product-card[hidden]{display:none}.card-tag{position:absolute;top:16px;right:16px;border:1px solid var(--ink);border-radius:999px;padding:7px 10px;background:rgba(255,255,255,.94);font-size:11px;font-weight:850;letter-spacing:.5px;text-transform:uppercase}.card-tag.pay{background:var(--accent);color:#fff;border-color:var(--accent)}.pill-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.pill{border:1px solid var(--line);border-radius:999px;padding:6px 10px;font-size:12px;background:rgba(255,255,255,.82)}.status-badge{display:inline-flex;border:1px solid var(--line);border-radius:999px;padding:6px 10px;font-size:11px;font-weight:850;letter-spacing:.5px;text-transform:uppercase;background:var(--soft)}.status-badge.paid{background:#dff7df;border-color:#3d7d3d}.status-badge.failed,.status-badge.expired{background:#ffe2dc}.status-badge.open,.status-badge.unpaid,.status-badge.checkout_created{background:#fff4bd}.product-buy{display:flex;gap:12px;align-items:end;flex-wrap:wrap}.product-buy input{max-width:130px}.gallery-main{width:100%;max-height:500px;object-fit:cover;border-radius:10px;margin:10px 0 16px;background:var(--panel);transition:opacity .28s cubic-bezier(.16,1,.3,1),transform .28s cubic-bezier(.16,1,.3,1)}.gallery-main.is-swapping{opacity:.62;transform:scale(.992)}.gallery-thumbs{display:grid;grid-template-columns:repeat(auto-fit,minmax(76px,96px));gap:10px;margin:0 0 18px}.gallery-thumb{display:block;width:100%;height:72px;border:1px solid var(--line);border-radius:8px;padding:0;background:var(--soft);overflow:hidden;cursor:pointer;transition:transform .2s cubic-bezier(.16,1,.3,1),border-color .2s cubic-bezier(.16,1,.3,1),box-shadow .2s cubic-bezier(.16,1,.3,1)}.gallery-thumb img{width:100%;height:100%;object-fit:cover;display:block}.gallery-thumb:hover,.gallery-thumb.active{border-color:var(--accent);box-shadow:0 10px 22px rgba(36,87,255,.14);transform:translateY(-2px)}.order-meta{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:14px 0}.order-meta span{display:block;border-top:1px solid var(--line);padding-top:8px;color:var(--muted);font-size:13px}.order-dashboard{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:26px 0}.metric-card{border:1px solid var(--line);border-radius:6px;background:var(--soft);padding:16px}.metric-card strong{display:block;font-size:32px;line-height:1;letter-spacing:-.04em}.metric-card span{display:block;margin-top:6px;color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.7px}.order-filter{display:grid;grid-template-columns:1fr 180px;gap:12px;margin:20px 0}.order-card[hidden]{display:none}
     .article-card h3{margin:34px 0 14px}.article-card p{color:var(--muted)}.article-card b{margin-top:auto;font-size:12px}.empty{margin-top:62px;padding:34px;border-top:1px solid var(--ink)}.empty p{font-family:Georgia,"Times New Roman",serif;font-size:32px;margin:0 0 8px}
     .contact{background:var(--ink);color:var(--paper);padding:104px 8vw;min-height:520px}.contact-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:8vw;align-items:end}.contact-mail{display:block;margin-top:48px;font-size:clamp(20px,2.6vw,36px);border-bottom:1px solid #666960;padding-bottom:13px}.contact-list{list-style:none;margin:0;padding:0;border-top:1px solid #666960}.contact-list li{display:grid;grid-template-columns:90px 1fr;gap:24px;padding:18px 0;border-bottom:1px solid #41433d}.contact-list span{font-size:11px;text-transform:uppercase;letter-spacing:.9px;color:#a9ada2}.address{font-size:13px;line-height:1.7;color:#c5c7be;margin:0}
     footer{padding:24px 4vw;background:var(--ink);color:#c5c7be;display:flex;justify-content:space-between;gap:20px;border-top:1px solid #494b44;font-size:11px}.listing{padding:88px 8vw}.listing h1{font-size:clamp(56px,7vw,108px)}.articles{display:grid;gap:14px}.article-link{display:block;border-top:1px solid var(--line);padding:24px 0}.article-link:hover h3{color:#2b3310}
     .article-page{padding:88px 8vw}.article-page article{max-width:860px}.article h1{font-size:clamp(52px,7.4vw,110px)}.article-dek{font-size:23px;line-height:1.42;max-width:700px;margin:36px 0}.post-body{font-family:Georgia,"Times New Roman",serif;font-size:21px;line-height:1.65;white-space:pre-wrap;max-width:680px}
-    input,textarea,select{width:100%;border:1px solid #aaa69c;border-radius:6px;padding:11px 12px;background:var(--soft);color:var(--ink);font:15px Arial,Helvetica,sans-serif}textarea{min-height:150px;line-height:1.45;resize:vertical}label{display:block;margin:14px 0 7px;font-size:12px;font-weight:800;letter-spacing:.3px}.notice{border:1px solid var(--line);padding:18px;border-radius:6px;background:var(--soft)}.support-widget{position:fixed;right:22px;bottom:22px;z-index:20;width:min(390px,calc(100vw - 32px));font-family:Arial,Helvetica,sans-serif}.support-toggle{width:100%;justify-content:space-between;border-radius:999px;padding:14px 18px}.support-panel{display:none;margin-top:10px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.97);box-shadow:0 20px 60px rgba(18,20,23,.18);padding:16px;backdrop-filter:blur(18px)}.support-widget.open .support-panel{display:block}.support-panel h3{margin:0 0 8px;font-size:24px}.support-panel p{margin:0;color:var(--muted);font-size:13px}.support-panel textarea{min-height:70px}.support-status{font-size:13px;color:#36510d;margin:10px 0 0;font-weight:700}.support-close{background:transparent;border:0;color:var(--muted);font-weight:800;cursor:pointer;padding:0}.support-head{display:flex;align-items:flex-start;justify-content:space-between;gap:18px}.support-feed{height:230px;overflow:auto;margin:14px 0;padding:12px;background:var(--paper);border:1px solid var(--line);border-radius:10px;display:flex;flex-direction:column;gap:10px}.support-bubble{max-width:86%;padding:10px 12px;border-radius:12px;background:#fff;border:1px solid var(--line);font-size:14px;line-height:1.42;white-space:pre-wrap}.support-bubble.customer{align-self:flex-end;background:var(--accent);border-color:var(--accent);color:#fff}.support-bubble.agent{align-self:flex-start}.support-bubble.system{align-self:center;background:transparent;border:0;color:var(--muted);font-size:12px;text-align:center}.support-fields{display:grid;grid-template-columns:1fr 1fr;gap:8px}.support-fields input{padding:9px 10px}.support-fields.hidden{display:none}.support-chat-row{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:end}.support-chat-row textarea{min-height:58px}.support-meta-line{font-size:12px;color:var(--muted);margin-top:8px}.support-desk{display:grid;grid-template-columns:minmax(260px,360px) minmax(0,1fr);gap:24px;background:transparent;border:0;padding:0}.support-desk aside,.support-desk section{min-height:680px}.support-thread-list{display:grid;gap:10px;margin-top:14px;max-height:680px;overflow:auto}.support-thread{width:100%;text-align:left;border:1px solid var(--line);background:var(--soft);border-radius:10px;padding:14px;cursor:pointer;color:var(--ink)}.support-thread.active,.support-thread:hover{border-color:var(--accent);box-shadow:0 12px 28px rgba(36,87,255,.1)}.support-thread span{display:flex;justify-content:space-between;gap:10px}.support-thread b{display:block;font-size:15px}.support-thread small,.support-thread em{display:block;color:var(--muted);font-size:11px;font-style:normal}.support-thread p{margin:10px 0 0;color:var(--muted);font-size:13px}.support-conversation-head{display:flex;justify-content:space-between;gap:20px;align-items:flex-start;border-bottom:1px solid var(--line);padding-bottom:18px}.support-conversation-head h2{font-family:Arial,Helvetica,sans-serif;font-size:clamp(34px,4vw,56px);font-weight:850;letter-spacing:-.055em;line-height:.95;margin:0}.desk-feed{height:430px;overflow:auto;border:1px solid var(--line);border-radius:12px;background:var(--paper);padding:18px;margin:18px 0;display:flex;flex-direction:column;gap:12px}.desk-bubble{max-width:76%;border:1px solid var(--line);border-radius:12px;background:#fff;padding:13px 15px}.desk-bubble.agent{align-self:flex-end;background:var(--accent);color:#fff;border-color:var(--accent)}.desk-bubble.customer{align-self:flex-start}.desk-bubble strong{display:block;font-size:12px;margin-bottom:6px}.desk-bubble p{margin:0;white-space:pre-wrap}.desk-bubble small{display:block;margin-top:8px;font-size:11px;opacity:.72}
+    input,textarea,select{width:100%;border:1px solid #aaa69c;border-radius:6px;padding:11px 12px;background:var(--soft);color:var(--ink);font:15px "Avenir Next",Avenir,"Helvetica Neue","Segoe UI",Helvetica,sans-serif}textarea{min-height:150px;line-height:1.45;resize:vertical}label{display:block;margin:14px 0 7px;font-size:12px;font-weight:800;letter-spacing:.3px}.notice{border:1px solid var(--line);padding:18px;border-radius:6px;background:var(--soft)}.support-widget{position:fixed;right:22px;bottom:22px;z-index:20;width:min(390px,calc(100vw - 32px));font-family:"Avenir Next",Avenir,"Helvetica Neue","Segoe UI",Helvetica,sans-serif}.support-toggle{width:100%;justify-content:space-between;border-radius:999px;padding:14px 18px}.support-panel{display:none;margin-top:10px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.97);box-shadow:0 20px 60px rgba(18,20,23,.18);padding:16px;backdrop-filter:blur(18px)}.support-widget.open .support-panel{display:block}.support-panel h3{margin:0 0 8px;font-size:24px}.support-panel p{margin:0;color:var(--muted);font-size:13px}.support-panel textarea{min-height:70px}.support-status{font-size:13px;color:#36510d;margin:10px 0 0;font-weight:700}.support-close{background:transparent;border:0;color:var(--muted);font-weight:800;cursor:pointer;padding:0}.support-head{display:flex;align-items:flex-start;justify-content:space-between;gap:18px}.support-feed{height:230px;overflow:auto;margin:14px 0;padding:12px;background:var(--paper);border:1px solid var(--line);border-radius:10px;display:flex;flex-direction:column;gap:10px}.support-bubble{max-width:86%;padding:10px 12px;border-radius:12px;background:#fff;border:1px solid var(--line);font-size:14px;line-height:1.42;white-space:pre-wrap}.support-bubble.customer{align-self:flex-end;background:var(--accent);border-color:var(--accent);color:#fff}.support-bubble.agent{align-self:flex-start}.support-bubble.system{align-self:center;background:transparent;border:0;color:var(--muted);font-size:12px;text-align:center}.support-fields{display:grid;grid-template-columns:1fr 1fr;gap:8px}.support-fields input{padding:9px 10px}.support-fields.hidden{display:none}.support-chat-row{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:end}.support-chat-row textarea{min-height:58px}.support-meta-line{font-size:12px;color:var(--muted);margin-top:8px}.support-desk{display:grid;grid-template-columns:minmax(260px,360px) minmax(0,1fr);gap:24px;background:transparent;border:0;padding:0}.support-desk aside,.support-desk section{min-height:680px}.support-thread-list{display:grid;gap:10px;margin-top:14px;max-height:680px;overflow:auto}.support-thread{width:100%;text-align:left;border:1px solid var(--line);background:var(--soft);border-radius:10px;padding:14px;cursor:pointer;color:var(--ink)}.support-thread.active,.support-thread:hover{border-color:var(--accent);box-shadow:0 12px 28px rgba(36,87,255,.1)}.support-thread span{display:flex;justify-content:space-between;gap:10px}.support-thread b{display:block;font-size:15px}.support-thread small,.support-thread em{display:block;color:var(--muted);font-size:11px;font-style:normal}.support-thread p{margin:10px 0 0;color:var(--muted);font-size:13px}.support-conversation-head{display:flex;justify-content:space-between;gap:20px;align-items:flex-start;border-bottom:1px solid var(--line);padding-bottom:18px}.support-conversation-head h2{font-family:"Avenir Next",Avenir,"Helvetica Neue","Segoe UI",Helvetica,sans-serif;font-size:clamp(34px,4vw,56px);font-weight:850;letter-spacing:-.055em;line-height:.95;margin:0}.desk-feed{height:430px;overflow:auto;border:1px solid var(--line);border-radius:12px;background:var(--paper);padding:18px;margin:18px 0;display:flex;flex-direction:column;gap:12px}.desk-bubble{max-width:76%;border:1px solid var(--line);border-radius:12px;background:#fff;padding:13px 15px}.desk-bubble.agent{align-self:flex-end;background:var(--accent);color:#fff;border-color:var(--accent)}.desk-bubble.customer{align-self:flex-start}.desk-bubble strong{display:block;font-size:12px;margin-bottom:6px}.desk-bubble p{margin:0;white-space:pre-wrap}.desk-bubble small{display:block;margin-top:8px;font-size:11px;opacity:.72}
     .admin-wrap{padding:58px 5vw 90px}.admin-hero{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:24px;align-items:end;margin-bottom:28px;border-bottom:1px solid var(--ink);padding-bottom:28px}.admin-hero h1{font-size:clamp(48px,6vw,88px);letter-spacing:-.06em;margin:0}.admin-tabs{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 32px}.admin-tab{border:1px solid var(--line);background:var(--soft);border-radius:999px;padding:10px 14px;font-size:12px;font-weight:850;letter-spacing:.5px;text-transform:uppercase}.admin-tab.active,.admin-tab:hover{border-color:var(--ink);background:var(--ink);color:var(--paper)}.editor{display:grid;grid-template-columns:minmax(260px,390px) minmax(0,820px);gap:5vw}.editor aside{border-right:1px solid var(--line);padding-right:28px}.admin-list-tools{display:grid;grid-template-columns:1fr 130px;gap:10px;margin:18px 0}.mini-dashboard{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:18px 0}.mini-dashboard div{border:1px solid var(--line);background:var(--soft);border-radius:8px;padding:14px}.mini-dashboard strong{display:block;font-size:26px;letter-spacing:-.04em}.mini-dashboard span{display:block;margin-top:4px;font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:var(--muted)}.admin-list-empty{border-top:1px solid var(--line);padding:20px 0;color:var(--muted)}.admin-thumb-row{display:grid;grid-template-columns:62px 1fr;gap:12px;align-items:center}.admin-thumb{width:62px;height:52px;border-radius:8px;object-fit:cover;background:var(--panel);border:1px solid var(--line)}.admin-preview-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(72px,1fr));gap:10px;margin:12px 0}.image-chip{position:relative;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--soft);min-height:68px}.image-chip img{width:100%;height:74px;object-fit:cover;display:block}.image-chip span{display:block;padding:6px 8px;font-size:10px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.media-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:14px;margin-top:24px}.media-card{border:1px solid var(--line);border-radius:10px;background:var(--soft);overflow:hidden}.media-card img{width:100%;height:154px;object-fit:cover;background:var(--panel);display:block}.media-card div{padding:12px}.media-card code{display:block;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--muted);background:transparent}.media-card .toolbar{margin:12px 0 0}.field-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.editor-actions{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:20px}.status{margin:12px 0 0;color:#36510d;font-weight:700}.danger{background:transparent;color:var(--ink);border:1px solid var(--line)}
-    :focus-visible{outline:3px solid var(--focus);outline-offset:3px}@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.btn,.btn:before,.article-card,.gallery-main,.gallery-thumb{transition:none}.btn:hover,.btn:active,.article-card:hover,.gallery-thumb:hover,.gallery-thumb.active{transform:none}}@media(max-width:980px){.portfolio-grid,.timeline,.team-panel,.contact-grid,.intro-strip,.commerce-panel,.metric-strip,.order-dashboard,.mini-dashboard{grid-template-columns:1fr 1fr}.portfolio-grid{grid-auto-rows:minmax(310px,auto)}.work-card.large{grid-row:auto}.timeline article,.timeline article+article{border-right:0;border-bottom:1px solid var(--line);padding:26px 0}.team-grid{grid-template-columns:1fr 1fr}.contact-list{margin-top:34px}.support-desk{grid-template-columns:1fr}.support-desk aside,.support-desk section{min-height:auto}}@media(max-width:760px){header{height:auto;min-height:68px;align-items:flex-start;gap:14px;flex-direction:column;padding:18px 6vw}nav{gap:16px;flex-wrap:wrap}.hero{min-height:620px;padding:82px 7vw 46px}.hero:after{width:88vw;height:88vw;right:-36vw;top:126px}.hero-note{position:static;margin-top:42px}.section,.contact,.listing,.article-page{padding:72px 7vw}.service-grid,.article-grid,.editor,.team-grid,.shop-filter,.order-filter,.commerce-panel,.metric-strip,.order-dashboard,.mini-dashboard,.field-grid,.admin-hero,.admin-list-tools{grid-template-columns:1fr}.service-grid article,.service-grid article+article{border-right:0;border-bottom:1px solid var(--line);min-height:auto;padding:24px 0}.person img{height:310px}.insights-head{display:block}.article-grid{margin-top:40px}.editor aside{border-right:0;border-bottom:1px solid var(--line);padding:0 0 26px}footer{display:block}.contact-mail{word-break:break-word}.contact-list li{grid-template-columns:1fr;gap:6px}.support-widget{right:16px;bottom:16px}.desk-feed{height:360px}.desk-bubble{max-width:92%}}
+    :focus-visible{outline:3px solid var(--focus);outline-offset:3px}@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.btn,.btn:before,.article-card,.gallery-main,.gallery-thumb{transition:none}.btn:hover,.btn:active,.article-card:hover,.gallery-thumb:hover,.gallery-thumb.active{transform:none}}@media(max-width:980px){.portfolio-grid,.timeline,.team-panel,.contact-grid,.intro-strip,.commerce-panel,.metric-strip,.order-dashboard,.mini-dashboard,.growth-map,.service-ledger,.proof-strip{grid-template-columns:1fr 1fr}.media-signal{grid-template-columns:repeat(2,minmax(0,1fr))}.portfolio-grid{grid-auto-rows:minmax(310px,auto)}.work-card.large{grid-row:auto}.timeline article,.timeline article+article{border-right:0;border-bottom:1px solid var(--line);padding:26px 0}.team-grid{grid-template-columns:1fr 1fr}.contact-list{margin-top:34px}.support-desk{grid-template-columns:1fr}.support-desk aside,.support-desk section{min-height:auto}}@media(max-width:760px){header{height:auto;min-height:68px;align-items:flex-start;gap:14px;flex-direction:column;padding:18px 6vw}nav{gap:16px;flex-wrap:wrap}.hero{min-height:620px;padding:82px 7vw 46px}.hero:after{width:88vw;height:88vw;right:-36vw;top:126px}.media-hero:before{width:90vw;height:90vw;right:-46vw;top:148px}.hero-note{position:static;margin-top:42px}.section,.contact,.listing,.article-page{padding:72px 7vw}.service-grid,.article-grid,.editor,.team-grid,.shop-filter,.order-filter,.commerce-panel,.metric-strip,.order-dashboard,.mini-dashboard,.field-grid,.admin-hero,.admin-list-tools,.growth-map,.service-ledger,.proof-strip,.media-signal{grid-template-columns:1fr}.service-grid article,.service-grid article+article{border-right:0;border-bottom:1px solid var(--line);min-height:auto;padding:24px 0}.growth-stack div{grid-template-columns:1fr}.service-ledger article{min-height:auto}.person img{height:310px}.insights-head{display:block}.article-grid{margin-top:40px}.editor aside{border-right:0;border-bottom:1px solid var(--line);padding:0 0 26px}footer{display:block}.contact-mail{word-break:break-word}.contact-list li{grid-template-columns:1fr;gap:6px}.support-widget{right:16px;bottom:16px}.desk-feed{height:360px}.desk-bubble{max-width:92%}}
   </style>
   ${schema ? `<script type="application/ld+json">${JSON.stringify(schema)}</script>` : ""}
 </head>
@@ -849,8 +906,8 @@ function shell({ title, description, path = "/", content, schema, image, tenant 
 }
 
 async function home(env, tenant = TENANTS.toumyou) {
-  const posts = (await listPublished(env)).slice(0, 3);
-  const products = (await listProducts(env)).slice(0, 3);
+  const posts = (tenant.key === "toumyou" ? MEDIA_ARTICLES : await listPublished(env)).slice(0, 3);
+  const products = tenant.key === "toumyou" ? [] : (await listProducts(env)).slice(0, 3);
   if (tenant.key === "ximiaokeji") {
     const categoryCards = SHOP.categories.map((item) => `<article class="article-card"><div class="meta">产品目录 / ${escapeHtml(item.slug)}</div><h3>${escapeHtml(zhCategoryName(item.name))}</h3><p>${escapeHtml(zhCategorySummary(item.summary))}</p><b>询价采购</b></article>`).join("");
     const content = `<main>
@@ -900,113 +957,120 @@ async function home(env, tenant = TENANTS.toumyou) {
       schema: { "@context": "https://schema.org", "@type": "Organization", name: tenant.legalName, url: tenant.url, email: tenant.email, telephone: tenant.phone, description: "紧固件销售、工业配件供应与企业采购支持。" },
     }));
   }
+  const mediaPosts = MEDIA_ARTICLES.slice(0, 3);
   const content = `<main>
-    <section id="supply" class="hero">
-      <p class="eyebrow">Cross-border fastener supply</p>
-      <h1>Fasteners for<br>international buyers.</h1>
-      <p class="lead">Toumyou supplies screws, bolts, nuts, washers, anchors, pins, and industrial accessories from Japan and Asia, with Stripe Checkout and quote support for custom orders.</p>
-      <div class="toolbar"><a class="btn" href="/shop">Shop fasteners</a><a class="btn secondary" href="mailto:sunflyerjp@gmail.com?subject=Fastener%20quote%20request">Request a quote</a></div>
+    <section class="hero media-hero">
+      <h1>Media operations<br>built like growth infrastructure.</h1>
+      <p class="lead">Toumyou designs and operates content growth systems for brands, founders, and commercial IPs: short-video production, traffic acquisition, websites, software tools, AI workflows, and multi-channel media matrices.</p>
+      <div class="toolbar"><a class="btn" href="mailto:sunflyerjp@gmail.com?subject=Growth%20system%20consultation">Discuss growth system</a><a class="btn secondary" href="/services">View services</a></div>
+      <div class="media-signal"><span>Content Growth</span><span>Short Video</span><span>Traffic Acquisition</span><span>Web & Software</span><span>Commercial IP</span></div>
     </section>
-    <section class="section">
-      <h2>Built for procurement,<br>not impulse shopping.</h2>
-      <div class="commerce-panel">
-        <div class="commerce-card"><strong>What we supply</strong><p>Metric screws, socket screws, hex bolts, nuts, washers, anchors, rivets, clips, brackets, specialty materials, and hard-to-source industrial parts.</p></div>
-        <div class="commerce-card"><strong>How orders work</strong><ul class="commerce-list">
-          <li>Buy listed products directly with Stripe Checkout where available.</li>
-          <li>Send drawings, standards, sizes, and quantities for quote-only items.</li>
-          <li>Choose standard or express freight during checkout for supported SKUs.</li>
-          <li>Alipay and other local methods appear when Stripe approves them for the buyer and order.</li>
-        </ul>
+    <section id="growth-os" class="section">
+      <h2>Attention is engineered,<br>not wished into existence.</h2>
+      <div class="growth-map">
+        <div class="growth-board">
+          <h3>Growth OS</h3>
+          <p>A working system that connects brand narrative, content production, platform distribution, conversion surfaces, and data feedback.</p>
+          <div class="tag-cloud"><span>Content growth leader</span><span>Traffic acquisition expert</span><span>Brand digital marketing operator</span><span>AI-driven growth officer</span></div>
+        </div>
+        <div class="growth-stack">
+          <div><strong>01 Narrative</strong><p>Clarify the commercial point of view, founder language, audience tension, and brand story that content must repeat.</p></div>
+          <div><strong>02 Production</strong><p>Turn one strategic idea into short videos, articles, landing pages, social posts, scripts, and sales material.</p></div>
+          <div><strong>03 Distribution</strong><p>Build platform-specific publishing flows for search, social, video, private traffic, paid acquisition, and partner channels.</p></div>
+          <div><strong>04 Conversion</strong><p>Connect attention to websites, forms, consultations, offers, customer records, and software-supported operations.</p></div>
         </div>
       </div>
-      <div class="metric-strip"><div><strong>JP</strong><span>Japan base</span></div><div><strong>B2B</strong><span>Procurement focus</span></div><div><strong>Stripe</strong><span>Secure checkout</span></div><div><strong>Quote</strong><span>Custom sourcing</span></div></div>
+    </section>
+    <section id="content-engine" class="section">
+      <h2>From scattered posts<br>to a media production engine.</h2>
+      <div class="service-ledger">
+        <article><span class="meta">Media operations</span><h3>New-media matrix architecture.</h3><p class="muted">We plan account roles, column systems, publishing cadence, channel adaptation, and editorial decision rules so content compounds instead of disappearing.</p></article>
+        <article><span class="meta">Short-video production</span><h3>Commercial IP video systems.</h3><p class="muted">Positioning, topic mining, hooks, scripts, shooting structure, editing rhythm, and platform-native repackaging for founders and brands.</p></article>
+        <article><span class="meta">Websites</span><h3>Conversion surfaces for every channel.</h3><p class="muted">Corporate websites, landing pages, content hubs, SEO structure, analytics readiness, and clear inquiry paths for qualified leads.</p></article>
+        <article><span class="meta">Software development</span><h3>Tools that make operations faster.</h3><p class="muted">Lightweight dashboards, customer portals, admin systems, media libraries, AI-assisted workflows, and internal automation.</p></article>
+      </div>
+      <div class="proof-strip"><div><strong>Strategy</strong><span>Brand narrative and digital communication planning.</span></div><div><strong>Production</strong><span>Multi-format content and short-video execution.</span></div><div><strong>Traffic</strong><span>Search, social, paid, private domain, and platform distribution.</span></div><div><strong>Systems</strong><span>Website, software, data, and AI workflow support.</span></div></div>
     </section>
     <section class="section">
-      <div class="insights-head"><div><p class="eyebrow">Featured catalog</p><h2>Ready-to-order<br>and quote-ready SKUs.</h2></div><a class="text-link" href="/shop">Open full shop</a></div>
-      <div class="article-grid">${products.length ? products.map((p) => productCard(p, env, tenant)).join("") : SHOP.categories.map((item) => `<article class="article-card"><div class="meta">${escapeHtml(item.slug)}</div><h3>${escapeHtml(item.name)}</h3><p>${escapeHtml(item.summary)}</p><b>Request quote</b></article>`).join("")}</div>
-    </section>
-    <section id="insights" class="section">
-      <div class="insights-head"><div><p class="eyebrow">Articles</p><h2>Updates and<br>procurement notes.</h2></div><a class="text-link" href="/articles">All articles</a></div>
-      ${posts.length ? `<div class="article-grid">${posts.map((post) => articleLink(post, tenant)).join("")}</div>` : '<div class="empty"><p>Our first notes are in progress.</p><span class="muted">Published articles will appear here immediately after you save them.</span></div>'}
+      <div class="insights-head"><div><h2>Thinking for brands<br>that want compounding attention.</h2></div><a class="text-link" href="/articles">All insights</a></div>
+      <div class="article-grid">${mediaPosts.map((post) => articleLink(post, tenant)).join("")}</div>
     </section>
     <section id="contact" class="contact">
       <div class="contact-grid">
-        <div><p class="eyebrow">Contact</p><h2>Send your drawing,<br>SKU, or quantity.</h2><a href="mailto:sunflyerjp@gmail.com" class="contact-mail">sunflyerjp@gmail.com</a></div>
+        <div><h2>Build the content engine<br>behind your next stage.</h2><a href="mailto:sunflyerjp@gmail.com?subject=Growth%20system%20consultation" class="contact-mail">sunflyerjp@gmail.com</a></div>
         <ul class="contact-list">
-          <li><span>Tel</span><a href="tel:+8107018461357">+81 070 1846 1357</a></li>
-          <li><span>Email</span><a href="mailto:sunflyerjp@gmail.com">sunflyerjp@gmail.com</a></li>
-          <li><span>Address</span><p class="address">2-1-35 Sugimoto, Sumiyoshi-ku<br>Osaka City, Japan</p></li>
+          <li><span>Scope</span><p class="address">Media operations, short-video production, websites, software development, traffic acquisition, AI workflows, and commercial IP growth.</p></li>
+          <li><span>Roles</span><p class="address">Content growth lead / Traffic acquisition expert / Brand digital marketing operator / New-media matrix architect.</p></li>
+          <li><span>Base</span><p class="address">Osaka City, Japan · serving cross-border and digital-first teams.</p></li>
         </ul>
       </div>
     </section>
   </main>`;
   return html(shell({
-    title: "Toumyou | Fastener supply from Japan",
+    title: "Toumyou | Media Operations & Digital Growth Company",
     description: SITE.description,
     content,
-    schema: { "@context": "https://schema.org", "@type": "Organization", name: "Toumyou LLC", url: SITE.url, email: "sunflyerjp@gmail.com", telephone: "+8107018461357", address: { "@type": "PostalAddress", streetAddress: "2-1-35 Sugimoto, Sumiyoshi-ku", addressLocality: "Osaka City", addressCountry: "JP" }, description: SITE.description, sameAs: ["https://toumyou.com"] },
+    schema: { "@context": "https://schema.org", "@type": "ProfessionalService", name: "Toumyou LLC", url: SITE.url, email: "sunflyerjp@gmail.com", telephone: "+8107018461357", address: { "@type": "PostalAddress", streetAddress: "2-1-35 Sugimoto, Sumiyoshi-ku", addressLocality: "Osaka City", addressCountry: "JP" }, description: SITE.description, sameAs: ["https://toumyou.com"], areaServed: "Global", serviceType: ["Media operations", "Short-video production", "Website production", "Software development", "Traffic acquisition", "Commercial IP growth"] },
     tenant,
   }));
 }
 
-function digitalPage() {
+function mediaServicesPage(path = "/services") {
   const asset = "https://4f4b3799.toumyou.pages.dev/assets/img";
-  const description = "Toumyou digital services: brand identity, graphic design, websites, animation, WeChat mini-programs, software tools, and AI workflow support.";
+  const description = "Toumyou media operations services: content growth strategy, short-video production, brand digital marketing, websites, software development, traffic acquisition, and AI workflow systems.";
   const content = `<main>
-    <section class="hero">
-      <p class="eyebrow">Digital services archive</p>
-      <h1>Design, web,<br>and software work.</h1>
-      <p class="lead">Toumyou's original creative and technology services are collected here: visual identity, websites, animation, WeChat mini-programs, lightweight software, and AI-assisted workflow systems.</p>
-      <div class="toolbar"><a class="btn" href="mailto:sunflyerjp@gmail.com?subject=Digital%20service%20inquiry">Discuss a project</a><a class="btn secondary" href="/">Back to fasteners</a></div>
+    <section class="hero media-hero">
+      <h1>One partner for content,<br>traffic, web, and software.</h1>
+      <p class="lead">Toumyou helps brands and commercial IPs build a complete digital growth layer: narrative strategy, short-video systems, new-media matrices, websites, software tools, traffic acquisition, and AI-assisted production workflows.</p>
+      <div class="toolbar"><a class="btn" href="mailto:sunflyerjp@gmail.com?subject=Media%20operations%20project">Start a project</a><a class="btn secondary" href="/articles">Read our thinking</a></div>
     </section>
     <section class="section">
-      <p class="eyebrow">Original business content</p>
-      <h2>Creative systems<br>for practical operations.</h2>
+      <h2>Services organized<br>around business outcomes.</h2>
       <div class="intro-strip">
-        <p>The earlier Toumyou site introduced a design-and-development practice. Instead of mixing it into the fastener homepage, those services now live here as a focused secondary business page.</p>
+        <p>A useful digital partner is not only a production vendor. We connect the work that usually gets split apart: strategy, content, channel operation, conversion pages, software tools, analytics, and internal workflow.</p>
         <ul>
-          <li>Brand systems, logo design, graphic design, and printed communication</li>
-          <li>Responsive websites, landing pages, and commerce interfaces</li>
-          <li>Animation, mini-programs, internal tools, and AI workflow support</li>
+          <li>For founders: commercial IP positioning, video formats, narrative assets, and conversion routes.</li>
+          <li>For brands: media operations, campaign content, websites, lead capture, and search visibility.</li>
+          <li>For teams: content dashboards, CMS/admin systems, AI workflows, and lightweight internal software.</li>
         </ul>
       </div>
     </section>
     <section id="portfolio" class="section">
-      <h2>Previous work,<br>cleanly organized.</h2>
+      <h2>A production stack<br>that covers the whole funnel.</h2>
       <div class="portfolio-grid">
-        <article class="work-card large"><img src="${asset}/portfolio/2.jpg" alt="Graphic design work by Toumyou" loading="lazy"><div class="work-copy"><span>Graphic design</span><h3>Identity systems for business communication.</h3><p>Logos, visual rules, printed material, and presentation assets.</p></div></article>
-        <article class="work-card"><img src="${asset}/portfolio/3.jpg" alt="Animation work by Toumyou" loading="lazy"><div class="work-copy"><span>Animation</span><h3>Motion assets for product and brand stories.</h3><p>Short-form animation, visual explainers, and campaign material.</p></div></article>
-        <article class="work-card"><img src="${asset}/portfolio/4.jpg" alt="WeChat mini-program development by Toumyou" loading="lazy"><div class="work-copy"><span>Mini-programs</span><h3>Focused services inside WeChat.</h3><p>Simple flows for ordering, information, membership, and service access.</p></div></article>
-        <article class="work-card"><img src="${asset}/portfolio/5.jpg" alt="Website design by Toumyou" loading="lazy"><div class="work-copy"><span>Websites</span><h3>Clear pages for search and conversion.</h3><p>Responsive web design with fast loading and clean structure.</p></div></article>
-        <article class="work-card"><img src="${asset}/portfolio/6.jpg" alt="Software development by Toumyou" loading="lazy"><div class="work-copy"><span>Software</span><h3>Tools for daily operations.</h3><p>Internal systems, lightweight apps, automation, and AI-assisted workflows.</p></div></article>
+        <article class="work-card large"><img src="${asset}/portfolio/2.jpg" alt="Brand narrative and digital communication system" loading="lazy"><div class="work-copy"><span>Strategy</span><h3>Brand narrative and digital communication strategy.</h3><p>Positioning, audience language, offer framing, content pillars, and channel planning.</p></div></article>
+        <article class="work-card"><img src="${asset}/portfolio/3.jpg" alt="Short-video production and content growth" loading="lazy"><div class="work-copy"><span>Video</span><h3>Short-video production for commercial IP.</h3><p>Topics, hooks, scripts, filming structure, editing rhythm, and platform versions.</p></div></article>
+        <article class="work-card"><img src="${asset}/portfolio/4.jpg" alt="New-media matrix operations" loading="lazy"><div class="work-copy"><span>Matrix</span><h3>New-media matrix architecture.</h3><p>Account roles, columns, cadence, search/social distribution, and private-domain routing.</p></div></article>
+        <article class="work-card"><img src="${asset}/portfolio/5.jpg" alt="Website production and traffic conversion" loading="lazy"><div class="work-copy"><span>Web</span><h3>Websites that turn traffic into intent.</h3><p>Corporate sites, landing pages, SEO hubs, analytics, forms, and consultation flows.</p></div></article>
+        <article class="work-card"><img src="${asset}/portfolio/6.jpg" alt="Software development and AI workflow systems" loading="lazy"><div class="work-copy"><span>Software</span><h3>AI-assisted operating tools.</h3><p>Dashboards, CMS/admin systems, media libraries, customer portals, and automation.</p></div></article>
       </div>
     </section>
     <section id="about" class="section">
-      <h2>From design studio<br>to trading operation.</h2>
+      <h2>Operator roles<br>inside one company.</h2>
       <div class="timeline">
-        <article><img src="${asset}/about/1.jpg" alt="Toumyou early company history" loading="lazy"><strong>2011</strong><h3>Cultural communication work begins.</h3><p>The team started with brand, design, and communication projects.</p></article>
-        <article><img src="${asset}/about/2.jpg" alt="Toumyou digital business development" loading="lazy"><strong>2017</strong><h3>Digital services expand.</h3><p>Web, visual, and online service projects became a core part of the business.</p></article>
-        <article><img src="${asset}/about/3.jpg" alt="Toumyou software development transition" loading="lazy"><strong>2023</strong><h3>Software work becomes formal.</h3><p>Custom systems, websites, and workflow tools were added to the service base.</p></article>
-        <article><img src="${asset}/about/4.jpg" alt="Toumyou Japan operation" loading="lazy"><strong>2025</strong><h3>Japan-based cross-border work grows.</h3><p>The company now combines supply, commerce, and digital operations from Osaka.</p></article>
+        <article><img src="${asset}/about/1.jpg" alt="Content growth leadership" loading="lazy"><strong>Growth</strong><h3>Content growth leader.</h3><p>Turns business goals into repeatable content systems and channel-specific execution.</p></article>
+        <article><img src="${asset}/about/2.jpg" alt="Traffic acquisition operations" loading="lazy"><strong>Traffic</strong><h3>Traffic acquisition expert.</h3><p>Connects search, social, video, paid, private traffic, and conversion pages.</p></article>
+        <article><img src="${asset}/about/3.jpg" alt="Commercial IP operations" loading="lazy"><strong>IP</strong><h3>Commercial IP operator.</h3><p>Builds founder and vertical content identity through role clarity and format discipline.</p></article>
+        <article><img src="${asset}/about/4.jpg" alt="AI-driven content growth architecture" loading="lazy"><strong>AI</strong><h3>Digital media production architect.</h3><p>Uses software and AI workflow design to reduce production friction and increase output quality.</p></article>
       </div>
     </section>
     <section class="contact">
       <div class="contact-grid">
-        <div><p class="eyebrow">Digital inquiry</p><h2>Need a clean web,<br>design, or workflow system?</h2><a href="mailto:sunflyerjp@gmail.com?subject=Digital%20service%20inquiry" class="contact-mail">sunflyerjp@gmail.com</a></div>
+        <div><h2>Ready to operate media<br>like a growth system?</h2><a href="mailto:sunflyerjp@gmail.com?subject=Media%20operations%20project" class="contact-mail">sunflyerjp@gmail.com</a></div>
         <ul class="contact-list">
-          <li><span>Services</span><p class="address">Brand identity, websites, animation, mini-programs, internal tools, and AI workflow support.</p></li>
+          <li><span>Services</span><p class="address">Media operations, short-video production, websites, software development, traffic acquisition, and AI workflow systems.</p></li>
           <li><span>Base</span><p class="address">Osaka City, Japan</p></li>
-          <li><span>Main site</span><p class="address"><a href="/">Toumyou fastener supply</a></p></li>
+          <li><span>Method</span><p class="address">Strategy first, production second, distribution third, measurement always.</p></li>
         </ul>
       </div>
     </section>
   </main>`;
   return html(shell({
-    title: "Digital Services | Toumyou",
+    title: "Services | Toumyou Media Operations",
     description,
-    path: "/digital",
+    path,
     content,
-    schema: { "@context": "https://schema.org", "@type": "ProfessionalService", name: "Toumyou Digital Services", url: `${SITE.url}/digital`, email: "sunflyerjp@gmail.com", description, parentOrganization: { "@type": "Organization", name: "Toumyou LLC", url: SITE.url } },
+    schema: { "@context": "https://schema.org", "@type": "ProfessionalService", name: "Toumyou Media Operations", url: `${SITE.url}${path}`, email: "sunflyerjp@gmail.com", description, parentOrganization: { "@type": "Organization", name: "Toumyou LLC", url: SITE.url }, serviceType: ["Media operations", "Content growth strategy", "Short-video production", "Website production", "Software development", "Traffic acquisition", "AI workflow systems"] },
   }));
 }
 
@@ -1037,21 +1101,22 @@ function articleLink(post, tenant = TENANTS.toumyou) {
 }
 
 async function articles(env, tenant = TENANTS.toumyou) {
-  const posts = await listPublished(env);
+  const posts = tenant.key === "toumyou" ? MEDIA_ARTICLES : await listPublished(env);
   const zh = tenant.lang === "zh-CN";
   return html(shell({
-    title: zh ? "紧固件文章 | 上海西缈科技有限公司" : "Insights | Toumyou",
-    description: zh ? "上海西缈科技有限公司发布紧固件产品知识、采购说明和企业采购相关信息。" : "Toumyou updates on fastener supply, cross-border commerce, digital operations, and web systems.",
+    title: zh ? "紧固件文章 | 上海西缈科技有限公司" : "Insights | Toumyou Media Operations",
+    description: zh ? "上海西缈科技有限公司发布紧固件产品知识、采购说明和企业采购相关信息。" : "Toumyou publishes thinking on content growth, short-video production, traffic acquisition, websites, software systems, and AI-assisted media operations.",
     path: "/articles",
     content: zh
       ? `<main class="listing"><h1>紧固件知识<br>与采购文章。</h1><p class="lead">这里发布产品规格、材料选择、采购流程、下单说明和工业配件供应相关内容。</p><div class="article-grid">${posts.map((post) => articleLink(post, tenant)).join("") || '<div class="empty"><p>暂无已发布文章。</p><span class="muted">在后台保存发布后，文章会自动显示。</span></div>'}</div></main>`
-      : `<main class="listing"><h1>Supply notes<br>and company updates.</h1><p class="lead">Articles on fastener procurement, cross-border commerce, digital systems, and practical operations from Toumyou.</p><div class="article-grid">${posts.map((post) => articleLink(post, tenant)).join("") || '<div class="empty"><p>No published articles yet.</p><span class="muted">Use the editor to publish the first note.</span></div>'}</div></main>`,
+      : `<main class="listing"><h1>Growth notes<br>for media operators.</h1><p class="lead">Articles on content systems, short-video production, commercial IP, traffic acquisition, websites, software tools, and AI-assisted media operations.</p><div class="article-grid">${posts.map((post) => articleLink(post, tenant)).join("")}</div></main>`,
     tenant,
   }));
 }
 
 async function article(env, slug, tenant = TENANTS.toumyou) {
-  const post = await getPost(env, slug);
+  const staticPost = tenant.key === "toumyou" ? MEDIA_ARTICLES.find((item) => item.slug === slug) : null;
+  const post = staticPost || await getPost(env, slug);
   const zh = tenant.lang === "zh-CN";
   if (!post || post.status !== "published") return html(shell({ title: zh ? "未找到文章 | 西缈科技" : "Not found | Toumyou", description: zh ? "未找到文章。" : "Article not found.", content: zh ? "<main><h1>未找到文章</h1></main>" : "<main><h1>Article not found</h1></main>", tenant }), { status: 404 });
   const pageTitle = post.seo_title || `${post.title} | ${tenant.name}`;
@@ -2306,18 +2371,24 @@ async function handleApi(request, env, pathname) {
 }
 
 async function sitemap(env, tenant = TENANTS.toumyou) {
-  const posts = await listPublished(env);
-  const products = await listProducts(env);
+  const posts = tenant.key === "toumyou" ? MEDIA_ARTICLES : await listPublished(env);
+  const products = tenant.key === "toumyou" ? [] : await listProducts(env);
   const today = new Date().toISOString().slice(0, 10);
   const toDate = (stamp) => (stamp ? new Date(Number(stamp) * 1000).toISOString().slice(0, 10) : today);
-  const urls = [
-    { path: "/", priority: "1.0", changefreq: "weekly", lastmod: today },
-    { path: "/shop", priority: "0.9", changefreq: "weekly", lastmod: today },
-    ...(tenant.showDigital ? [{ path: "/digital", priority: "0.5", changefreq: "monthly", lastmod: today }] : []),
-    { path: "/articles", priority: "0.8", changefreq: "weekly", lastmod: today },
-    ...products.map((p) => ({ path: `/shop/products/${p.slug}`, priority: "0.8", changefreq: "weekly", lastmod: toDate(p.updated_at || p.created_at) })),
-    ...posts.map((p) => ({ path: `/articles/${p.slug}`, priority: "0.7", changefreq: "monthly", lastmod: toDate(p.updated_at || p.published_at) })),
-  ];
+  const urls = tenant.key === "toumyou"
+    ? [
+        { path: "/", priority: "1.0", changefreq: "weekly", lastmod: today },
+        { path: "/services", priority: "0.9", changefreq: "weekly", lastmod: today },
+        { path: "/articles", priority: "0.8", changefreq: "weekly", lastmod: today },
+        ...posts.map((p) => ({ path: `/articles/${p.slug}`, priority: "0.7", changefreq: "monthly", lastmod: toDate(p.updated_at || p.published_at) })),
+      ]
+    : [
+        { path: "/", priority: "1.0", changefreq: "weekly", lastmod: today },
+        { path: "/shop", priority: "0.9", changefreq: "weekly", lastmod: today },
+        { path: "/articles", priority: "0.8", changefreq: "weekly", lastmod: today },
+        ...products.map((p) => ({ path: `/shop/products/${p.slug}`, priority: "0.8", changefreq: "weekly", lastmod: toDate(p.updated_at || p.created_at) })),
+        ...posts.map((p) => ({ path: `/articles/${p.slug}`, priority: "0.7", changefreq: "monthly", lastmod: toDate(p.updated_at || p.published_at) })),
+      ];
   const body = urls.map((u) => `<url><loc>${tenant.url}${u.path}</loc><lastmod>${u.lastmod}</lastmod><changefreq>${u.changefreq}</changefreq><priority>${u.priority}</priority></url>`).join("");
   return new Response(`<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${body}</urlset>`, {
     headers: { "content-type": "application/xml; charset=utf-8", "cache-control": "no-store, no-cache, must-revalidate" },
@@ -2335,11 +2406,14 @@ export default {
     if (url.pathname.startsWith("/media/")) return mediaFile(request, env, decodeURIComponent(url.pathname.slice("/media/".length)));
     if (url.pathname.startsWith("/api/")) return handleApi(request, env, url.pathname);
     if (url.pathname === "/") return home(env, tenant);
+    if (tenant.key === "toumyou" && ["/shop", "/cart", "/account", "/login", "/shop/success", "/digital"].includes(url.pathname)) return redirect(`${tenant.url}/services`, 301);
+    if (tenant.key === "toumyou" && url.pathname.startsWith("/shop/products/")) return redirect(`${tenant.url}/services`, 301);
     if (url.pathname === "/login") return loginPage(request, env);
     if (url.pathname === "/cart") return cartPage(request, env);
     if (url.pathname === "/account") return accountPage(request, env);
     if (url.pathname === "/shop") return shopPage(env, tenant);
-    if (url.pathname === "/digital" && tenant.showDigital) return digitalPage();
+    if (url.pathname === "/services" && tenant.key === "toumyou") return mediaServicesPage("/services");
+    if (url.pathname === "/digital" && tenant.showDigital) return mediaServicesPage("/digital");
     if (url.pathname === "/digital") return redirect(`${tenant.url}/`, 302);
     if (url.pathname === "/shop/success") return checkoutSuccessPage(tenant);
     if (url.pathname.startsWith("/shop/products/")) return productPage(env, decodeURIComponent(url.pathname.split("/").pop()), tenant);
