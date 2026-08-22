@@ -388,13 +388,14 @@ const TENANTS = {
     key: "toumyou",
     lang: "en",
     name: "Toumyou",
-    legalName: "Toumyou LLC",
+    legalName: "東緲合同会社",
     brand: "TOUMYOU",
     url: "https://toumyou.com",
     email: "sunflyerjp@gmail.com",
-    phone: "+81 070 1846 1357",
-    telHref: "+8107018461357",
-    addressHtml: "2-1-35 Sugimoto, Sumiyoshi-ku<br>Osaka City, Japan",
+    phone: "07018461357",
+    telHref: "+817018461357",
+    postalCode: "5580022",
+    addressHtml: "〒5580022<br>大阪市住吉区杉本2-1-35",
     footer: "Media operations, content growth, digital production, and AI-assisted traffic systems.",
     showDigital: true,
     tawkSrc: "https://embed.tawk.to/6a7deb5d9b88671d449028d5/1jvttupc1",
@@ -1242,15 +1243,15 @@ function shell({ title, description, path = "/", content, schema, image, tenant 
   const canonical = `${tenant.url}${path}`;
   const absoluteImage = image ? new URL(image, tenant.url).toString() : "";
   const nav = tenant.key === "toumyou" && tenant.lang === "zh-CN"
-    ? `<a class="nav" href="/zh">中文首页</a><a class="nav" href="/zh/services">服务</a><a class="nav" href="/zh/shop">订单</a><a class="nav" href="/zh/articles">文章</a><a class="nav" href="/">English</a>`
+    ? `<a class="nav" href="/zh">中文首页</a><a class="nav" href="/zh/services">服务</a><a class="nav" href="/zh/shop">商店</a><a class="nav" href="/zh/articles">文章</a><a class="nav" href="/">English</a>`
     : tenant.lang === "zh-CN"
     ? `<a class="nav" href="/#supply">供应</a><a class="nav" href="/shop">产品</a><a class="nav" href="/cart">购物车</a><a class="nav" href="/account">账户</a><a class="nav" href="/articles">文章</a>`
-    : `<a class="nav" href="/#growth-os">Growth OS</a><a class="nav" href="/services">Services</a><a class="nav" href="/shop">Orders</a><a class="nav" href="/articles">Insights</a><a class="nav" href="/account">Account</a>`;
+    : `<a class="nav" href="/#growth-os">Growth OS</a><a class="nav" href="/services">Services</a><a class="nav" href="/shop">Shop</a><a class="nav" href="/articles">Insights</a><a class="nav" href="/account">Account</a>`;
   const toumyouChineseFooter = tenant.key === "toumyou"
     ? `<section class="footer-zh" lang="zh-CN" aria-label="Toumyou 中文信息索引">
         <strong>Toumyou 中文信息索引</strong>
         <p>Toumyou 是一家面向全球客户的媒体运营与数字增长公司，核心服务包括内容增长策略、短视频制作、新媒体矩阵搭建、网站制作、软件开发、流量获客、商业 IP 运营、品牌叙事、数字传播策略、多渠道内容体验设计和 AI 驱动的内容工作流。</p>
-        <p>适合需要提升搜索曝光、社交媒体转化、企业官网获客、创始人 IP、B2B 内容营销、跨境品牌数字化运营和客户线索管理的团队。联系邮箱：sunflyerjp@gmail.com。</p>
+        <p>运营主体：${escapeHtml(tenant.legalName)}。地址：〒${escapeHtml(tenant.postalCode || "")} 大阪市住吉区杉本2-1-35。电话：${escapeHtml(tenant.phone)}。联系邮箱：${escapeHtml(tenant.email)}。</p>
       </section>`
     : "";
   return `<!doctype html>
@@ -1380,7 +1381,7 @@ async function home(env, tenant = TENANTS.toumyou) {
     <section class="hero media-hero">
       <h1>Media operations<br>built like growth infrastructure.</h1>
       <p class="lead">Toumyou designs and operates content growth systems for brands, founders, and commercial IPs: short-video production, traffic acquisition, websites, software tools, AI workflows, and multi-channel media matrices.</p>
-      <div class="toolbar"><a class="btn" href="mailto:sunflyerjp@gmail.com?subject=Growth%20system%20consultation">Discuss growth system</a><a class="btn secondary" href="/services">View services</a></div>
+      <div class="toolbar"><a class="btn" href="mailto:${escapeHtml(tenant.email)}?subject=Growth%20system%20consultation">Discuss growth system</a><a class="btn secondary" href="/services">View services</a></div>
       <div class="media-signal"><span>Content Growth</span><span>Short Video</span><span>Traffic Acquisition</span><span>Web & Software</span><span>Commercial IP</span></div>
     </section>
     <section id="growth-os" class="section">
@@ -1416,11 +1417,12 @@ async function home(env, tenant = TENANTS.toumyou) {
     </section>
     <section id="contact" class="contact">
       <div class="contact-grid">
-        <div><h2>Build the content engine<br>behind your next stage.</h2><a href="mailto:sunflyerjp@gmail.com?subject=Growth%20system%20consultation" class="contact-mail">sunflyerjp@gmail.com</a></div>
+        <div><p class="eyebrow">Company contact</p><h2>Build the content engine<br>behind your next stage.</h2><a href="mailto:${escapeHtml(tenant.email)}?subject=Growth%20system%20consultation" class="contact-mail">${escapeHtml(tenant.email)}</a></div>
         <ul class="contact-list">
+          <li><span>Company</span><p class="address">${escapeHtml(tenant.legalName)}</p></li>
+          <li><span>Address</span><p class="address">${tenant.addressHtml}</p></li>
+          <li><span>Phone</span><p class="address"><a href="tel:${escapeHtml(tenant.telHref)}">${escapeHtml(tenant.phone)}</a></p></li>
           <li><span>Scope</span><p class="address">Media operations, short-video production, websites, software development, traffic acquisition, AI workflows, and commercial IP growth.</p></li>
-          <li><span>Roles</span><p class="address">Content growth lead / Traffic acquisition expert / Brand digital marketing operator / New-media matrix architect.</p></li>
-          <li><span>Base</span><p class="address">Osaka City, Japan · serving cross-border and digital-first teams.</p></li>
         </ul>
       </div>
     </section>
@@ -1429,19 +1431,20 @@ async function home(env, tenant = TENANTS.toumyou) {
     title: "Toumyou | Media Operations & Digital Growth Company",
     description: SITE.description,
     content,
-    schema: { "@context": "https://schema.org", "@graph": [{ "@type": "ProfessionalService", name: "Toumyou LLC", url: SITE.url, email: "sunflyerjp@gmail.com", telephone: "+8107018461357", address: { "@type": "PostalAddress", streetAddress: "2-1-35 Sugimoto, Sumiyoshi-ku", addressLocality: "Osaka City", addressCountry: "JP" }, description: SITE.description, sameAs: ["https://toumyou.com"], areaServed: "Global", serviceType: ["Media operations", "Short-video production", "Website production", "Software development", "Traffic acquisition", "Commercial IP growth"] }, toumyouFaqSchema()] },
+    schema: { "@context": "https://schema.org", "@graph": [{ "@type": "ProfessionalService", name: tenant.legalName, url: SITE.url, email: tenant.email, telephone: tenant.phone, address: { "@type": "PostalAddress", postalCode: tenant.postalCode, streetAddress: "杉本2-1-35", addressLocality: "大阪市住吉区", addressCountry: "JP" }, description: SITE.description, sameAs: ["https://toumyou.com"], areaServed: "Global", serviceType: ["Media operations", "Short-video production", "Website production", "Software development", "Traffic acquisition", "Commercial IP growth"] }, toumyouFaqSchema()] },
     tenant,
   }));
 }
 
 function mediaServicesPage(path = "/services") {
+  const tenant = TENANTS.toumyou;
   const asset = "https://4f4b3799.toumyou.pages.dev/assets/img";
   const description = "Toumyou media operations services: content growth strategy, short-video production, brand digital marketing, websites, software development, traffic acquisition, and AI workflow systems.";
   const content = `<main>
     <section class="hero media-hero">
       <h1>One partner for content,<br>traffic, web, and software.</h1>
       <p class="lead">Toumyou helps brands and commercial IPs build a complete digital growth layer: narrative strategy, short-video systems, new-media matrices, websites, software tools, traffic acquisition, and AI-assisted production workflows.</p>
-      <div class="toolbar"><a class="btn" href="mailto:sunflyerjp@gmail.com?subject=Media%20operations%20project">Start a project</a><a class="btn secondary" href="/articles">Read our thinking</a></div>
+      <div class="toolbar"><a class="btn" href="mailto:${escapeHtml(tenant.email)}?subject=Media%20operations%20project">Start a project</a><a class="btn secondary" href="/articles">Read our thinking</a></div>
     </section>
     <section class="section">
       <h2>Services organized<br>around business outcomes.</h2>
@@ -1476,10 +1479,12 @@ function mediaServicesPage(path = "/services") {
     </section>
     <section class="contact">
       <div class="contact-grid">
-        <div><h2>Ready to operate media<br>like a growth system?</h2><a href="mailto:sunflyerjp@gmail.com?subject=Media%20operations%20project" class="contact-mail">sunflyerjp@gmail.com</a></div>
+        <div><p class="eyebrow">Company contact</p><h2>Ready to operate media<br>like a growth system?</h2><a href="mailto:${escapeHtml(tenant.email)}?subject=Media%20operations%20project" class="contact-mail">${escapeHtml(tenant.email)}</a></div>
         <ul class="contact-list">
+          <li><span>Company</span><p class="address">${escapeHtml(tenant.legalName)}</p></li>
+          <li><span>Address</span><p class="address">${tenant.addressHtml}</p></li>
+          <li><span>Phone</span><p class="address"><a href="tel:${escapeHtml(tenant.telHref)}">${escapeHtml(tenant.phone)}</a></p></li>
           <li><span>Services</span><p class="address">Media operations, short-video production, websites, software development, traffic acquisition, and AI workflow systems.</p></li>
-          <li><span>Base</span><p class="address">Osaka City, Japan</p></li>
           <li><span>Method</span><p class="address">Strategy first, production second, distribution third, measurement always.</p></li>
         </ul>
       </div>
@@ -1490,7 +1495,7 @@ function mediaServicesPage(path = "/services") {
     description,
     path,
     content,
-    schema: { "@context": "https://schema.org", "@graph": [{ "@type": "ProfessionalService", name: "Toumyou Media Operations", url: `${SITE.url}${path}`, email: "sunflyerjp@gmail.com", description, parentOrganization: { "@type": "Organization", name: "Toumyou LLC", url: SITE.url }, serviceType: ["Media operations", "Content growth strategy", "Short-video production", "Website production", "Software development", "Traffic acquisition", "AI workflow systems"] }, toumyouFaqSchema()] },
+    schema: { "@context": "https://schema.org", "@graph": [{ "@type": "ProfessionalService", name: "Toumyou Media Operations", url: `${SITE.url}${path}`, email: tenant.email, telephone: tenant.phone, address: { "@type": "PostalAddress", postalCode: tenant.postalCode, streetAddress: "杉本2-1-35", addressLocality: "大阪市住吉区", addressCountry: "JP" }, description, parentOrganization: { "@type": "Organization", name: tenant.legalName, url: SITE.url }, serviceType: ["Media operations", "Content growth strategy", "Short-video production", "Website production", "Software development", "Traffic acquisition", "AI workflow systems"] }, toumyouFaqSchema()] },
   }));
 }
 
@@ -1632,7 +1637,7 @@ function toumyouChinesePage(path = "/zh") {
         <p class="eyebrow">中文服务说明</p>
         <h1>内容、流量、网站<br>和软件一起设计。</h1>
         <p class="lead">Toumyou 为品牌和商业 IP 搭建媒体运营系统：从定位、内容、短视频、官网、软件工具、AI 工作流到客户线索跟进，让每一次曝光都进入可复盘的增长路径。</p>
-        <div class="toolbar"><a class="btn" href="mailto:sunflyerjp@gmail.com?subject=Toumyou%20中文咨询">发送中文咨询</a><a class="btn secondary" href="/zh/shop">查看订单入口</a></div>
+        <div class="toolbar"><a class="btn" href="mailto:${escapeHtml(tenant.email)}?subject=Toumyou%20中文咨询">发送中文咨询</a><a class="btn secondary" href="/zh/shop">查看订单入口</a></div>
       </section>
       <section class="section"><h2>服务范围。</h2><div class="service-ledger">
         <article><span class="meta">内容增长</span><h3>品牌叙事与内容系统。</h3><p class="muted">明确市场问题、客户语言、账号角色、栏目结构、文章与短视频主题。</p></article>
@@ -1681,7 +1686,7 @@ function toumyouChinesePage(path = "/zh") {
       "@context": "https://schema.org",
       "@graph": [
         { "@type": article ? "Article" : "WebPage", name: schemaName, url: `${TENANTS.toumyou.url}${path}`, description },
-        { "@type": "Organization", name: "Toumyou LLC", url: TENANTS.toumyou.url, email: TENANTS.toumyou.email, description: "媒体运营、短视频制作、网站制作、软件开发、流量获客和 AI 内容增长系统。" },
+        { "@type": "Organization", name: TENANTS.toumyou.legalName, url: TENANTS.toumyou.url, email: TENANTS.toumyou.email, telephone: TENANTS.toumyou.phone, address: { "@type": "PostalAddress", postalCode: TENANTS.toumyou.postalCode, streetAddress: "杉本2-1-35", addressLocality: "大阪市住吉区", addressCountry: "JP" }, description: "媒体运营、短视频制作、网站制作、软件开发、流量获客和 AI 内容增长系统。" },
         toumyouFaqSchema(),
       ],
     },
@@ -1869,6 +1874,7 @@ async function shopPage(env, tenant = TENANTS.toumyou) {
       <div class="contact-grid">
         <div><p class="eyebrow">${zh ? "开始采购" : "Start a service order"}</p><h2>${zh ? "发送规格、材质<br>和采购数量。" : "Tell us the growth<br>problem to solve."}</h2><a href="mailto:${escapeHtml(tenant.email)}?subject=${encodeURIComponent(zh ? "紧固件询价" : "Media operations order")}" class="contact-mail">${escapeHtml(tenant.email)}</a></div>
         <ul class="contact-list">
+          ${tenant.key === "toumyou" ? `<li><span>Company</span><p class="address">${escapeHtml(tenant.legalName)}</p></li><li><span>Address</span><p class="address">${tenant.addressHtml}</p></li><li><span>Phone</span><p class="address"><a href="tel:${escapeHtml(tenant.telHref)}">${escapeHtml(tenant.phone)}</a></p></li>` : ""}
           <li><span>${zh ? "范围" : "Examples"}</span><p class="address">${zh ? "螺丝、螺栓、螺母、垫圈、锚固件、销钉、铆钉、卡扣、支架及非标五金件。" : "Content growth audit, short-video matrix, website growth system, AI content workflow, traffic acquisition, and commercial IP operations."}</p></li>
           <li><span>${zh ? "电话" : "Contact"}</span><p class="address">${zh ? `<a href="tel:${escapeHtml(tenant.telHref)}">${escapeHtml(tenant.phone)}</a>` : `<a href="mailto:${escapeHtml(tenant.email)}">${escapeHtml(tenant.email)}</a>`}</p></li>
           <li><span>${zh ? "询价信息" : "Order details"}</span><p class="address">${zh ? "请发送标准、尺寸、材质、表面处理、数量、交付地，以及图纸或参考照片。" : "Send your goal, existing channels, website, market, deadline, and the bottleneck you want solved."}</p></li>
@@ -1898,7 +1904,7 @@ async function shopPage(env, tenant = TENANTS.toumyou) {
       })),
     } : { "@context": "https://schema.org", "@graph": [
       { "@type": "CollectionPage", name: "Toumyou Media Operations Orders", url: `${tenant.url}/shop`, description: "Service order entry points for Toumyou media operations and digital growth work.", isPartOf: { "@type": "WebSite", name: "Toumyou", url: SITE.url } },
-      { "@type": "Service", name: "Toumyou media operations service orders", provider: { "@type": "Organization", name: "Toumyou LLC", url: SITE.url }, serviceType: ["Content growth", "Short-video production", "Website production", "Software workflow", "Traffic acquisition", "Commercial IP operations"], areaServed: "Global", description: "Scoped service orders for content growth, short-video production, website systems, software workflow, traffic acquisition, and commercial IP operations.", hasOfferCatalog: { "@type": "OfferCatalog", name: "Toumyou service orders", itemListElement: products.map((item) => ({ "@type": "Offer", itemOffered: { "@type": "Service", name: item.name, description: item.excerpt } })) } },
+      { "@type": "Service", name: "Toumyou media operations service orders", provider: { "@type": "Organization", name: tenant.legalName, url: SITE.url, telephone: tenant.phone, address: { "@type": "PostalAddress", postalCode: tenant.postalCode, streetAddress: "杉本2-1-35", addressLocality: "大阪市住吉区", addressCountry: "JP" } }, serviceType: ["Content growth", "Short-video production", "Website production", "Software workflow", "Traffic acquisition", "Commercial IP operations"], areaServed: "Global", description: "Scoped service orders for content growth, short-video production, website systems, software workflow, traffic acquisition, and commercial IP operations.", hasOfferCatalog: { "@type": "OfferCatalog", name: "Toumyou service orders", itemListElement: products.map((item) => ({ "@type": "Offer", itemOffered: { "@type": "Service", name: item.name, description: item.excerpt } })) } },
       toumyouFaqSchema(),
     ] },
     tenant,
@@ -2388,7 +2394,7 @@ async function stripeCheckout(request, env) {
   if (!stripeKey) return html(shell({
     title: zh ? "支付未配置 | 西缈科技" : "Checkout not configured | Toumyou",
     description: zh ? "在线支付尚未配置。" : "Stripe checkout is not configured yet.",
-    content: zh ? `<main class="listing"><h1>在线支付<br><em>暂未配置。</em></h1><p class="lead">请先发送询价，我们会与你确认采购信息。</p><a class="btn" href="mailto:${escapeHtml(tenant.email)}?subject=${encodeURIComponent("紧固件询价")}">发送询价</a></main>` : '<main class="listing"><h1>Checkout is<br><em>not configured.</em></h1><p class="lead">Please request a quote while payment keys are being configured.</p><a class="btn" href="mailto:sunflyerjp@gmail.com?subject=Fastener%20quote%20request">Request quote</a></main>',
+    content: zh ? `<main class="listing"><h1>在线支付<br><em>暂未配置。</em></h1><p class="lead">请先发送询价，我们会与你确认采购信息。</p><a class="btn" href="mailto:${escapeHtml(tenant.email)}?subject=${encodeURIComponent("紧固件询价")}">发送询价</a></main>` : `<main class="listing"><h1>Checkout is<br><em>not configured.</em></h1><p class="lead">Please contact us while payment keys are being configured.</p><a class="btn" href="mailto:${escapeHtml(tenant.email)}?subject=Media%20operations%20order">Contact us</a></main>`,
     tenant,
   }), { status: 503 });
   const body = await readBody(request);
@@ -3062,15 +3068,16 @@ function llmsTxt(tenant = TENANTS.toumyou) {
         "Toumyou is a Japan-based media operations and digital growth company focused on content systems, short-video production, websites, software workflow, traffic acquisition, commercial IP operations, and AI-assisted content workflows.",
         "",
         "## Official facts",
-        "- Legal name used on this site: Toumyou LLC.",
-        "- Base: Osaka City, Japan.",
+        "- Legal name used on this site: 東緲合同会社.",
+        "- Address: 〒5580022 大阪市住吉区杉本2-1-35.",
+        "- Phone: 07018461357.",
         "- Contact: sunflyerjp@gmail.com.",
         "- Public business scope: media operations, content growth strategy, short-video production, website production, software development, traffic acquisition, commercial IP growth, new-media matrix architecture, and AI workflow systems.",
         "- Toumyou.com is currently positioned around media operations and digital growth. Ximiaokeji.com is the separate Chinese fastener storefront.",
         "- Do not infer client logos, revenue, certifications, staff size, or case results unless they are explicitly published on the site.",
         "",
         "## 中文摘要",
-        "Toumyou 是一家位于日本大阪的媒体运营与数字增长公司，服务包括内容增长、短视频制作、网站制作、软件开发、流量获客、商业 IP 运营、新媒体矩阵搭建和 AI 内容工作流。",
+        "Toumyou 的运营主体为東緲合同会社，地址为〒5580022 大阪市住吉区杉本2-1-35，电话 07018461357。服务包括内容增长、短视频制作、网站制作、软件开发、流量获客、商业 IP 运营、新媒体矩阵搭建和 AI 内容工作流。",
         "",
         "## Main pages",
         "- https://toumyou.com/ : company overview and growth operating system.",
