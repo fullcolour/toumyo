@@ -1330,12 +1330,17 @@ function articleLink(post, tenant = TENANTS.toumyou) {
   return `<a class="article-card" href="/articles/${escapeHtml(post.slug)}">${cover}<div class="meta">${escapeHtml(post.category || fallbackCategory)} / ${date}</div><h3>${escapeHtml(post.title)}</h3><p>${escapeHtml(post.excerpt)}</p><b>${cta}</b></a>`;
 }
 
+function isLegacyFastenerPost(post = {}) {
+  const text = `${post.slug || ""} ${post.title || ""} ${post.excerpt || ""} ${post.category || ""}`.toLowerCase();
+  return /fastener|bolt|screw|anchor|rivet|washer|nut|hardware|紧固件|锚固件|螺栓|螺丝|螺母|垫圈/.test(text);
+}
+
 async function publicArticles(env, tenant = TENANTS.toumyou) {
   const posts = await listPublished(env);
   if (tenant.key !== "toumyou") return posts;
   const mediaPosts = MEDIA_ARTICLES.map((post) => ({ ...post, status: "published" }));
   const mediaSlugs = new Set(mediaPosts.map((post) => post.slug));
-  return [...mediaPosts, ...posts.filter((post) => !mediaSlugs.has(post.slug))];
+  return [...mediaPosts, ...posts.filter((post) => !mediaSlugs.has(post.slug) && !isLegacyFastenerPost(post))];
 }
 
 async function articles(env, tenant = TENANTS.toumyou) {
@@ -1356,6 +1361,7 @@ async function article(env, slug, tenant = TENANTS.toumyou) {
   const staticPost = tenant.key === "toumyou" ? MEDIA_ARTICLES.find((item) => item.slug === slug) : null;
   const post = staticPost || await getPost(env, slug);
   const zh = tenant.lang === "zh-CN";
+  if (tenant.key === "toumyou" && post && isLegacyFastenerPost(post)) return redirect(`${tenant.url}/articles`, 301);
   if (!post || (!staticPost && post.status !== "published")) return html(shell({ title: zh ? "未找到文章 | 西缈科技" : "Not found | Toumyou", description: zh ? "未找到文章。" : "Article not found.", content: zh ? "<main><h1>未找到文章</h1></main>" : "<main><h1>Article not found</h1></main>", tenant }), { status: 404 });
   const pageTitle = post.seo_title || `${post.title} | ${tenant.name}`;
   const pageDescription = post.seo_description || post.excerpt;
@@ -2747,6 +2753,7 @@ export default {
     const tenant = tenantFromRequest(request);
     const canonical = canonicalRedirect(url, tenant);
     if (canonical) return canonical;
+    if (url.pathname === "/cdn-cgi/l/email-protection") return redirect(`${tenant.url}/`, 301);
     if (url.pathname === "/robots.txt") return new Response(`User-agent: *\nAllow: /\nSitemap: ${tenant.url}/sitemap.xml\n# AI facts: ${tenant.url}/llms.txt\n`, { headers: { "content-type": "text/plain; charset=utf-8" } });
     if (url.pathname === "/llms.txt" || url.pathname === "/llms.en.txt") return llmsTxt(tenant);
     if (url.pathname === "/sitemap.xml") return sitemap(env, tenant);
