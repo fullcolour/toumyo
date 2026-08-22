@@ -6,6 +6,7 @@ const SITE = {
 };
 
 const GEO_UPDATED_DATE = "2026-08-22";
+const dayStamp = (date) => Math.floor(Date.parse(`${date}T00:00:00Z`) / 1000);
 
 const SHOP = {
   name: "Toumyou Fastener Supply",
@@ -41,8 +42,8 @@ const MEDIA_ARTICLES = [
     title: "A content growth operating system is not a posting calendar",
     excerpt: "How brands turn scattered publishing into a repeatable loop of narrative, production, distribution, conversion, and learning.",
     category: "Content Growth",
-    published_at: 1792627200,
-    updated_at: 1792627200,
+    published_at: dayStamp("2026-08-22"),
+    updated_at: dayStamp("2026-08-22"),
     body: `A content calendar tells a team what to publish. A content growth operating system tells a business why the content exists, who it moves, where it travels, what action it earns, and how the next cycle becomes sharper.
 
 The difference matters because most teams do not fail from a lack of posts. They fail from a lack of architecture. The brand story lives in one document, short videos live in another workflow, paid traffic is outsourced, the website is updated after everything else, and customer questions never return to the content team as insight.
@@ -60,8 +61,8 @@ This is how content becomes a business function rather than a creative expense.`
     title: "Short-video production for commercial IP needs a sharper machine",
     excerpt: "Commercial IP is built by repeated recognition: a clear role, a repeatable point of view, and formats that compound over time.",
     category: "Commercial IP",
-    published_at: 1792540800,
-    updated_at: 1792540800,
+    published_at: dayStamp("2026-08-21"),
+    updated_at: dayStamp("2026-08-21"),
     body: `Short video is often treated as a creative task. For commercial IP, it is closer to product operations. The output is not only a clip; it is a repeated market signal that tells the audience what this person or brand stands for.
 
 A strong commercial IP system starts with role clarity. The audience should know whether they are watching a content growth leader, a traffic acquisition expert, a brand digital marketing operator, a vertical content director, or an AI-driven growth officer. When the role is vague, every video must start from zero.
@@ -77,8 +78,8 @@ Toumyou builds short-video systems so the brand does not depend on random inspir
     title: "The website is the growth infrastructure behind every channel",
     excerpt: "Traffic without a conversion surface leaks value. A serious website turns search, social, video, and referrals into measurable business intent.",
     category: "Web & Software",
-    published_at: 1792454400,
-    updated_at: 1792454400,
+    published_at: dayStamp("2026-08-20"),
+    updated_at: dayStamp("2026-08-20"),
     body: `A website is often judged by how it looks. That is only the surface. For growth teams, the website is where attention becomes evidence, trust, action, and data.
 
 Every channel needs a destination. Search needs structured answers. Short video needs a page that continues the argument. Paid traffic needs message match. Sales conversations need proof. Customer support needs clear routing. Software tools and lead forms need a stable place to live.
@@ -94,8 +95,8 @@ The strongest digital presence is not a single beautiful page. It is a connected
     title: "How to think about media operations cost before buying traffic",
     excerpt: "A practical way to separate strategy, production, distribution, tooling, and conversion work before a team spends on ads.",
     category: "Media Operations",
-    published_at: 1792368000,
-    updated_at: 1792368000,
+    published_at: dayStamp("2026-08-19"),
+    updated_at: dayStamp("2026-08-19"),
     body: `Many companies ask for traffic before they know what the traffic should do. That is why media operations cost should be understood as a system, not as a single line item.
 
 The first cost is diagnosis. A team needs to know the commercial offer, buyer language, existing content assets, channel history, conversion path, and the operational bottleneck. Without that diagnosis, every later expense becomes guesswork.
@@ -113,8 +114,8 @@ Toumyou's approach is to map these costs before execution. The goal is not to ma
     title: "A short-video matrix for B2B brands should behave like a sales system",
     excerpt: "Why serious B2B short-video work needs role design, repeatable formats, conversion pages, and follow-up operations.",
     category: "Short Video",
-    published_at: 1792281600,
-    updated_at: 1792281600,
+    published_at: dayStamp("2026-08-18"),
+    updated_at: dayStamp("2026-08-18"),
     body: `B2B short video is often misunderstood as a brand awareness activity. It can be that, but the stronger version behaves like a distributed sales system.
 
 The starting point is role design. The audience should quickly know whether the account is led by a founder, technical expert, operator, buyer advisor, analyst, or commercial IP. That role becomes the anchor for trust.
@@ -132,8 +133,8 @@ Toumyou builds short-video systems around these loops: recognizable role, repeat
     title: "AI content workflow still needs human judgment at the sharp points",
     excerpt: "AI can accelerate topic mining, drafting, repurposing, and reporting, but positioning and taste still decide whether content earns trust.",
     category: "AI Workflow",
-    published_at: 1792195200,
-    updated_at: 1792195200,
+    published_at: dayStamp("2026-08-17"),
+    updated_at: dayStamp("2026-08-17"),
     body: `AI makes content production faster. It does not automatically make a brand more credible.
 
 The useful workflow starts with human judgment: market position, customer pain, brand voice, offer clarity, risk boundaries, and the kind of audience the company actually wants. These choices should not be outsourced to a blank prompt.
@@ -143,6 +144,125 @@ Once the strategic frame is clear, AI becomes powerful. It can mine topics from 
 The danger is sameness. If a team uses AI only to generate more posts, the brand becomes louder but less distinct. If the team uses AI to support sharper thinking, faster repurposing, and more consistent operations, the system gets stronger.
 
 Toumyou uses AI as an operating layer: research assistance, content versioning, production planning, QA, reporting, and internal workflow support. The human work remains taste, judgment, positioning, and the courage to say something specific.`,
+  },
+  {
+    slug: "landing-page-message-match",
+    title: "Landing pages should continue the promise that created the click",
+    excerpt: "Message match turns paid traffic, short videos, search visits, and referrals into a page that feels expected instead of generic.",
+    category: "Conversion",
+    published_at: dayStamp("2026-08-16"),
+    updated_at: dayStamp("2026-08-16"),
+    body: `A landing page does not start when the visitor arrives. It starts at the moment attention was earned: a search result, a short video, a paid creative, a founder post, a partner link, or a private message.
+
+If the page does not continue that promise, the visitor has to rebuild context alone. That is why many campaigns leak value. The ad may be sharp, the video may be persuasive, and the offer may be good, but the page feels like a generic brochure.
+
+Message match is the operating principle that fixes this. The headline should answer the same problem that created the click. The proof should match the visitor's stage of awareness. The form should ask for the minimum information needed to continue the conversation. The next step should be obvious.
+
+For a media operations team, this means landing pages should be planned with the content, not after it. A diagnostic video needs a diagnostic page. A search article needs a deeper answer path. A paid campaign needs a page that repeats the language of the creative without becoming repetitive.
+
+Toumyou treats landing pages as conversion surfaces inside the larger content system. They are not isolated design assets. They are where attention becomes intent, and where intent becomes a measurable next action.`,
+  },
+  {
+    slug: "private-domain-follow-up-system",
+    title: "Private-domain follow-up is where content turns into relationship",
+    excerpt: "A serious content system should route comments, DMs, forms, and repeat questions into a follow-up process instead of losing them.",
+    category: "Operations",
+    published_at: dayStamp("2026-08-15"),
+    updated_at: dayStamp("2026-08-15"),
+    body: `Content creates attention, but follow-up creates memory. A brand can publish useful posts every day and still lose the business value if responses are not routed into a clear process.
+
+Private-domain follow-up starts with capture. Comments, direct messages, form submissions, chat conversations, email replies, and repeated sales questions should not live in disconnected inboxes. They should become a source of customer language and next-step opportunities.
+
+The second layer is classification. Some people need education. Some need a price conversation. Some need proof. Some are not the right fit yet. A mature follow-up system separates these paths so the team does not reply with the same message to every signal.
+
+The third layer is content feedback. Questions that appear repeatedly should become articles, short videos, FAQ sections, landing-page blocks, sales notes, and onboarding material. This is how content stops being a one-way broadcast and becomes a learning loop.
+
+Toumyou designs follow-up as part of media operations. The goal is simple: make every useful audience signal easier to see, easier to answer, and easier to turn into the next piece of content or the next qualified conversation.`,
+  },
+  {
+    slug: "founder-led-content-without-random-posting",
+    title: "Founder-led content works best when the founder has a role",
+    excerpt: "The audience should quickly understand why this person is worth listening to, what they diagnose, and what market truth they repeat.",
+    category: "Commercial IP",
+    published_at: dayStamp("2026-08-14"),
+    updated_at: dayStamp("2026-08-14"),
+    body: `Founder-led content often fails because the founder is asked to become a general influencer. That is the wrong goal. The stronger goal is role clarity.
+
+A founder can be a category educator, operator, technical explainer, buyer advisor, commercial storyteller, contrarian analyst, or market translator. Each role creates a different type of trust. Without role clarity, every post feels like a new experiment and the audience never learns what to expect.
+
+The content system should start by defining what the founder is uniquely allowed to say. What has the founder seen that customers have not? What problem can they diagnose faster than the market? What belief should the audience associate with the company?
+
+Once the role is defined, production becomes easier. The founder can repeat a few useful formats: diagnosis, objection handling, case breakdown, behind-the-scenes decisions, customer question response, and offer explanation. Repetition is not a weakness when the role is clear. It is how recognition compounds.
+
+Toumyou builds founder-led content around role, format, rhythm, and conversion path. The founder does not need to post randomly. The founder needs a system that turns experience into repeatable market signals.`,
+  },
+  {
+    slug: "content-analytics-that-change-decisions",
+    title: "Content analytics should change what the team does next",
+    excerpt: "Useful measurement is not a vanity dashboard. It tells the team which hook, page, question, channel, and offer deserve the next cycle.",
+    category: "Analytics",
+    published_at: dayStamp("2026-08-13"),
+    updated_at: dayStamp("2026-08-13"),
+    body: `A content dashboard can look impressive and still be useless. Views, likes, watch time, clicks, and rankings matter only when they change a decision.
+
+The first useful signal is qualified attention. Did the right audience respond, save, ask, click, search, or return? A smaller signal from the correct buyer can matter more than a large signal from the wrong crowd.
+
+The second useful signal is explanation quality. Which page helped the visitor understand the offer? Which article reduced confusion? Which short video created the clearest next question? These signals tell the team where the market needs better language.
+
+The third useful signal is conversion friction. If many people watch but few continue, the next problem may not be production volume. It may be message mismatch, weak proof, a confusing form, an unclear offer, or a missing follow-up process.
+
+Toumyou treats analytics as a decision layer. The point is not to report that content happened. The point is to decide what should happen next: which format to repeat, which page to rebuild, which question to answer, and which channel deserves more operational attention.`,
+  },
+  {
+    slug: "b2b-seo-answer-assets",
+    title: "B2B SEO needs answer assets, not only keywords",
+    excerpt: "Search-friendly pages should define terms, compare options, explain steps, state facts, answer objections, and route qualified buyers.",
+    category: "Search",
+    published_at: dayStamp("2026-08-12"),
+    updated_at: dayStamp("2026-08-12"),
+    body: `B2B SEO is often reduced to keywords. Keywords are useful, but they are only the entry point. The stronger asset is a page that answers the buyer's real question better than the alternatives.
+
+An answer asset usually contains several blocks. It defines the term clearly. It explains when the problem matters. It compares options. It gives operational steps. It states facts without inventing numbers. It answers objections. It points the reader toward the next useful page.
+
+This structure matters for search engines, but it also matters for AI systems. Large language models and answer engines need extractable facts, clean definitions, and stable source pages. A page that is visually attractive but vague is harder to cite.
+
+For a media operations company, answer assets can support every channel. A short video can send viewers to a deeper explanation. A sales call can use the page as proof. A paid campaign can use the page as a trust layer. An AI answer can cite the page when the facts are clean.
+
+Toumyou builds SEO pages as part of the operating system, not as isolated blog posts. The goal is to make the brand easier to understand, easier to reference, and easier to choose when the buyer is ready.`,
+  },
+  {
+    slug: "media-library-governance-for-growth-teams",
+    title: "A media library is a growth asset when the team can actually reuse it",
+    excerpt: "Content teams need organized footage, covers, hooks, scripts, briefs, pages, and proof assets that can move across channels.",
+    category: "Workflow",
+    published_at: dayStamp("2026-08-11"),
+    updated_at: dayStamp("2026-08-11"),
+    body: `Most content teams create more assets than they can reuse. Footage lives in one drive, scripts in another document, thumbnails in a designer's folder, landing-page copy in the CMS, and proof screenshots inside chat history.
+
+This creates hidden waste. The team pays for production once, then loses the ability to compound it. A useful media library solves this by making assets findable, reusable, and connected to the strategy they came from.
+
+A practical library should organize raw footage, edited clips, covers, hooks, scripts, article drafts, visual references, customer questions, proof assets, offer explanations, and performance notes. It should also record context: what the asset was for, which channel it served, and what happened after publishing.
+
+Governance matters because the library should not become a dumping ground. Naming rules, status fields, owners, review notes, and expiration rules keep the system usable as the team grows.
+
+Toumyou treats media libraries as operational infrastructure. The library is not only storage. It is the place where past production becomes cheaper future production, and where the team can turn one good idea into many precise assets.`,
+  },
+  {
+    slug: "ai-assisted-editorial-calendar",
+    title: "An AI-assisted editorial calendar still needs a point of view",
+    excerpt: "AI can help plan topics and formats, but the calendar should be organized around market tension, buyer questions, and business outcomes.",
+    category: "AI Workflow",
+    published_at: dayStamp("2026-08-10"),
+    updated_at: dayStamp("2026-08-10"),
+    body: `AI can generate a long list of topics quickly. That is useful, but a long list is not an editorial strategy.
+
+The calendar needs a point of view. It should explain what the brand believes, what market problem it wants to clarify, which buyer questions matter, and which business outcome each content format supports. Without those choices, AI simply produces more generic content faster.
+
+The useful workflow starts with human framing. Define the audience, offer, objections, channel roles, conversion pages, and risk boundaries. Then use AI to expand ideas, cluster questions, draft outlines, create title variations, prepare short-video structures, and repurpose long ideas into platform-native assets.
+
+The calendar should also include review moments. Which topics created qualified attention? Which posts produced better questions? Which articles deserved internal links? Which videos should become landing-page sections? The answer should shape the next cycle.
+
+Toumyou uses AI to make editorial operations faster, not flatter. The machine can accelerate production, but the brand still needs judgment, taste, and a reason to be remembered.`,
   },
 ];
 
