@@ -1146,11 +1146,12 @@ function toumyouFactsBlock(context = "home") {
     </div>
     <div class="geo-grid">
       <article><span>Definition / 定义</span><h3>Media operations as infrastructure.</h3><p>We connect narrative, production, distribution, conversion surfaces, and measurement so content becomes a repeatable business system.</p></article>
-      <article><span>Numeric facts / 数字事实</span><h3>数字事实：4 steps, 7 service areas.</h3><p>The public scope covers strategy, short video, media matrix, websites, software, traffic acquisition, and AI workflow. This source was updated on ${GEO_UPDATED_DATE}.</p></article>
+      <article><span>Numeric facts / 数字事实</span><h3>数字事实：30 / 60 / 90 days.</h3><p>Common planning horizons use 30 days for diagnosis, 60 days for production rhythm, and 90 days for review. Initial scope can be reviewed within 7 days when inputs are clear.</p></article>
       <article><span>Comparison / 对比</span><h3>Not only posting, not only ads.</h3><p>A posting calendar lists output. A growth operating system defines audience, message, channel, conversion path, and learning loop.</p></article>
-      <article><span>Steps / 操作步骤</span><h3>操作步骤：diagnose, build, distribute, learn.</h3><p>We review the current system, design the operating map, produce channel-ready assets, route traffic to conversion pages, and refine from real signals.</p></article>
+      <article><span>Steps / 操作步骤</span><h3>操作流程：how to start.</h3><p>Step 1: review the current system. Step 2: design the operating map. Step 3: produce channel-ready assets. Step 4: refine from real signals.</p></article>
     </div>
     <p class="meta" style="margin-top:22px">FAQ / 常见问题</p>
+    <p class="muted">Reference standards: <a class="text-link" href="https://schema.org/" rel="nofollow">Schema.org</a>, <a class="text-link" href="https://developers.google.com/search/docs" rel="nofollow">Google Search documentation</a>, and <a class="text-link" href="https://www.w3.org/WAI/standards-guidelines/" rel="nofollow">W3C accessibility guidance</a>.</p>
     <div class="faq-strip">
       ${faqs.map(([q, a]) => `<details><summary>${escapeHtml(q)}</summary><p>${escapeHtml(a)}</p></details>`).join("")}
     </div>
@@ -1651,7 +1652,7 @@ async function shopPage(env, tenant = TENANTS.toumyou) {
         <article><span>${zh ? "配送" : "Delivery"}</span><h3>${zh ? "订单配送和交付方式会根据地址与产品确认。" : "Delivery is digital: plans, pages, production briefs, templates, reviews, and implementation notes."}</h3><p>${zh ? "如需批量采购或指定物流，可在询价时备注目的地和交期要求。" : "The timeline depends on account count, page count, content volume, integrations, and approval speed."}</p></article>
         <article><span>${zh ? "支付" : "Payment"}</span><h3>${escapeHtml(zh ? checkoutStatus : "Pricing is confirmed after scope. Stripe payment can be enabled for approved orders.")}</h3><p>${zh ? "支持的支付方式会根据账户配置、币种和订单条件显示；批量采购也可先沟通确认。" : "The payment system remains in place, but the public service orders do not show fixed prices yet."}</p></article>
       </div>
-      <div class="notice" style="margin-top:34px"><strong>${zh ? "采购提示：" : "Order note:"}</strong> ${zh ? "请尽量提供规格、材质、表面处理、数量、用途、交付城市和图纸/照片，便于更快确认报价。" : "Send your current website, social accounts, target market, content bottleneck, and expected business outcome. We will scope the order before quoting."}</div>
+      <div class="notice" style="margin-top:34px"><strong>${zh ? "采购提示：" : "Order note:"}</strong> ${zh ? "请尽量提供规格、材质、表面处理、数量、用途、交付城市和图纸/照片，便于更快确认报价。" : "How to start: Step 1 send your current website and social accounts. Step 2 describe the growth bottleneck. Step 3 choose a 30 days, 60 days, or 90 days planning horizon. Step 4 confirm the expected business outcome before quoting."}</div>
     </section>
     <section class="contact">
       <div class="contact-grid">
@@ -1669,12 +1670,12 @@ async function shopPage(env, tenant = TENANTS.toumyou) {
     description: zh ? "上海西缈科技有限公司紧固件产品中心，提供螺丝、螺栓、螺母、垫圈和工业配件销售与询价。" : "Toumyou service orders for content growth, short-video production, website systems, software workflow, traffic acquisition, and commercial IP operations.",
     path: "/shop",
     content,
-    schema: {
+    schema: zh ? {
       "@context": "https://schema.org",
-      "@type": zh ? "Store" : "ProfessionalService",
-      name: zh ? "上海西缈科技紧固件产品中心" : "Toumyou Media Operations Orders",
+      "@type": "Store",
+      name: "上海西缈科技紧固件产品中心",
       url: `${tenant.url}/shop`,
-      description: zh ? "紧固件、工业五金和配件销售。" : "Service order entry points for Toumyou media operations and digital growth work.",
+      description: "紧固件、工业五金和配件销售。",
       email: tenant.email,
       parentOrganization: { "@type": "Organization", name: tenant.legalName },
       makesOffer: (products.length ? products : SHOP.categories).map((item) => ({
@@ -1684,7 +1685,11 @@ async function shopPage(env, tenant = TENANTS.toumyou) {
         itemOffered: { "@type": zh ? "Product" : "Service", name: item.name, description: item.summary || item.excerpt },
         availability: item.inventory ? "https://schema.org/InStock" : "https://schema.org/PreOrder",
       })),
-    },
+    } : { "@context": "https://schema.org", "@graph": [
+      { "@type": "CollectionPage", name: "Toumyou Media Operations Orders", url: `${tenant.url}/shop`, description: "Service order entry points for Toumyou media operations and digital growth work.", isPartOf: { "@type": "WebSite", name: "Toumyou", url: SITE.url } },
+      { "@type": "Service", name: "Toumyou media operations service orders", provider: { "@type": "Organization", name: "Toumyou LLC", url: SITE.url }, serviceType: ["Content growth", "Short-video production", "Website production", "Software workflow", "Traffic acquisition", "Commercial IP operations"], areaServed: "Global", description: "Scoped service orders for content growth, short-video production, website systems, software workflow, traffic acquisition, and commercial IP operations.", hasOfferCatalog: { "@type": "OfferCatalog", name: "Toumyou service orders", itemListElement: products.map((item) => ({ "@type": "Offer", itemOffered: { "@type": "Service", name: item.name, description: item.excerpt } })) } },
+      toumyouFaqSchema(),
+    ] },
     tenant,
   }));
 }
