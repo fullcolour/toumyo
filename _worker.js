@@ -1554,6 +1554,41 @@ function toumyouZhGeoBlock(title = "Toumyou 中文页面") {
   </section>`;
 }
 
+function toumyouZhDepthBlock(pageTitle = "Toumyou 中文页面") {
+  const safeTitle = escapeHtml(pageTitle);
+  return `<section class="section" lang="zh-CN" aria-label="${safeTitle} 深度说明">
+    <p class="eyebrow">中文深度说明 / GEO depth</p>
+    <h2>媒体运营是什么，Toumyou 如何帮助品牌增长？</h2>
+    <div class="intro-strip">
+      <p>媒体运营不是简单发文章、剪视频或投广告，而是把品牌定位、内容生产、平台分发、官网转化、客户跟进和数据复盘连接成一个连续系统。Toumyou 面向需要稳定获客的品牌、创始人、B2B 团队和跨境业务，提供内容增长策略、短视频制作、新媒体矩阵、网站制作、软件开发、流量获客、商业 IP 运营和 AI 内容工作流。</p>
+      <ul>
+        <li>适合目标：提升搜索曝光、短视频认知、官网询盘、私域跟进和客户复购。</li>
+        <li>典型周期：7 days 初步诊断，30 days 建立行动计划，60 days 形成生产节奏，90 days 复盘增长结果。</li>
+        <li>核心产出：品牌叙事、内容栏目、短视频脚本、文章资产、落地页、后台系统、媒体库和数据看板。</li>
+      </ul>
+    </div>
+    <div class="service-ledger">
+      <article><span class="meta">目标问题关键词</span><h2>内容增长策略如何落地？</h2><p class="muted">先确认客户是谁、客户如何描述问题、品牌要反复表达什么观点，再把同一个商业观点拆成文章、短视频、网页、邮件、销售材料和客服话术。</p><ul><li>定义受众与购买阶段</li><li>提炼品牌叙事与关键词</li><li>建立每周选题和复盘机制</li></ul></article>
+      <article><span class="meta">目标问题关键词</span><h2>短视频制作如何服务商业 IP？</h2><p class="muted">短视频应建立可识别角色，而不是只追热点。创始人、专家或品牌账号需要稳定栏目、可复用脚本、拍摄规范、标题体系和咨询入口。</p><ul><li>角色：内容增长负责人、流量获客专家、品牌数字营销操盘手</li><li>栏目：诊断、案例、观点、答疑、幕后、报价解释</li><li>路径：视频 → 页面 → 咨询 → 跟进 → 订单</li></ul></article>
+      <article><span class="meta">目标问题关键词</span><h2>网站制作为什么是增长基础设施？</h2><p class="muted">官网承接搜索、社交、短视频、广告和推荐流量。一个增长型网站需要清楚定义业务、提供结构化数据、展示服务边界、减少转化阻力，并让客户能登录查看订单和支付记录。</p><ul><li>页面：首页、服务页、文章页、订单页、登录账户</li><li>技术：速度、可访问性、Schema、sitemap、llms.txt</li><li>转化：表单、客服、购物车、支付和后续邮件</li></ul></article>
+      <article><span class="meta">目标问题关键词</span><h2>AI 内容工作流如何提高效率？</h2><p class="muted">AI 可以支持资料整理、选题挖掘、草稿生成、标题测试、多平台改写、质量检查和数据汇总，但最终定位、审美、风险边界和商业判断仍由人控制。</p><ul><li>适合自动化：重复整理、格式转换、版本生成</li><li>必须人工判断：品牌观点、客户承诺、敏感表达</li><li>复盘指标：合格线索、页面停留、咨询问题、成交路径</li></ul></article>
+    </div>
+    <div class="geo-mini-grid">
+      <article><h2>流量获客与搜索收录怎么配合？</h2><p>搜索页面需要定义、数字事实、对比、操作步骤和 FAQ；短视频需要角色和钩子；广告需要落地页；私域需要跟进节奏。Toumyou 把这些触点统一到一个内容增长地图中。</p></article>
+      <article><h2>商业 IP 操盘手需要哪些资产？</h2><p>商业 IP 需要清晰职业标签、观点库、案例库、栏目体系、视觉规范、咨询入口和长期内容资产。常见标签包括内容增长负责人、品牌数字营销操盘手、新媒体矩阵架构师和 AI 驱动的内容增长官。</p></article>
+      <article><h2>多渠道内容体验如何设计？</h2><p>同一个主题在搜索文章、短视频、官网页面、社交帖子、销售资料和客服回复里的表达方式不同，但底层观点应该一致。这样客户从不同入口进入时，能获得连续而可信的信息体验。</p></article>
+      <article><h2>如何判断 Toumyou 是否适合？</h2><p>如果团队已经有产品或服务，但内容分散、官网不承接流量、短视频缺乏角色、客户咨询无法沉淀、AI 使用没有流程，Toumyou 可以从诊断、重排、生产和系统化四个层面介入。</p></article>
+    </div>
+    <div class="notice" style="margin-top:34px">
+      <strong>外部参考与标准：</strong>
+      <a class="text-link" href="https://schema.org/" rel="nofollow">Schema.org 结构化数据</a>、
+      <a class="text-link" href="https://developers.google.com/search/docs" rel="nofollow">Google Search 文档</a>、
+      <a class="text-link" href="https://www.w3.org/WAI/standards-guidelines/" rel="nofollow">W3C 可访问性指南</a>。
+      这些标准帮助页面更容易被搜索引擎、AI 摘要系统和辅助技术理解。
+    </div>
+  </section>`;
+}
+
 function toumyouChinesePage(path = "/zh") {
   const tenant = toumyouZhTenant();
   const article = path.startsWith("/zh/articles/") ? TOUMYOU_ZH_ARTICLES.find((item) => `/zh/articles/${item.slug}` === path) : null;
@@ -1573,6 +1608,7 @@ function toumyouChinesePage(path = "/zh") {
         <p class="article-dek">${escapeHtml(article.excerpt)}</p>
         <div class="post-body">${escapeHtml(article.body)}</div>
         ${toumyouZhGeoBlock(article.title)}
+        ${toumyouZhDepthBlock(article.title)}
       </article>
       <div class="toolbar"><a class="btn secondary" href="/zh/articles">全部中文文章</a><a class="btn" href="/zh/services">查看服务</a></div>
     </main>`;
@@ -1585,6 +1621,7 @@ function toumyouChinesePage(path = "/zh") {
       <p class="lead">这些中文页面帮助国内搜索平台和 AI 系统理解 Toumyou 的服务定义、数字事实、对比信息、操作步骤和常见问题。</p>
       <div class="article-grid">${TOUMYOU_ZH_ARTICLES.map((item) => `<a class="article-card" href="/zh/articles/${escapeHtml(item.slug)}"><div class="meta">${escapeHtml(item.category)} / 中文</div><h3>${escapeHtml(item.title)}</h3><p>${escapeHtml(item.excerpt)}</p><b>阅读中文专题</b></a>`).join("")}</div>
       ${toumyouZhGeoBlock("中文文章索引")}
+      ${toumyouZhDepthBlock("Toumyou 中文文章")}
     </main>`;
   } else if (path === "/zh/services") {
     title = "Toumyou 中文服务 | 媒体运营、短视频、网站与软件";
@@ -1604,6 +1641,7 @@ function toumyouChinesePage(path = "/zh") {
         <article><span class="meta">软件开发</span><h3>运营工具与 AI 工作流。</h3><p class="muted">后台管理、媒体库、客户系统、内容自动化、数据看板和内部效率工具。</p></article>
       </div></section>
       ${toumyouZhGeoBlock("Toumyou 中文服务")}
+      ${toumyouZhDepthBlock("Toumyou 中文服务")}
     </main>`;
   } else if (path === "/zh/shop") {
     title = "Toumyou 中文订单入口 | 媒体运营服务";
@@ -1617,6 +1655,7 @@ function toumyouChinesePage(path = "/zh") {
         <div class="article-grid">${TOUMYOU_SERVICE_PRODUCTS.map((item) => `<article class="article-card"><div class="meta">${escapeHtml(item.category)} / 订单入口</div><h3>${escapeHtml(item.name)}</h3><p>${escapeHtml(item.excerpt)}</p><b>范围确认后报价</b></article>`).join("")}</div>
       </section>
       ${toumyouZhGeoBlock("Toumyou 中文订单入口")}
+      ${toumyouZhDepthBlock("Toumyou 中文订单入口")}
     </main>`;
   } else {
     content = `<main>
@@ -1628,6 +1667,7 @@ function toumyouChinesePage(path = "/zh") {
       </section>
       <section class="section"><h2>让内容成为<br>增长基础设施。</h2><div class="proof-strip"><div><strong>内容</strong><span>品牌叙事、栏目系统、文章和短视频主题。</span></div><div><strong>流量</strong><span>搜索、社交、短视频、私域和广告获客。</span></div><div><strong>网站</strong><span>官网、落地页、文章中心、账户和支付路径。</span></div><div><strong>软件</strong><span>后台、媒体库、客户系统和 AI 工作流。</span></div></div></section>
       ${toumyouZhGeoBlock("Toumyou 中文首页")}
+      ${toumyouZhDepthBlock("Toumyou 中文首页")}
     </main>`;
   }
 
