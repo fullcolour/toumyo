@@ -5,6 +5,15 @@ const SITE = {
     "Toumyou is a media operations and digital growth company for content systems, short-video production, websites, software development, traffic acquisition, and commercial IP growth.",
 };
 
+const RELATED_SITES = [
+  { url: "https://toumyou.com", label: "Toumyou", zhLabel: "東緲 · 媒体运营", description: "Media operations and digital growth." },
+  { url: "https://ximiaokeji.com", label: "Ximiaokeji", zhLabel: "西缈科技 · 紧固件", description: "Chinese fastener and industrial accessory storefront." },
+  { url: "https://wangtaiyang.com", label: "Wang Taiyang", zhLabel: "王太阳个人站", description: "Personal site and project index." },
+  { url: "https://xojoj.com", label: "XOJOJ", zhLabel: "XOJOJ", description: "Independent digital project site." },
+  { url: "https://cjetr.com", label: "CJETR", zhLabel: "CJETR", description: "Related domain in the site network." },
+];
+const RELATED_SITE_URLS = RELATED_SITES.map((site) => site.url);
+
 const GEO_UPDATED_DATE = "2026-08-22";
 const dayStamp = (date) => Math.floor(Date.parse(`${date}T00:00:00Z`) / 1000);
 
@@ -1239,6 +1248,26 @@ function toumyouSourceNotes({ title = "Toumyou service", type = "service", summa
   </section>`;
 }
 
+function relatedSitesBlock(tenant = TENANTS.toumyou) {
+  const zh = tenant.lang === "zh-CN";
+  const currentUrl = tenant.url.replace(/\/$/, "");
+  const primaryPeer = tenant.key === "ximiaokeji" ? "https://toumyou.com" : "https://ximiaokeji.com";
+  const links = RELATED_SITES.map((site) => {
+    const isCurrent = site.url === currentUrl;
+    const isPeer = site.url === primaryPeer;
+    const label = zh ? site.zhLabel : site.label;
+    const rel = isCurrent ? "" : ' rel="noopener"';
+    const target = isCurrent ? "" : ' target="_blank"';
+    const badge = isPeer ? (zh ? "互链" : "Partner link") : (isCurrent ? (zh ? "当前站点" : "Current site") : "");
+    return `<a class="site-link ${isCurrent ? "current" : ""} ${isPeer ? "peer" : ""}" href="${escapeHtml(site.url)}"${target}${rel}><span>${escapeHtml(label)}</span>${badge ? `<em>${escapeHtml(badge)}</em>` : ""}</a>`;
+  }).join("");
+  return `<section class="site-network" aria-label="${zh ? "相关网站链接" : "Related sites"}">
+    <strong>${zh ? "网站网络" : "Site network"}</strong>
+    <p>${zh ? "東緲与西缈两个站点已互相链接，并收录相关域名入口，方便用户和搜索引擎识别站点关系。" : "Toumyou and Ximiaokeji are cross-linked, with related domains listed for users, search engines, and AI retrieval."}</p>
+    <div class="site-network-links">${links}</div>
+  </section>`;
+}
+
 function shell({ title, description, path = "/", content, schema, image, tenant = TENANTS.toumyou }) {
   const canonical = `${tenant.url}${path}`;
   const absoluteImage = image ? new URL(image, tenant.url).toString() : "";
@@ -1293,7 +1322,7 @@ function shell({ title, description, path = "/", content, schema, image, tenant 
     .commerce-panel{display:grid;grid-template-columns:1.15fr .85fr;gap:18px;margin-top:50px;align-items:stretch}.commerce-card{background:var(--soft);border:1px solid var(--line);border-radius:10px;padding:26px}.commerce-card strong{display:block;font-size:14px;text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px}.commerce-list{list-style:none;margin:0;padding:0;display:grid;gap:12px}.commerce-list li{border-top:1px solid var(--line);padding-top:12px;color:var(--muted)}.metric-strip{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:34px}.metric-strip div{border:1px solid var(--line);border-radius:10px;background:var(--soft);padding:18px}.metric-strip strong{display:block;font-size:28px;line-height:1;letter-spacing:-.04em}.metric-strip span{display:block;margin-top:8px;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px}.shop-filter{display:grid;grid-template-columns:1.3fr .7fr .7fr;gap:12px;margin:34px 0 0}.catalog-first{padding-top:58px}.catalog-first h1{font-family:"Avenir Next",Avenir,"Helvetica Neue","Segoe UI",Helvetica,sans-serif;font-size:clamp(48px,6.4vw,96px);font-weight:850;letter-spacing:-.055em;line-height:.94;margin:0;max-width:940px}.product-card{position:relative;overflow:hidden;background:var(--soft);border:1px solid var(--line)}.product-card:hover{background:var(--soft);border-color:#aeb6c0}.product-card[hidden]{display:none}.card-tag{position:absolute;top:16px;right:16px;border:1px solid var(--ink);border-radius:999px;padding:7px 10px;background:rgba(255,255,255,.94);font-size:11px;font-weight:850;letter-spacing:.5px;text-transform:uppercase}.card-tag.pay{background:var(--accent);color:#fff;border-color:var(--accent)}.pill-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.pill{border:1px solid var(--line);border-radius:999px;padding:6px 10px;font-size:12px;background:rgba(255,255,255,.82)}.status-badge{display:inline-flex;border:1px solid var(--line);border-radius:999px;padding:6px 10px;font-size:11px;font-weight:850;letter-spacing:.5px;text-transform:uppercase;background:var(--soft)}.status-badge.paid{background:#dff7df;border-color:#3d7d3d}.status-badge.failed,.status-badge.expired{background:#ffe2dc}.status-badge.open,.status-badge.unpaid,.status-badge.checkout_created{background:#fff4bd}.product-buy{display:flex;gap:12px;align-items:end;flex-wrap:wrap}.product-buy input{max-width:130px}.gallery-main{width:100%;max-height:500px;object-fit:cover;border-radius:10px;margin:10px 0 16px;background:var(--panel);transition:opacity .28s cubic-bezier(.16,1,.3,1),transform .28s cubic-bezier(.16,1,.3,1)}.gallery-main.is-swapping{opacity:.62;transform:scale(.992)}.gallery-thumbs{display:grid;grid-template-columns:repeat(auto-fit,minmax(76px,96px));gap:10px;margin:0 0 18px}.gallery-thumb{display:block;width:100%;height:72px;border:1px solid var(--line);border-radius:8px;padding:0;background:var(--soft);overflow:hidden;cursor:pointer;transition:transform .2s cubic-bezier(.16,1,.3,1),border-color .2s cubic-bezier(.16,1,.3,1),box-shadow .2s cubic-bezier(.16,1,.3,1)}.gallery-thumb img{width:100%;height:100%;object-fit:cover;display:block}.gallery-thumb:hover,.gallery-thumb.active{border-color:var(--accent);box-shadow:0 10px 22px rgba(36,87,255,.14);transform:translateY(-2px)}.order-meta{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:14px 0}.order-meta span{display:block;border-top:1px solid var(--line);padding-top:8px;color:var(--muted);font-size:13px}.order-dashboard{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:26px 0}.metric-card{border:1px solid var(--line);border-radius:6px;background:var(--soft);padding:16px}.metric-card strong{display:block;font-size:32px;line-height:1;letter-spacing:-.04em}.metric-card span{display:block;margin-top:6px;color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.7px}.order-filter{display:grid;grid-template-columns:1fr 180px;gap:12px;margin:20px 0}.order-card[hidden]{display:none}
     .article-card h3{margin:34px 0 14px}.article-card p{color:var(--muted)}.article-card b{margin-top:auto;font-size:12px}.empty{margin-top:62px;padding:34px;border-top:1px solid var(--ink)}.empty p{font-family:Georgia,"Times New Roman",serif;font-size:32px;margin:0 0 8px}
     .contact{background:var(--ink);color:var(--paper);padding:104px 8vw;min-height:520px}.contact-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:8vw;align-items:end}.contact-mail{display:block;margin-top:48px;font-size:clamp(20px,2.6vw,36px);border-bottom:1px solid #666960;padding-bottom:13px}.contact-list{list-style:none;margin:0;padding:0;border-top:1px solid #666960}.contact-list li{display:grid;grid-template-columns:90px 1fr;gap:24px;padding:18px 0;border-bottom:1px solid #41433d}.contact-list span{font-size:11px;text-transform:uppercase;letter-spacing:.9px;color:#a9ada2}.address{font-size:13px;line-height:1.7;color:#c5c7be;margin:0}
-    footer{padding:24px 4vw;background:var(--ink);color:#c5c7be;display:grid;grid-template-columns:1fr auto;gap:20px;border-top:1px solid #494b44;font-size:11px}.footer-meta{display:flex;gap:20px;justify-content:space-between;align-items:start;grid-column:1/-1}.footer-zh{grid-column:1/-1;max-width:980px;border-top:1px solid #494b44;padding-top:18px;color:#d6d9d0}.footer-zh strong{display:block;color:#fff;margin-bottom:8px;font-size:12px;letter-spacing:.5px}.footer-zh p{margin:6px 0 0;line-height:1.75;color:#c5c7be;max-width:960px}.listing{padding:88px 8vw}.listing h1{font-size:clamp(56px,7vw,108px)}.articles{display:grid;gap:14px}.article-link{display:block;border-top:1px solid var(--line);padding:24px 0}.article-link:hover h3{color:#2b3310}
+    footer{padding:24px 4vw;background:var(--ink);color:#c5c7be;display:grid;grid-template-columns:1fr auto;gap:20px;border-top:1px solid #494b44;font-size:11px}.footer-meta{display:flex;gap:20px;justify-content:space-between;align-items:start;grid-column:1/-1}.footer-zh{grid-column:1/-1;max-width:980px;border-top:1px solid #494b44;padding-top:18px;color:#d6d9d0}.footer-zh strong,.site-network strong{display:block;color:#fff;margin-bottom:8px;font-size:12px;letter-spacing:.5px}.footer-zh p,.site-network p{margin:6px 0 0;line-height:1.75;color:#c5c7be;max-width:960px}.site-network{grid-column:1/-1;border-top:1px solid #494b44;padding-top:18px}.site-network-links{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}.site-link{display:inline-flex;align-items:center;gap:8px;border:1px solid #5b5e56;border-radius:999px;padding:8px 11px;color:#f2f4ec;background:rgba(255,255,255,.03)}.site-link:hover,.site-link.peer{border-color:#dce7ff;background:rgba(220,231,255,.12)}.site-link.current{color:#aeb5ac}.site-link em{font-style:normal;color:#dce7ff;font-size:10px;text-transform:uppercase;letter-spacing:.6px}.listing{padding:88px 8vw}.listing h1{font-size:clamp(56px,7vw,108px)}.articles{display:grid;gap:14px}.article-link{display:block;border-top:1px solid var(--line);padding:24px 0}.article-link:hover h3{color:#2b3310}
     .article-page{padding:88px 8vw}.article-page article{max-width:860px}.article h1{font-size:clamp(52px,7.4vw,110px)}.article-dek{font-size:23px;line-height:1.42;max-width:700px;margin:36px 0}.post-body{font-family:Georgia,"Times New Roman",serif;font-size:21px;line-height:1.65;white-space:pre-wrap;max-width:680px}
     input,textarea,select{width:100%;border:1px solid #aaa69c;border-radius:6px;padding:11px 12px;background:var(--soft);color:var(--ink);font:15px "Avenir Next",Avenir,"Helvetica Neue","Segoe UI",Helvetica,sans-serif}textarea{min-height:150px;line-height:1.45;resize:vertical}label{display:block;margin:14px 0 7px;font-size:12px;font-weight:800;letter-spacing:.3px}.notice{border:1px solid var(--line);padding:18px;border-radius:6px;background:var(--soft)}.support-widget{position:fixed;right:22px;bottom:22px;z-index:20;width:min(390px,calc(100vw - 32px));font-family:"Avenir Next",Avenir,"Helvetica Neue","Segoe UI",Helvetica,sans-serif}.support-toggle{width:100%;justify-content:space-between;border-radius:999px;padding:14px 18px}.support-panel{display:none;margin-top:10px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.97);box-shadow:0 20px 60px rgba(18,20,23,.18);padding:16px;backdrop-filter:blur(18px)}.support-widget.open .support-panel{display:block}.support-panel h3{margin:0 0 8px;font-size:24px}.support-panel p{margin:0;color:var(--muted);font-size:13px}.support-panel textarea{min-height:70px}.support-status{font-size:13px;color:#36510d;margin:10px 0 0;font-weight:700}.support-close{background:transparent;border:0;color:var(--muted);font-weight:800;cursor:pointer;padding:0}.support-head{display:flex;align-items:flex-start;justify-content:space-between;gap:18px}.support-feed{height:230px;overflow:auto;margin:14px 0;padding:12px;background:var(--paper);border:1px solid var(--line);border-radius:10px;display:flex;flex-direction:column;gap:10px}.support-bubble{max-width:86%;padding:10px 12px;border-radius:12px;background:#fff;border:1px solid var(--line);font-size:14px;line-height:1.42;white-space:pre-wrap}.support-bubble.customer{align-self:flex-end;background:var(--accent);border-color:var(--accent);color:#fff}.support-bubble.agent{align-self:flex-start}.support-bubble.system{align-self:center;background:transparent;border:0;color:var(--muted);font-size:12px;text-align:center}.support-fields{display:grid;grid-template-columns:1fr 1fr;gap:8px}.support-fields input{padding:9px 10px}.support-fields.hidden{display:none}.support-chat-row{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:end}.support-chat-row textarea{min-height:58px}.support-meta-line{font-size:12px;color:var(--muted);margin-top:8px}.support-desk{display:grid;grid-template-columns:minmax(260px,360px) minmax(0,1fr);gap:24px;background:transparent;border:0;padding:0}.support-desk aside,.support-desk section{min-height:680px}.support-thread-list{display:grid;gap:10px;margin-top:14px;max-height:680px;overflow:auto}.support-thread{width:100%;text-align:left;border:1px solid var(--line);background:var(--soft);border-radius:10px;padding:14px;cursor:pointer;color:var(--ink)}.support-thread.active,.support-thread:hover{border-color:var(--accent);box-shadow:0 12px 28px rgba(36,87,255,.1)}.support-thread span{display:flex;justify-content:space-between;gap:10px}.support-thread b{display:block;font-size:15px}.support-thread small,.support-thread em{display:block;color:var(--muted);font-size:11px;font-style:normal}.support-thread p{margin:10px 0 0;color:var(--muted);font-size:13px}.support-conversation-head{display:flex;justify-content:space-between;gap:20px;align-items:flex-start;border-bottom:1px solid var(--line);padding-bottom:18px}.support-conversation-head h2{font-family:"Avenir Next",Avenir,"Helvetica Neue","Segoe UI",Helvetica,sans-serif;font-size:clamp(34px,4vw,56px);font-weight:850;letter-spacing:-.055em;line-height:.95;margin:0}.desk-feed{height:430px;overflow:auto;border:1px solid var(--line);border-radius:12px;background:var(--paper);padding:18px;margin:18px 0;display:flex;flex-direction:column;gap:12px}.desk-bubble{max-width:76%;border:1px solid var(--line);border-radius:12px;background:#fff;padding:13px 15px}.desk-bubble.agent{align-self:flex-end;background:var(--accent);color:#fff;border-color:var(--accent)}.desk-bubble.customer{align-self:flex-start}.desk-bubble strong{display:block;font-size:12px;margin-bottom:6px}.desk-bubble p{margin:0;white-space:pre-wrap}.desk-bubble small{display:block;margin-top:8px;font-size:11px;opacity:.72}
     .admin-wrap{padding:58px 5vw 90px}.admin-hero{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:24px;align-items:end;margin-bottom:28px;border-bottom:1px solid var(--ink);padding-bottom:28px}.admin-hero h1{font-size:clamp(48px,6vw,88px);letter-spacing:-.06em;margin:0}.admin-tabs{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 32px}.admin-tab{border:1px solid var(--line);background:var(--soft);border-radius:999px;padding:10px 14px;font-size:12px;font-weight:850;letter-spacing:.5px;text-transform:uppercase}.admin-tab.active,.admin-tab:hover{border-color:var(--ink);background:var(--ink);color:var(--paper)}.editor{display:grid;grid-template-columns:minmax(260px,390px) minmax(0,820px);gap:5vw}.editor aside{border-right:1px solid var(--line);padding-right:28px}.admin-list-tools{display:grid;grid-template-columns:1fr 130px;gap:10px;margin:18px 0}.mini-dashboard{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:18px 0}.mini-dashboard div{border:1px solid var(--line);background:var(--soft);border-radius:8px;padding:14px}.mini-dashboard strong{display:block;font-size:26px;letter-spacing:-.04em}.mini-dashboard span{display:block;margin-top:4px;font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:var(--muted)}.admin-list-empty{border-top:1px solid var(--line);padding:20px 0;color:var(--muted)}.admin-thumb-row{display:grid;grid-template-columns:62px 1fr;gap:12px;align-items:center}.admin-thumb{width:62px;height:52px;border-radius:8px;object-fit:cover;background:var(--panel);border:1px solid var(--line)}.admin-preview-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(72px,1fr));gap:10px;margin:12px 0}.image-chip{position:relative;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--soft);min-height:68px}.image-chip img{width:100%;height:74px;object-fit:cover;display:block}.image-chip span{display:block;padding:6px 8px;font-size:10px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.media-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:14px;margin-top:24px}.media-card{border:1px solid var(--line);border-radius:10px;background:var(--soft);overflow:hidden}.media-card img{width:100%;height:154px;object-fit:cover;background:var(--panel);display:block}.media-card div{padding:12px}.media-card code{display:block;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--muted);background:transparent}.media-card .toolbar{margin:12px 0 0}.field-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.editor-actions{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:20px}.status{margin:12px 0 0;color:#36510d;font-weight:700}.danger{background:transparent;color:var(--ink);border:1px solid var(--line)}
@@ -1319,7 +1348,7 @@ function shell({ title, description, path = "/", content, schema, image, tenant 
     })();
   </script>
   <!--End of Tawk.to Script-->
-  <footer><div class="footer-meta"><span>© ${new Date().getFullYear()} ${escapeHtml(tenant.legalName)}</span><span>${escapeHtml(tenant.footer)}</span></div>${toumyouChineseFooter}</footer>
+  <footer><div class="footer-meta"><span>© ${new Date().getFullYear()} ${escapeHtml(tenant.legalName)}</span><span>${escapeHtml(tenant.footer)}</span></div>${relatedSitesBlock(tenant)}${toumyouChineseFooter}</footer>
 </body>
 </html>`;
 }
@@ -1373,7 +1402,7 @@ async function home(env, tenant = TENANTS.toumyou) {
       description: "上海西缈科技有限公司主营紧固件销售和工业配件供应，支持螺丝、螺栓、螺母、垫圈及非标件询价采购。",
       content,
       tenant,
-      schema: { "@context": "https://schema.org", "@type": "Organization", name: tenant.legalName, url: tenant.url, email: tenant.email, telephone: tenant.phone, description: "紧固件销售、工业配件供应与企业采购支持。" },
+      schema: { "@context": "https://schema.org", "@type": "Organization", name: tenant.legalName, url: tenant.url, email: tenant.email, telephone: tenant.phone, description: "紧固件销售、工业配件供应与企业采购支持。", sameAs: RELATED_SITE_URLS },
     }));
   }
   const mediaPosts = MEDIA_ARTICLES.slice(0, 3);
@@ -1431,7 +1460,7 @@ async function home(env, tenant = TENANTS.toumyou) {
     title: "Toumyou | Media Operations & Digital Growth Company",
     description: SITE.description,
     content,
-    schema: { "@context": "https://schema.org", "@graph": [{ "@type": "ProfessionalService", name: tenant.legalName, url: SITE.url, email: tenant.email, telephone: tenant.phone, address: { "@type": "PostalAddress", postalCode: tenant.postalCode, streetAddress: "杉本2-1-35", addressLocality: "大阪市住吉区", addressCountry: "JP" }, description: SITE.description, sameAs: ["https://toumyou.com"], areaServed: "Global", serviceType: ["Media operations", "Short-video production", "Website production", "Software development", "Traffic acquisition", "Commercial IP growth"] }, toumyouFaqSchema()] },
+    schema: { "@context": "https://schema.org", "@graph": [{ "@type": "ProfessionalService", name: tenant.legalName, url: SITE.url, email: tenant.email, telephone: tenant.phone, address: { "@type": "PostalAddress", postalCode: tenant.postalCode, streetAddress: "杉本2-1-35", addressLocality: "大阪市住吉区", addressCountry: "JP" }, description: SITE.description, sameAs: RELATED_SITE_URLS, areaServed: "Global", serviceType: ["Media operations", "Short-video production", "Website production", "Software development", "Traffic acquisition", "Commercial IP growth"] }, toumyouFaqSchema()] },
     tenant,
   }));
 }
@@ -1495,7 +1524,7 @@ function mediaServicesPage(path = "/services") {
     description,
     path,
     content,
-    schema: { "@context": "https://schema.org", "@graph": [{ "@type": "ProfessionalService", name: "Toumyou Media Operations", url: `${SITE.url}${path}`, email: tenant.email, telephone: tenant.phone, address: { "@type": "PostalAddress", postalCode: tenant.postalCode, streetAddress: "杉本2-1-35", addressLocality: "大阪市住吉区", addressCountry: "JP" }, description, parentOrganization: { "@type": "Organization", name: tenant.legalName, url: SITE.url }, serviceType: ["Media operations", "Content growth strategy", "Short-video production", "Website production", "Software development", "Traffic acquisition", "AI workflow systems"] }, toumyouFaqSchema()] },
+    schema: { "@context": "https://schema.org", "@graph": [{ "@type": "ProfessionalService", name: "Toumyou Media Operations", url: `${SITE.url}${path}`, email: tenant.email, telephone: tenant.phone, address: { "@type": "PostalAddress", postalCode: tenant.postalCode, streetAddress: "杉本2-1-35", addressLocality: "大阪市住吉区", addressCountry: "JP" }, description, parentOrganization: { "@type": "Organization", name: tenant.legalName, url: SITE.url, sameAs: RELATED_SITE_URLS }, serviceType: ["Media operations", "Content growth strategy", "Short-video production", "Website production", "Software development", "Traffic acquisition", "AI workflow systems"] }, toumyouFaqSchema()] },
   }));
 }
 
@@ -1686,7 +1715,7 @@ function toumyouChinesePage(path = "/zh") {
       "@context": "https://schema.org",
       "@graph": [
         { "@type": article ? "Article" : "WebPage", name: schemaName, url: `${TENANTS.toumyou.url}${path}`, description },
-        { "@type": "Organization", name: TENANTS.toumyou.legalName, url: TENANTS.toumyou.url, email: TENANTS.toumyou.email, telephone: TENANTS.toumyou.phone, address: { "@type": "PostalAddress", postalCode: TENANTS.toumyou.postalCode, streetAddress: "杉本2-1-35", addressLocality: "大阪市住吉区", addressCountry: "JP" }, description: "媒体运营、短视频制作、网站制作、软件开发、流量获客和 AI 内容增长系统。" },
+        { "@type": "Organization", name: TENANTS.toumyou.legalName, url: TENANTS.toumyou.url, email: TENANTS.toumyou.email, telephone: TENANTS.toumyou.phone, address: { "@type": "PostalAddress", postalCode: TENANTS.toumyou.postalCode, streetAddress: "杉本2-1-35", addressLocality: "大阪市住吉区", addressCountry: "JP" }, description: "媒体运营、短视频制作、网站制作、软件开发、流量获客和 AI 内容增长系统。", sameAs: RELATED_SITE_URLS },
         toumyouFaqSchema(),
       ],
     },
@@ -1894,7 +1923,7 @@ async function shopPage(env, tenant = TENANTS.toumyou) {
       url: `${tenant.url}/shop`,
       description: "紧固件、工业五金和配件销售。",
       email: tenant.email,
-      parentOrganization: { "@type": "Organization", name: tenant.legalName },
+      parentOrganization: { "@type": "Organization", name: tenant.legalName, url: tenant.url, sameAs: RELATED_SITE_URLS },
       makesOffer: (products.length ? products : SHOP.categories).map((item) => ({
         "@type": "Offer",
         price: item.price_cents ? String(minorToDisplay(item.price_cents, item.currency)) : undefined,
@@ -1904,7 +1933,7 @@ async function shopPage(env, tenant = TENANTS.toumyou) {
       })),
     } : { "@context": "https://schema.org", "@graph": [
       { "@type": "CollectionPage", name: "Toumyou Media Operations Orders", url: `${tenant.url}/shop`, description: "Service order entry points for Toumyou media operations and digital growth work.", isPartOf: { "@type": "WebSite", name: "Toumyou", url: SITE.url } },
-      { "@type": "Service", name: "Toumyou media operations service orders", provider: { "@type": "Organization", name: tenant.legalName, url: SITE.url, telephone: tenant.phone, address: { "@type": "PostalAddress", postalCode: tenant.postalCode, streetAddress: "杉本2-1-35", addressLocality: "大阪市住吉区", addressCountry: "JP" } }, serviceType: ["Content growth", "Short-video production", "Website production", "Software workflow", "Traffic acquisition", "Commercial IP operations"], areaServed: "Global", description: "Scoped service orders for content growth, short-video production, website systems, software workflow, traffic acquisition, and commercial IP operations.", hasOfferCatalog: { "@type": "OfferCatalog", name: "Toumyou service orders", itemListElement: products.map((item) => ({ "@type": "Offer", itemOffered: { "@type": "Service", name: item.name, description: item.excerpt } })) } },
+      { "@type": "Service", name: "Toumyou media operations service orders", provider: { "@type": "Organization", name: tenant.legalName, url: SITE.url, telephone: tenant.phone, sameAs: RELATED_SITE_URLS, address: { "@type": "PostalAddress", postalCode: tenant.postalCode, streetAddress: "杉本2-1-35", addressLocality: "大阪市住吉区", addressCountry: "JP" } }, serviceType: ["Content growth", "Short-video production", "Website production", "Software workflow", "Traffic acquisition", "Commercial IP operations"], areaServed: "Global", description: "Scoped service orders for content growth, short-video production, website systems, software workflow, traffic acquisition, and commercial IP operations.", hasOfferCatalog: { "@type": "OfferCatalog", name: "Toumyou service orders", itemListElement: products.map((item) => ({ "@type": "Offer", itemOffered: { "@type": "Service", name: item.name, description: item.excerpt } })) } },
       toumyouFaqSchema(),
     ] },
     tenant,
@@ -3074,6 +3103,7 @@ function llmsTxt(tenant = TENANTS.toumyou) {
         "- Contact: sunflyerjp@gmail.com.",
         "- Public business scope: media operations, content growth strategy, short-video production, website production, software development, traffic acquisition, commercial IP growth, new-media matrix architecture, and AI workflow systems.",
         "- Toumyou.com is currently positioned around media operations and digital growth. Ximiaokeji.com is the separate Chinese fastener storefront.",
+        "- Related site network: https://toumyou.com, https://ximiaokeji.com, https://wangtaiyang.com, https://xojoj.com, https://cjetr.com.",
         "- Do not infer client logos, revenue, certifications, staff size, or case results unless they are explicitly published on the site.",
         "",
         "## 中文摘要",
@@ -3085,6 +3115,9 @@ function llmsTxt(tenant = TENANTS.toumyou) {
         "- https://toumyou.com/shop : service order entry points and scoped paid order flow.",
         "- https://toumyou.com/articles : media operations and growth articles.",
         "- https://toumyou.com/login : Google sign-in for customer account, cart, orders, and payment records.",
+        "",
+        "## Related sites",
+        ...RELATED_SITES.map((site) => `- ${site.url} : ${site.label}. ${site.description}`),
         "",
         "## Service order pages",
         ...TOUMYOU_SERVICE_PRODUCTS.map((item) => `- https://toumyou.com/shop/products/${item.slug} : ${item.name}. ${item.excerpt}`),
@@ -3106,12 +3139,16 @@ function llmsTxt(tenant = TENANTS.toumyou) {
         "- 电话：18616626832。",
         "- 邮箱：hello@ximiaokeji.com。",
         "- 主营业务：紧固件销售、工业配件供应、批量询价和企业采购支持。",
+        "- 相关网站：https://toumyou.com、https://ximiaokeji.com、https://wangtaiyang.com、https://xojoj.com、https://cjetr.com。",
         "",
         "## 主要页面",
         "- https://ximiaokeji.com/ : 公司首页与采购说明。",
         "- https://ximiaokeji.com/shop : 产品中心。",
         "- https://ximiaokeji.com/articles : 文章与采购知识。",
         "- https://ximiaokeji.com/login : 用户登录、购物车、订单和支付记录。",
+        "",
+        "## 相关网站",
+        ...RELATED_SITES.map((site) => `- ${site.url} : ${site.zhLabel}。${site.description}`),
       ];
   return new Response(`${lines.join("\n")}\n`, {
     headers: { "content-type": "text/plain; charset=utf-8", "cache-control": "no-store, no-cache, must-revalidate" },
