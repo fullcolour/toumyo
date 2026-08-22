@@ -304,11 +304,13 @@ function tenantFromRequest(request) {
 const encoder = new TextEncoder();
 
 function html(body, init = {}) {
+  const cache = init.cache || "no-store, no-cache, must-revalidate";
+  const cacheControl = cache.includes("no-transform") ? cache : `${cache}, no-transform`;
   return new Response(body, {
     status: init.status || 200,
     headers: {
       "content-type": "text/html; charset=utf-8",
-      "cache-control": init.cache || "no-store, no-cache, must-revalidate",
+      "cache-control": cacheControl,
       "cdn-cache-control": "no-store",
       "cloudflare-cdn-cache-control": "no-store",
       ...init.headers,
