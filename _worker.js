@@ -1372,7 +1372,10 @@ async function articles(env, tenant = TENANTS.toumyou) {
     path: "/articles",
     content: zh
       ? `<main class="listing"><h1>紧固件知识<br>与采购文章。</h1><p class="lead">这里发布产品规格、材料选择、采购流程、下单说明和工业配件供应相关内容。</p><div class="article-grid">${posts.map((post) => articleLink(post, tenant)).join("") || '<div class="empty"><p>暂无已发布文章。</p><span class="muted">在后台保存发布后，文章会自动显示。</span></div>'}</div></main>`
-      : `<main class="listing"><h1>Growth notes<br>for media operators.</h1><p class="lead">Articles on content systems, short-video production, commercial IP, traffic acquisition, websites, software tools, and AI-assisted media operations.</p><div class="article-grid">${posts.map((post) => articleLink(post, tenant)).join("")}</div></main>`,
+      : `<main class="listing"><h1>Growth notes<br>for media operators.</h1><p class="lead">Articles on content systems, short-video production, commercial IP, traffic acquisition, websites, software tools, and AI-assisted media operations.</p><div class="article-grid">${posts.map((post) => articleLink(post, tenant)).join("")}</div>${toumyouSourceNotes({ title: "Toumyou Insights", type: "article", summary: "This article index collects Toumyou thinking on media operations, content systems, short-video production, traffic acquisition, websites, software tools, and AI workflow." })}</main>`,
+    schema: zh
+      ? undefined
+      : { "@context": "https://schema.org", "@type": "CollectionPage", name: "Toumyou Insights", url: `${SITE.url}/articles`, description: "Toumyou articles on media operations, content growth, short-video production, traffic acquisition, websites, software systems, and AI-assisted workflows.", hasPart: posts.map((post) => ({ "@type": "Article", headline: post.title, url: `${SITE.url}/articles/${post.slug}`, description: post.excerpt })) },
     tenant,
   }));
 }
@@ -2413,6 +2416,7 @@ function loginPage(request, env) {
           : `<p><strong>${zh ? "Google 登录尚未配置。" : "Google login is not configured yet."}</strong></p><p>${zh ? "请在 Cloudflare Pages 中配置 GOOGLE_CLIENT_ID 和 GOOGLE_CLIENT_SECRET，并将 OAuth 回调地址设置为" : "Add GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in Cloudflare Pages, then set the Google OAuth redirect URI to"} ${tenant.url}/api/auth/google/callback.</p>`}
         ${zh ? '<p class="muted" style="margin-top:16px">QQ 登录需要 QQ 互联 AppID / AppKey / 回调域名审核，拿到凭据后可以继续接入。</p>' : ""}
       </div>
+      ${tenant.key === "toumyou" ? toumyouSourceNotes({ title: "Toumyou customer login", type: "service", summary: "The customer account area supports Google sign-in, cart access, service order records, Stripe payment status, and customer order history." }) : ""}
     </main>`,
     tenant,
   }), { cache: "no-store" });
