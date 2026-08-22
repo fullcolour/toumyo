@@ -87,6 +87,178 @@ The same principle applies to software development. A lightweight internal tool,
 
 The strongest digital presence is not a single beautiful page. It is a connected operating layer: content brings attention, the website organizes belief, software reduces operational drag, and data feeds the next decision.`,
   },
+  {
+    slug: "media-operations-cost-structure",
+    title: "How to think about media operations cost before buying traffic",
+    excerpt: "A practical way to separate strategy, production, distribution, tooling, and conversion work before a team spends on ads.",
+    category: "Media Operations",
+    published_at: 1792368000,
+    updated_at: 1792368000,
+    body: `Many companies ask for traffic before they know what the traffic should do. That is why media operations cost should be understood as a system, not as a single line item.
+
+The first cost is diagnosis. A team needs to know the commercial offer, buyer language, existing content assets, channel history, conversion path, and the operational bottleneck. Without that diagnosis, every later expense becomes guesswork.
+
+The second cost is production. Short videos, articles, landing pages, lead magnets, email sequences, paid creatives, and sales materials should not be produced as isolated pieces. They should be produced from one narrative spine so the brand sounds coherent across channels.
+
+The third cost is distribution. Search, social, paid traffic, private domain, platform recommendation, and partner channels each need different packaging. A good media operations plan defines where the content travels before the content is created.
+
+The fourth cost is conversion infrastructure. If the website, forms, analytics, CRM notes, order flow, and customer response loop are weak, better content only creates more leakage.
+
+Toumyou's approach is to map these costs before execution. The goal is not to make the plan complicated. The goal is to make each spend visible, justified, and connected to business intent.`,
+  },
+  {
+    slug: "short-video-matrix-for-b2b-brands",
+    title: "A short-video matrix for B2B brands should behave like a sales system",
+    excerpt: "Why serious B2B short-video work needs role design, repeatable formats, conversion pages, and follow-up operations.",
+    category: "Short Video",
+    published_at: 1792281600,
+    updated_at: 1792281600,
+    body: `B2B short video is often misunderstood as a brand awareness activity. It can be that, but the stronger version behaves like a distributed sales system.
+
+The starting point is role design. The audience should quickly know whether the account is led by a founder, technical expert, operator, buyer advisor, analyst, or commercial IP. That role becomes the anchor for trust.
+
+The second layer is format. A mature matrix usually includes market diagnosis, product explanation, case breakdown, objection handling, founder perspective, customer question response, and behind-the-scenes proof. Each format answers a different buyer doubt.
+
+The third layer is routing. A video should know where it sends attention. Some videos send people to a service page. Some invite a consultation. Some support retargeting. Some become search-friendly articles. Some become sales enablement assets.
+
+The fourth layer is operation. Comments, private messages, website visits, form submissions, and repeated questions should return to the content team as insight. That is how a short-video matrix compounds rather than resets every week.
+
+Toumyou builds short-video systems around these loops: recognizable role, repeatable format, measurable routing, and practical follow-up.`,
+  },
+  {
+    slug: "ai-content-workflow-with-human-judgment",
+    title: "AI content workflow still needs human judgment at the sharp points",
+    excerpt: "AI can accelerate topic mining, drafting, repurposing, and reporting, but positioning and taste still decide whether content earns trust.",
+    category: "AI Workflow",
+    published_at: 1792195200,
+    updated_at: 1792195200,
+    body: `AI makes content production faster. It does not automatically make a brand more credible.
+
+The useful workflow starts with human judgment: market position, customer pain, brand voice, offer clarity, risk boundaries, and the kind of audience the company actually wants. These choices should not be outsourced to a blank prompt.
+
+Once the strategic frame is clear, AI becomes powerful. It can mine topics from customer questions, turn a long idea into multiple formats, draft article structures, create title variations, prepare short-video outlines, summarize performance signals, and maintain a reusable content library.
+
+The danger is sameness. If a team uses AI only to generate more posts, the brand becomes louder but less distinct. If the team uses AI to support sharper thinking, faster repurposing, and more consistent operations, the system gets stronger.
+
+Toumyou uses AI as an operating layer: research assistance, content versioning, production planning, QA, reporting, and internal workflow support. The human work remains taste, judgment, positioning, and the courage to say something specific.`,
+  },
+];
+
+const TOUMYOU_SERVICE_PRODUCTS = [
+  {
+    id: "service-content-growth-audit",
+    slug: "ewe",
+    name: "Content Growth Audit",
+    sku: "MEDIA-AUDIT",
+    category: "Strategy",
+    excerpt: "A focused diagnostic order for positioning, content assets, channel gaps, website conversion, and the next growth roadmap.",
+    description: "Toumyou reviews the current brand narrative, publishing rhythm, short-video assets, website journey, search surfaces, and lead conversion path. The output is a clear operating map: what to keep, what to rebuild, which content formats to prioritize, and how the next 30 to 90 days should run.",
+    specs: "Brand narrative review / Channel audit / Website conversion review / Content roadmap / Priority action list",
+    package_info: "Remote strategy order with written operating notes",
+    lead_time: "Usually scoped after an initial conversation",
+    shipping_note: "No physical delivery. The work is delivered as strategy notes, calls, and digital documents.",
+    price_cents: 0,
+    currency: "JPY",
+    inventory: 0,
+    status: "published",
+    allow_checkout: 0,
+    moq: 1,
+  },
+  {
+    id: "service-short-video-matrix",
+    slug: "short-video-matrix-build",
+    name: "Short-Video Matrix Build",
+    sku: "MEDIA-VIDEO",
+    category: "Short Video",
+    excerpt: "Design a repeatable short-video system for commercial IP, founder accounts, product education, and conversion-oriented content.",
+    description: "This order covers account role design, topic banks, hook structures, repeatable content formats, filming rhythm, editing notes, publishing logic, and conversion routing. It is built for teams that want short video to become an operating system, not a random posting habit.",
+    specs: "Role design / Topic bank / Format system / Script patterns / Publishing rhythm / Conversion routing",
+    package_info: "Remote production planning and operating templates",
+    lead_time: "Scoped by account count and production volume",
+    shipping_note: "Delivered digitally through planning documents, calls, and production briefs.",
+    price_cents: 0,
+    currency: "JPY",
+    inventory: 0,
+    status: "published",
+    allow_checkout: 0,
+    moq: 1,
+  },
+  {
+    id: "service-website-growth-system",
+    slug: "website-growth-system",
+    name: "Website Growth System",
+    sku: "MEDIA-WEB",
+    category: "Website",
+    excerpt: "Plan and build a website surface that turns search, social, video, paid traffic, and referrals into measurable business intent.",
+    description: "This order is for companies that need a more serious website: positioning, information architecture, service pages, article structure, SEO foundations, lead forms, analytics readiness, and a content management workflow.",
+    specs: "Information architecture / Landing pages / SEO structure / Lead forms / Analytics readiness / CMS workflow",
+    package_info: "Website strategy, build direction, and implementation scope",
+    lead_time: "Scoped by page count, CMS needs, and integrations",
+    shipping_note: "Delivered as a website system and digital operating handoff.",
+    price_cents: 0,
+    currency: "JPY",
+    inventory: 0,
+    status: "published",
+    allow_checkout: 0,
+    moq: 1,
+  },
+  {
+    id: "service-ai-content-workflow",
+    slug: "ai-content-workflow",
+    name: "AI Content Workflow",
+    sku: "MEDIA-AI",
+    category: "AI Workflow",
+    excerpt: "Create an AI-assisted workflow for topic mining, drafts, repurposing, QA, publishing preparation, and reporting.",
+    description: "Toumyou designs a practical workflow where AI accelerates research, drafting, versioning, repurposing, and reporting while humans keep control of positioning, taste, judgment, and risk.",
+    specs: "Prompt library / Content pipeline / QA checklist / Repurposing system / Reporting loop",
+    package_info: "Workflow design, templates, and team handoff",
+    lead_time: "Scoped by team size and content channels",
+    shipping_note: "Delivered digitally as workflow documentation and reusable templates.",
+    price_cents: 0,
+    currency: "JPY",
+    inventory: 0,
+    status: "published",
+    allow_checkout: 0,
+    moq: 1,
+  },
+  {
+    id: "service-traffic-acquisition-plan",
+    slug: "traffic-acquisition-plan",
+    name: "Traffic Acquisition Plan",
+    sku: "MEDIA-TRAFFIC",
+    category: "Traffic",
+    excerpt: "A channel plan for search, social, paid traffic, private domain, and conversion follow-up before media spend scales.",
+    description: "This order maps the buyer journey, channel roles, content offers, paid and organic surfaces, landing pages, response flow, and measurement signals so traffic has a clear commercial destination.",
+    specs: "Channel map / Paid-organic split / Landing path / Lead response flow / Measurement plan",
+    package_info: "Traffic plan and execution roadmap",
+    lead_time: "Scoped after reviewing goals, market, and existing assets",
+    shipping_note: "Delivered digitally as a plan, channel map, and operating priorities.",
+    price_cents: 0,
+    currency: "JPY",
+    inventory: 0,
+    status: "published",
+    allow_checkout: 0,
+    moq: 1,
+  },
+  {
+    id: "service-commercial-ip-operator",
+    slug: "commercial-ip-operator",
+    name: "Commercial IP Operator",
+    sku: "MEDIA-IP",
+    category: "Commercial IP",
+    excerpt: "Build the role, narrative, formats, and business path behind a founder, expert, or vertical content IP.",
+    description: "Toumyou helps define the commercial role, audience promise, content formats, narrative boundaries, trust assets, and conversion path for a founder, expert, or vertical content account.",
+    specs: "Role strategy / Narrative spine / Content formats / Trust assets / Consultation path",
+    package_info: "Commercial IP strategy and operating system",
+    lead_time: "Scoped by account maturity and execution depth",
+    shipping_note: "Delivered digitally through strategy notes, operating templates, and review calls.",
+    price_cents: 0,
+    currency: "JPY",
+    inventory: 0,
+    status: "published",
+    allow_checkout: 0,
+    moq: 1,
+  },
 ];
 
 const TENANTS = {
@@ -838,7 +1010,7 @@ function shell({ title, description, path = "/", content, schema, image, tenant 
   const absoluteImage = image ? new URL(image, tenant.url).toString() : "";
   const nav = tenant.lang === "zh-CN"
     ? `<a class="nav" href="/#supply">供应</a><a class="nav" href="/shop">产品</a><a class="nav" href="/cart">购物车</a><a class="nav" href="/account">账户</a><a class="nav" href="/articles">文章</a><a class="nav nav-admin" href="/admin">后台</a>`
-    : `<a class="nav" href="/#growth-os">Growth OS</a><a class="nav" href="/services">Services</a><a class="nav" href="/#content-engine">Content Engine</a><a class="nav" href="/articles">Insights</a><a class="nav" href="/#contact">Contact</a><a class="nav nav-admin" href="/admin">Admin</a>`;
+    : `<a class="nav" href="/#growth-os">Growth OS</a><a class="nav" href="/services">Services</a><a class="nav" href="/shop">Orders</a><a class="nav" href="/articles">Insights</a><a class="nav" href="/account">Account</a><a class="nav nav-admin" href="/admin">Admin</a>`;
   return `<!doctype html>
 <html lang="${escapeHtml(tenant.lang)}">
 <head>
@@ -880,6 +1052,7 @@ function shell({ title, description, path = "/", content, schema, image, tenant 
     .article-page{padding:88px 8vw}.article-page article{max-width:860px}.article h1{font-size:clamp(52px,7.4vw,110px)}.article-dek{font-size:23px;line-height:1.42;max-width:700px;margin:36px 0}.post-body{font-family:Georgia,"Times New Roman",serif;font-size:21px;line-height:1.65;white-space:pre-wrap;max-width:680px}
     input,textarea,select{width:100%;border:1px solid #aaa69c;border-radius:6px;padding:11px 12px;background:var(--soft);color:var(--ink);font:15px "Avenir Next",Avenir,"Helvetica Neue","Segoe UI",Helvetica,sans-serif}textarea{min-height:150px;line-height:1.45;resize:vertical}label{display:block;margin:14px 0 7px;font-size:12px;font-weight:800;letter-spacing:.3px}.notice{border:1px solid var(--line);padding:18px;border-radius:6px;background:var(--soft)}.support-widget{position:fixed;right:22px;bottom:22px;z-index:20;width:min(390px,calc(100vw - 32px));font-family:"Avenir Next",Avenir,"Helvetica Neue","Segoe UI",Helvetica,sans-serif}.support-toggle{width:100%;justify-content:space-between;border-radius:999px;padding:14px 18px}.support-panel{display:none;margin-top:10px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.97);box-shadow:0 20px 60px rgba(18,20,23,.18);padding:16px;backdrop-filter:blur(18px)}.support-widget.open .support-panel{display:block}.support-panel h3{margin:0 0 8px;font-size:24px}.support-panel p{margin:0;color:var(--muted);font-size:13px}.support-panel textarea{min-height:70px}.support-status{font-size:13px;color:#36510d;margin:10px 0 0;font-weight:700}.support-close{background:transparent;border:0;color:var(--muted);font-weight:800;cursor:pointer;padding:0}.support-head{display:flex;align-items:flex-start;justify-content:space-between;gap:18px}.support-feed{height:230px;overflow:auto;margin:14px 0;padding:12px;background:var(--paper);border:1px solid var(--line);border-radius:10px;display:flex;flex-direction:column;gap:10px}.support-bubble{max-width:86%;padding:10px 12px;border-radius:12px;background:#fff;border:1px solid var(--line);font-size:14px;line-height:1.42;white-space:pre-wrap}.support-bubble.customer{align-self:flex-end;background:var(--accent);border-color:var(--accent);color:#fff}.support-bubble.agent{align-self:flex-start}.support-bubble.system{align-self:center;background:transparent;border:0;color:var(--muted);font-size:12px;text-align:center}.support-fields{display:grid;grid-template-columns:1fr 1fr;gap:8px}.support-fields input{padding:9px 10px}.support-fields.hidden{display:none}.support-chat-row{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:end}.support-chat-row textarea{min-height:58px}.support-meta-line{font-size:12px;color:var(--muted);margin-top:8px}.support-desk{display:grid;grid-template-columns:minmax(260px,360px) minmax(0,1fr);gap:24px;background:transparent;border:0;padding:0}.support-desk aside,.support-desk section{min-height:680px}.support-thread-list{display:grid;gap:10px;margin-top:14px;max-height:680px;overflow:auto}.support-thread{width:100%;text-align:left;border:1px solid var(--line);background:var(--soft);border-radius:10px;padding:14px;cursor:pointer;color:var(--ink)}.support-thread.active,.support-thread:hover{border-color:var(--accent);box-shadow:0 12px 28px rgba(36,87,255,.1)}.support-thread span{display:flex;justify-content:space-between;gap:10px}.support-thread b{display:block;font-size:15px}.support-thread small,.support-thread em{display:block;color:var(--muted);font-size:11px;font-style:normal}.support-thread p{margin:10px 0 0;color:var(--muted);font-size:13px}.support-conversation-head{display:flex;justify-content:space-between;gap:20px;align-items:flex-start;border-bottom:1px solid var(--line);padding-bottom:18px}.support-conversation-head h2{font-family:"Avenir Next",Avenir,"Helvetica Neue","Segoe UI",Helvetica,sans-serif;font-size:clamp(34px,4vw,56px);font-weight:850;letter-spacing:-.055em;line-height:.95;margin:0}.desk-feed{height:430px;overflow:auto;border:1px solid var(--line);border-radius:12px;background:var(--paper);padding:18px;margin:18px 0;display:flex;flex-direction:column;gap:12px}.desk-bubble{max-width:76%;border:1px solid var(--line);border-radius:12px;background:#fff;padding:13px 15px}.desk-bubble.agent{align-self:flex-end;background:var(--accent);color:#fff;border-color:var(--accent)}.desk-bubble.customer{align-self:flex-start}.desk-bubble strong{display:block;font-size:12px;margin-bottom:6px}.desk-bubble p{margin:0;white-space:pre-wrap}.desk-bubble small{display:block;margin-top:8px;font-size:11px;opacity:.72}
     .admin-wrap{padding:58px 5vw 90px}.admin-hero{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:24px;align-items:end;margin-bottom:28px;border-bottom:1px solid var(--ink);padding-bottom:28px}.admin-hero h1{font-size:clamp(48px,6vw,88px);letter-spacing:-.06em;margin:0}.admin-tabs{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 32px}.admin-tab{border:1px solid var(--line);background:var(--soft);border-radius:999px;padding:10px 14px;font-size:12px;font-weight:850;letter-spacing:.5px;text-transform:uppercase}.admin-tab.active,.admin-tab:hover{border-color:var(--ink);background:var(--ink);color:var(--paper)}.editor{display:grid;grid-template-columns:minmax(260px,390px) minmax(0,820px);gap:5vw}.editor aside{border-right:1px solid var(--line);padding-right:28px}.admin-list-tools{display:grid;grid-template-columns:1fr 130px;gap:10px;margin:18px 0}.mini-dashboard{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:18px 0}.mini-dashboard div{border:1px solid var(--line);background:var(--soft);border-radius:8px;padding:14px}.mini-dashboard strong{display:block;font-size:26px;letter-spacing:-.04em}.mini-dashboard span{display:block;margin-top:4px;font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:var(--muted)}.admin-list-empty{border-top:1px solid var(--line);padding:20px 0;color:var(--muted)}.admin-thumb-row{display:grid;grid-template-columns:62px 1fr;gap:12px;align-items:center}.admin-thumb{width:62px;height:52px;border-radius:8px;object-fit:cover;background:var(--panel);border:1px solid var(--line)}.admin-preview-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(72px,1fr));gap:10px;margin:12px 0}.image-chip{position:relative;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--soft);min-height:68px}.image-chip img{width:100%;height:74px;object-fit:cover;display:block}.image-chip span{display:block;padding:6px 8px;font-size:10px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.media-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:14px;margin-top:24px}.media-card{border:1px solid var(--line);border-radius:10px;background:var(--soft);overflow:hidden}.media-card img{width:100%;height:154px;object-fit:cover;background:var(--panel);display:block}.media-card div{padding:12px}.media-card code{display:block;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--muted);background:transparent}.media-card .toolbar{margin:12px 0 0}.field-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.editor-actions{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:20px}.status{margin:12px 0 0;color:#36510d;font-weight:700}.danger{background:transparent;color:var(--ink);border:1px solid var(--line)}
+    iframe[src*="tawk.to"],iframe[title*="chat"],iframe[title*="Chat"]{z-index:2147483647!important}
     :focus-visible{outline:3px solid var(--focus);outline-offset:3px}@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.btn,.btn:before,.article-card,.gallery-main,.gallery-thumb{transition:none}.btn:hover,.btn:active,.article-card:hover,.gallery-thumb:hover,.gallery-thumb.active{transform:none}}@media(max-width:980px){.portfolio-grid,.timeline,.team-panel,.contact-grid,.intro-strip,.commerce-panel,.metric-strip,.order-dashboard,.mini-dashboard,.growth-map,.service-ledger,.proof-strip{grid-template-columns:1fr 1fr}.media-signal{grid-template-columns:repeat(2,minmax(0,1fr))}.portfolio-grid{grid-auto-rows:minmax(310px,auto)}.work-card.large{grid-row:auto}.timeline article,.timeline article+article{border-right:0;border-bottom:1px solid var(--line);padding:26px 0}.team-grid{grid-template-columns:1fr 1fr}.contact-list{margin-top:34px}.support-desk{grid-template-columns:1fr}.support-desk aside,.support-desk section{min-height:auto}}@media(max-width:760px){header{height:auto;min-height:68px;align-items:flex-start;gap:14px;flex-direction:column;padding:18px 6vw}nav{gap:16px;flex-wrap:wrap}.hero{min-height:620px;padding:82px 7vw 46px}.hero:after{width:88vw;height:88vw;right:-36vw;top:126px}.media-hero:before{width:90vw;height:90vw;right:-46vw;top:148px}.hero-note{position:static;margin-top:42px}.section,.contact,.listing,.article-page{padding:72px 7vw}.service-grid,.article-grid,.editor,.team-grid,.shop-filter,.order-filter,.commerce-panel,.metric-strip,.order-dashboard,.mini-dashboard,.field-grid,.admin-hero,.admin-list-tools,.growth-map,.service-ledger,.proof-strip,.media-signal{grid-template-columns:1fr}.service-grid article,.service-grid article+article{border-right:0;border-bottom:1px solid var(--line);min-height:auto;padding:24px 0}.growth-stack div{grid-template-columns:1fr}.service-ledger article{min-height:auto}.person img{height:310px}.insights-head{display:block}.article-grid{margin-top:40px}.editor aside{border-right:0;border-bottom:1px solid var(--line);padding:0 0 26px}footer{display:block}.contact-mail{word-break:break-word}.contact-list li{grid-template-columns:1fr;gap:6px}.support-widget{right:16px;bottom:16px}.desk-feed{height:360px}.desk-bubble{max-width:92%}}
   </style>
   ${schema ? `<script type="application/ld+json">${JSON.stringify(schema)}</script>` : ""}
@@ -889,8 +1062,9 @@ function shell({ title, description, path = "/", content, schema, image, tenant 
   ${content}
   <!--Start of Tawk.to Script-->
   <script type="text/javascript">
-    var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
-    (function(){
+    window.Tawk_API = window.Tawk_API || {};
+    window.Tawk_LoadStart = new Date();
+    (function() {
       var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
       s1.async=true;
       s1.src='${escapeHtml(tenant.tawkSrc)}';
@@ -1152,35 +1326,21 @@ async function article(env, slug, tenant = TENANTS.toumyou) {
 
 function publicProduct(product = {}, tenant = TENANTS.toumyou) {
   if (tenant.key !== "toumyou") return product;
+  const service = TOUMYOU_SERVICE_PRODUCTS.find((item) => item.slug === product.slug || item.id === product.id);
+  if (service) return { ...product, ...service, id: product.id || service.id, slug: product.slug || service.slug };
   const isLegacyTest =
     String(product.slug || "").toLowerCase() === "ewe" ||
     String(product.name || "").toLowerCase() === "test001" ||
     String(product.sku || "").toLowerCase() === "00001";
   if (!isLegacyTest) return product;
-  return {
-    ...product,
-    name: "Japanese files",
-    category: "Digital product",
-    material: "",
-    size: "",
-    excerpt: product.excerpt && !/good|test/i.test(product.excerpt)
-      ? product.excerpt
-      : "A paid Japanese digital file product kept from the original shop test link.",
-    description: product.description && !/good|test/i.test(product.description)
-      ? product.description
-      : "Japanese files is the preserved paid test product for Toumyou. The original product link and Stripe payment flow remain available.",
-    specs: product.specs || "Digital delivery / Japanese content file / Checkout enabled",
-    package_info: product.package_info || "Digital delivery",
-    lead_time: product.lead_time || "Delivered or confirmed after payment",
-    shipping_note: product.shipping_note || "No physical shipping is required for digital files.",
-  };
+  return { ...product, ...TOUMYOU_SERVICE_PRODUCTS[0], id: product.id || TOUMYOU_SERVICE_PRODUCTS[0].id, slug: product.slug || TOUMYOU_SERVICE_PRODUCTS[0].slug };
 }
 
 function productCard(product, env, tenant = TENANTS.toumyou) {
   product = publicProduct(product, tenant);
   const zh = tenant.lang === "zh-CN";
   const canCheckout = product.allow_checkout && product.price_cents > 0 && (env.STRIPE_SECRET_KEY || env.STRIPE_RESTRICTED_KEY);
-  const price = product.price_cents > 0 ? money(product.price_cents, product.currency) : (zh ? "询价" : "Quote");
+  const price = product.price_cents > 0 ? money(product.price_cents, product.currency) : (zh ? "询价" : "Custom quote");
   const meta = [product.category, product.material, product.size].filter(Boolean).join(" / ") || (zh ? "紧固件" : "Digital product");
   const moq = Number(product.moq || 1) > 1 ? `, ${zh ? "起订量" : "MOQ"} ${escapeHtml(product.moq)}` : "";
   const minQty = Math.max(1, Number.parseInt(product.moq || 1, 10) || 1);
@@ -1190,18 +1350,18 @@ function productCard(product, env, tenant = TENANTS.toumyou) {
     ? `<img src="${escapeHtml(images[0])}" alt="${escapeHtml(product.name)}" loading="lazy" style="width:100%;height:190px;object-fit:cover;border-radius:6px;margin-bottom:18px">`
     : "";
   return `<article class="article-card product-card" data-product-card data-search="${escapeHtml(searchText)}" data-category="${escapeHtml(product.category || "")}" data-availability="${canCheckout ? "stock" : "quote"}">
-    <span class="card-tag ${canCheckout ? "pay" : ""}">${canCheckout ? (zh ? "可购买" : "Ready to buy") : (zh ? "询价" : "Quote")}</span>
+    <span class="card-tag ${canCheckout ? "pay" : ""}">${canCheckout ? (zh ? "可购买" : "Ready to buy") : (zh ? "询价" : "Scope first")}</span>
     ${image}
     <div class="meta">${escapeHtml(meta)}</div>
     <h3>${escapeHtml(product.name)}</h3>
     <p>${escapeHtml(product.excerpt || product.description || (zh ? "适用于企业采购的紧固件及工业配件产品。" : "Digital product available through Toumyou checkout."))}</p>
-    <p class="muted">SKU: ${escapeHtml(product.sku || product.slug)}<br>${escapeHtml(price)}${moq}${product.inventory ? `, ${zh ? "库存" : "stock"} ${escapeHtml(product.inventory)}` : ""}</p>
+    <p class="muted">${zh ? `SKU: ${escapeHtml(product.sku || product.slug)}<br>` : ""}${escapeHtml(price)}${moq}${product.inventory && zh ? `, 库存 ${escapeHtml(product.inventory)}` : ""}</p>
     <div class="toolbar" style="margin-top:auto">
       <a class="btn secondary" href="/shop/products/${escapeHtml(product.slug)}">${zh ? "查看详情" : "Details"}</a>
       ${
         canCheckout
           ? `<form method="post" action="/api/cart/add"><input type="hidden" name="product_id" value="${escapeHtml(product.id)}"><input type="hidden" name="quantity" value="${escapeHtml(minQty)}"><button class="btn secondary" type="submit">${zh ? "加入购物车" : "Add to cart"}</button></form><form method="post" action="/api/checkout"><input type="hidden" name="product_id" value="${escapeHtml(product.id)}"><input type="hidden" name="quantity" value="${escapeHtml(minQty)}"><button class="btn buy" type="submit">${zh ? "立即购买" : "Buy now"}</button></form>`
-          : `<a class="btn" href="mailto:${escapeHtml(tenant.email)}?subject=${encodeURIComponent(`${zh ? "紧固件询价" : "Product inquiry"}: ${product.name}`)}">${zh ? "发送询价" : "Request quote"}</a>`
+          : `<a class="btn" href="mailto:${escapeHtml(tenant.email)}?subject=${encodeURIComponent(`${zh ? "紧固件询价" : "Media operations inquiry"}: ${product.name}`)}">${zh ? "发送询价" : "Start order"}</a>`
       }
     </div>
   </article>`;
@@ -1211,7 +1371,8 @@ async function shopPage(env, tenant = TENANTS.toumyou) {
   const zh = tenant.lang === "zh-CN";
   const medusaUrl = env.MEDUSA_BACKEND_URL || "";
   const checkoutStatus = env.STRIPE_SECRET_KEY || env.STRIPE_RESTRICTED_KEY ? (zh ? "已配置在线支付，可用于支持购买的产品。" : "Secure checkout is available for listed paid products.") : (zh ? "在线支付正在配置中，可先提交询价。" : "Checkout is pending merchant configuration.");
-  const products = await listProducts(env);
+  const storedProducts = await listProducts(env);
+  const products = tenant.key === "toumyou" ? TOUMYOU_SERVICE_PRODUCTS : storedProducts;
   const displayProducts = products.map((p) => publicProduct(p, tenant));
   const categories = [...new Set(displayProducts.map((p) => String(p.category || (zh ? "紧固件" : "Digital product")).trim()).filter(Boolean))].sort();
   const categoryCards = zh
@@ -1220,31 +1381,31 @@ async function shopPage(env, tenant = TENANTS.toumyou) {
         (item) => `<article class="article-card"><div class="meta">产品目录 / ${escapeHtml(item.slug)}</div><h3>${escapeHtml(zhCategoryName(item.name))}</h3><p>${escapeHtml(zhCategorySummary(item.summary))}</p><b>询价采购</b></article>`,
       )
       .join("")
-    : `<article class="article-card"><div class="meta">Shop / japanese-files</div><h3>Japanese files</h3><p>Paid Japanese files and lightweight digital products from Toumyou. The original test product link and checkout flow are preserved.</p><b>Open product</b></article>`;
+    : TOUMYOU_SERVICE_PRODUCTS.map((item) => productCard(item, env, tenant)).join("");
   const content = `<main>
     <section id="catalog" class="section catalog-first">
-      <p class="eyebrow">${zh ? "紧固件产品中心" : "Toumyou shop"}</p>
-      <h1>${zh ? "紧固件、五金件<br>与工业配件供应。" : "Japanese files<br>and paid digital products."}</h1>
+      <p class="eyebrow">${zh ? "紧固件产品中心" : "Media operations orders"}</p>
+      <h1>${zh ? "紧固件、五金件<br>与工业配件供应。" : "Choose the media<br>operation you need."}</h1>
       <div class="intro-strip">
-        <p>${zh ? "浏览已上架 SKU，支持购物车和在线购买；特殊材质、图纸件、批量采购和组合清单可提交询价。" : "The original test product remains available as Japanese files. Checkout, cart, account, and Stripe payment flows are preserved."}</p>
+        <p>${zh ? "浏览已上架 SKU，支持购物车和在线购买；特殊材质、图纸件、批量采购和组合清单可提交询价。" : "Service orders for content growth, short-video systems, website production, AI workflow, traffic acquisition, and commercial IP operations. Prices are scoped after the first conversation."}</p>
         <ul>
-          <li>${zh ? "螺丝、螺栓、螺母、垫圈、锚固件和配套工业五金" : "Original test product link stays live."}</li>
-          <li>${zh ? "适合维修、样品、经销、工程项目和 OEM 采购需求" : "Stripe checkout and cart payment remain enabled for eligible products."}</li>
-          <li>${zh ? "支持账户、购物车、订单记录和支付状态查询" : "This shop supports paid digital files while the main site focuses on media operations."}</li>
+          <li>${zh ? "螺丝、螺栓、螺母、垫圈、锚固件和配套工业五金" : "Start with an audit, then scope production, traffic, website, or AI workflow work."}</li>
+          <li>${zh ? "适合维修、样品、经销、工程项目和 OEM 采购需求" : "Each order page explains deliverables, lead time, and what information we need."}</li>
+          <li>${zh ? "支持账户、购物车、订单记录和支付状态查询" : "Stripe payment and customer accounts remain available when a scoped paid order is enabled."}</li>
         </ul>
       </div>
       ${
         products.length
           ? `<div class="shop-filter">
-              <input id="shopSearch" type="search" placeholder="${zh ? "按 SKU、规格、材质、标准或表面处理搜索..." : "Search by product name, SKU, file type, or status..."}">
+              <input id="shopSearch" type="search" placeholder="${zh ? "按 SKU、规格、材质、标准或表面处理搜索..." : "Search by service, channel, workflow, or growth problem..."}">
               <select id="shopCategory"><option value="">${zh ? "全部分类" : "All categories"}</option>${categories.map((c) => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join("")}</select>
-              <select id="shopAvailability"><option value="">${zh ? "全部采购方式" : "All ordering types"}</option><option value="stock">${zh ? "可在线购买" : "Online checkout"}</option><option value="quote">${zh ? "需要询价" : "Quote required"}</option></select>
+              <select id="shopAvailability"><option value="">${zh ? "全部采购方式" : "All order types"}</option><option value="stock">${zh ? "可在线购买" : "Online checkout"}</option><option value="quote">${zh ? "需要询价" : "Scope first"}</option></select>
             </div>
-            <p id="shopCount" class="muted" style="max-width:none;margin-top:12px">${products.length} ${zh ? "个产品已上架" : "products listed"}</p>`
+            <p id="shopCount" class="muted" style="max-width:none;margin-top:12px">${products.length} ${zh ? "个产品已上架" : "service orders listed"}</p>`
           : ""
       }
       <div class="article-grid">${products.length ? products.map((p) => productCard(p, env, tenant)).join("") : categoryCards}</div>
-      ${products.length ? "" : `<div class="notice" style="margin-top:24px">${zh ? '暂无已发布产品。可在 <a class="text-link" href="/admin/products">产品后台</a> 发布第一个 SKU。' : 'No public products yet. Use <a class="text-link" href="/admin/products">Product Admin</a> to publish Japanese files or other paid digital products.'}</div>`}
+      ${products.length ? "" : `<div class="notice" style="margin-top:24px">${zh ? '暂无已发布产品。可在 <a class="text-link" href="/admin/products">产品后台</a> 发布第一个 SKU。' : 'No public service orders yet. Use the admin system to publish a new scoped service order.'}</div>`}
       ${
         products.length
           ? `<script>
@@ -1267,7 +1428,7 @@ async function shopPage(env, tenant = TENANTS.toumyou) {
                     card.hidden = !ok;
                     if (ok) shown += 1;
                   });
-                  if (count) count.textContent = ${JSON.stringify(zh)} ? (shown + ' / ' + cards.length + ' 个产品') : (shown + ' of ' + cards.length + ' products shown');
+                  if (count) count.textContent = ${JSON.stringify(zh)} ? (shown + ' / ' + cards.length + ' 个产品') : (shown + ' of ' + cards.length + ' service orders shown');
                 }
                 [search, category, availability].forEach(el => el && el.addEventListener('input', applyFilter));
               })();
@@ -1276,44 +1437,44 @@ async function shopPage(env, tenant = TENANTS.toumyou) {
       }
     </section>
     <section class="section">
-      <p class="eyebrow">${zh ? "下单与交付" : "Checkout and delivery"}</p>
-      <h2>${zh ? "下单前清楚确认<br>规格、数量和交付。" : "Clear checkout<br>for paid files."}</h2>
+      <p class="eyebrow">${zh ? "下单与交付" : "Scope and delivery"}</p>
+      <h2>${zh ? "下单前清楚确认<br>规格、数量和交付。" : "Clear scope before<br>the order starts."}</h2>
       <div class="service-grid">
-        <article><span>${zh ? "产品信息" : "Product details"}</span><h3>${zh ? "每个可购买 SKU 会显示价格、起订量、库存和规格。" : "Each paid item shows name, price, availability, and checkout status."}</h3><p>${zh ? "特殊尺寸、材料、表面处理或图纸件，建议先提交询价再确认。" : "Japanese files keeps the original test product online while the main site serves Toumyou's media operations business."}</p></article>
-        <article><span>${zh ? "配送" : "Delivery"}</span><h3>${zh ? "订单配送和交付方式会根据地址与产品确认。" : "Digital delivery or follow-up is confirmed after payment."}</h3><p>${zh ? "如需批量采购或指定物流，可在询价时备注目的地和交期要求。" : "No physical shipping is required unless a specific product page says otherwise."}</p></article>
-        <article><span>${zh ? "支付" : "Payment"}</span><h3>${escapeHtml(checkoutStatus)}</h3><p>${zh ? "支持的支付方式会根据账户配置、币种和订单条件显示；批量采购也可先沟通确认。" : "Stripe may show cards, Alipay, WeChat Pay, Apple Pay, or other methods depending on buyer location, currency, and Stripe eligibility."}</p></article>
+        <article><span>${zh ? "产品信息" : "Service scope"}</span><h3>${zh ? "每个可购买 SKU 会显示价格、起订量、库存和规格。" : "Every order starts with a clear problem, channel, deliverable, and operating rhythm."}</h3><p>${zh ? "特殊尺寸、材料、表面处理或图纸件，建议先提交询价再确认。" : "We define what needs strategy, what needs production, and what needs software or workflow support."}</p></article>
+        <article><span>${zh ? "配送" : "Delivery"}</span><h3>${zh ? "订单配送和交付方式会根据地址与产品确认。" : "Delivery is digital: plans, pages, production briefs, templates, reviews, and implementation notes."}</h3><p>${zh ? "如需批量采购或指定物流，可在询价时备注目的地和交期要求。" : "The timeline depends on account count, page count, content volume, integrations, and approval speed."}</p></article>
+        <article><span>${zh ? "支付" : "Payment"}</span><h3>${escapeHtml(zh ? checkoutStatus : "Pricing is confirmed after scope. Stripe payment can be enabled for approved orders.")}</h3><p>${zh ? "支持的支付方式会根据账户配置、币种和订单条件显示；批量采购也可先沟通确认。" : "The payment system remains in place, but the public service orders do not show fixed prices yet."}</p></article>
       </div>
-      <div class="notice" style="margin-top:34px"><strong>${zh ? "采购提示：" : "Digital product note:"}</strong> ${zh ? "请尽量提供规格、材质、表面处理、数量、用途、交付城市和图纸/照片，便于更快确认报价。" : "No physical shipping is required for Japanese files unless a product page says otherwise."}</div>
+      <div class="notice" style="margin-top:34px"><strong>${zh ? "采购提示：" : "Order note:"}</strong> ${zh ? "请尽量提供规格、材质、表面处理、数量、用途、交付城市和图纸/照片，便于更快确认报价。" : "Send your current website, social accounts, target market, content bottleneck, and expected business outcome. We will scope the order before quoting."}</div>
     </section>
     <section class="contact">
       <div class="contact-grid">
-        <div><p class="eyebrow">${zh ? "开始采购" : "Shop contact"}</p><h2>${zh ? "发送规格、材质<br>和采购数量。" : "Need a custom media asset<br>or Japanese file?"}</h2><a href="mailto:${escapeHtml(tenant.email)}?subject=${encodeURIComponent(zh ? "紧固件询价" : "Japanese files inquiry")}" class="contact-mail">${escapeHtml(tenant.email)}</a></div>
+        <div><p class="eyebrow">${zh ? "开始采购" : "Start a service order"}</p><h2>${zh ? "发送规格、材质<br>和采购数量。" : "Tell us the growth<br>problem to solve."}</h2><a href="mailto:${escapeHtml(tenant.email)}?subject=${encodeURIComponent(zh ? "紧固件询价" : "Media operations order")}" class="contact-mail">${escapeHtml(tenant.email)}</a></div>
         <ul class="contact-list">
-          <li><span>${zh ? "范围" : "Examples"}</span><p class="address">${zh ? "螺丝、螺栓、螺母、垫圈、锚固件、销钉、铆钉、卡扣、支架及非标五金件。" : "Japanese files, digital assets, media operation templates, and lightweight paid resources."}</p></li>
-          <li><span>${zh ? "电话" : "Market"}</span><p class="address">${zh ? `<a href="tel:${escapeHtml(tenant.telHref)}">${escapeHtml(tenant.phone)}</a>` : "Toumyou media operations shop."}</p></li>
-          <li><span>${zh ? "询价信息" : "Quote details"}</span><p class="address">${zh ? "请发送标准、尺寸、材质、表面处理、数量、交付地，以及图纸或参考照片。" : "Send the file name, usage, delivery email, and any required format."}</p></li>
+          <li><span>${zh ? "范围" : "Examples"}</span><p class="address">${zh ? "螺丝、螺栓、螺母、垫圈、锚固件、销钉、铆钉、卡扣、支架及非标五金件。" : "Content growth audit, short-video matrix, website growth system, AI content workflow, traffic acquisition, and commercial IP operations."}</p></li>
+          <li><span>${zh ? "电话" : "Contact"}</span><p class="address">${zh ? `<a href="tel:${escapeHtml(tenant.telHref)}">${escapeHtml(tenant.phone)}</a>` : `<a href="mailto:${escapeHtml(tenant.email)}">${escapeHtml(tenant.email)}</a>`}</p></li>
+          <li><span>${zh ? "询价信息" : "Order details"}</span><p class="address">${zh ? "请发送标准、尺寸、材质、表面处理、数量、交付地，以及图纸或参考照片。" : "Send your goal, existing channels, website, market, deadline, and the bottleneck you want solved."}</p></li>
         </ul>
       </div>
     </section>
   </main>`;
   return html(shell({
-    title: zh ? "紧固件产品 | 上海西缈科技有限公司" : "Japanese files | Toumyou Shop",
-    description: zh ? "上海西缈科技有限公司紧固件产品中心，提供螺丝、螺栓、螺母、垫圈和工业配件销售与询价。" : "Toumyou shop for Japanese files and paid digital products, with cart and Stripe checkout preserved.",
+    title: zh ? "紧固件产品 | 上海西缈科技有限公司" : "Media Operations Orders | Toumyou",
+    description: zh ? "上海西缈科技有限公司紧固件产品中心，提供螺丝、螺栓、螺母、垫圈和工业配件销售与询价。" : "Toumyou service orders for content growth, short-video production, website systems, software workflow, traffic acquisition, and commercial IP operations.",
     path: "/shop",
     content,
     schema: {
       "@context": "https://schema.org",
       "@type": "Store",
-      name: zh ? "上海西缈科技紧固件产品中心" : "Toumyou Japanese files",
+      name: zh ? "上海西缈科技紧固件产品中心" : "Toumyou Media Operations Orders",
       url: `${tenant.url}/shop`,
-      description: zh ? "紧固件、工业五金和配件销售。" : "Japanese files and paid digital products from Toumyou.",
+      description: zh ? "紧固件、工业五金和配件销售。" : "Service order entry points for Toumyou media operations and digital growth work.",
       email: tenant.email,
       parentOrganization: { "@type": "Organization", name: tenant.legalName },
       makesOffer: (products.length ? products : SHOP.categories).map((item) => ({
         "@type": "Offer",
         price: item.price_cents ? String(minorToDisplay(item.price_cents, item.currency)) : undefined,
         priceCurrency: item.currency || undefined,
-        itemOffered: { "@type": "Product", name: item.name, description: item.summary || item.excerpt },
+        itemOffered: { "@type": zh ? "Product" : "Service", name: item.name, description: item.summary || item.excerpt },
         availability: item.inventory ? "https://schema.org/InStock" : "https://schema.org/PreOrder",
       })),
     },
@@ -1324,6 +1485,9 @@ async function shopPage(env, tenant = TENANTS.toumyou) {
 async function productPage(env, slug, tenant = TENANTS.toumyou) {
   const zh = tenant.lang === "zh-CN";
   let product = await getProduct(env, slug);
+  if (tenant.key === "toumyou" && (!product || product.status !== "published")) {
+    product = TOUMYOU_SERVICE_PRODUCTS.find((item) => item.slug === slug);
+  }
   if (!product || product.status !== "published") {
     return html(shell({ title: zh ? "产品未找到 | 西缈科技" : "Product not found | Toumyou", description: zh ? "产品未找到。" : "Product not found.", content: zh ? "<main><h1>产品未找到</h1></main>" : "<main><h1>Product not found</h1></main>", tenant }), { status: 404 });
   }
@@ -1333,16 +1497,24 @@ async function productPage(env, slug, tenant = TENANTS.toumyou) {
   const specs = String(product.specs || "").trim();
   const minQty = Math.max(1, Number.parseInt(product.moq || 1, 10) || 1);
   const maxQty = product.inventory ? Math.max(minQty, Math.min(999, Number.parseInt(product.inventory, 10) || 999)) : 999;
-  const specRows = [
-    ["SKU", product.sku || product.slug],
-    [zh ? "分类" : "Category", product.category || (zh ? "紧固件" : "Digital product")],
-    [zh ? "材质" : "Material", product.material || (zh ? "按订单确认" : "Digital file")],
-    [zh ? "规格" : "Size", product.size || (zh ? "按订单确认" : "Digital delivery")],
-    [zh ? "包装" : "Packaging", product.package_info || (zh ? "标准出口包装，可按订单确认" : "Digital delivery")],
-    [zh ? "起订量" : "MOQ", product.moq || 1],
-    [zh ? "交期" : "Lead time", product.lead_time || (zh ? "常规 7-14 个工作日，急单另行确认" : "Delivered or confirmed after payment")],
-    [zh ? "重量" : "Weight", product.weight_grams ? `${product.weight_grams} g / ${zh ? "件" : "unit"}` : (zh ? "按订单确认" : "Confirm by order")],
-  ];
+  const specRows = zh
+    ? [
+        ["SKU", product.sku || product.slug],
+        ["分类", product.category || "紧固件"],
+        ["材质", product.material || "按订单确认"],
+        ["规格", product.size || "按订单确认"],
+        ["包装", product.package_info || "标准出口包装，可按订单确认"],
+        ["起订量", product.moq || 1],
+        ["交期", product.lead_time || "常规 7-14 个工作日，急单另行确认"],
+        ["重量", product.weight_grams ? `${product.weight_grams} g / 件` : "按订单确认"],
+      ]
+    : [
+        ["Order type", product.category || "Media operations"],
+        ["Scope", product.specs || "Defined after the first conversation"],
+        ["Delivery format", product.package_info || "Digital strategy, production, workflow, and review assets"],
+        ["Timeline", product.lead_time || "Scoped by channel count, page count, production volume, and approval speed"],
+        ["Best for", product.size || "Brands that need clearer content, traffic, website, or AI operating systems"],
+      ];
   const gallery = images.length
     ? `<div class="product-gallery" data-gallery>
         <img class="gallery-main" data-main src="${escapeHtml(images[0])}" alt="${escapeHtml(product.name)}">
@@ -1357,18 +1529,18 @@ async function productPage(env, slug, tenant = TENANTS.toumyou) {
       </script>`
     : "";
   const content = `<main class="article-page article"><article>
-    <div class="meta">${escapeHtml(product.category || (zh ? "紧固件" : "Digital product"))} / ${escapeHtml(product.sku || product.slug)}</div>
+    <div class="meta">${escapeHtml(product.category || (zh ? "紧固件" : "Media operations"))}${zh ? ` / ${escapeHtml(product.sku || product.slug)}` : ""}</div>
     <h1>${escapeHtml(product.name)}</h1>
-    <p class="article-dek">${escapeHtml(product.excerpt || (zh ? "紧固件与工业配件供应产品。" : "Digital product available through Toumyou checkout."))}</p>
+    <p class="article-dek">${escapeHtml(product.excerpt || (zh ? "紧固件与工业配件供应产品。" : "Media operations service order from Toumyou."))}</p>
     ${gallery}
     <div class="post-body">${escapeHtml(product.description || "")}</div>
     <div class="notice" style="margin-top:34px">
-      <p><strong>${zh ? "价格" : "Price"}:</strong> ${escapeHtml(product.price_cents > 0 ? money(product.price_cents, product.currency) : (zh ? "需要询价" : "Quote required"))}</p>
-      <p><strong>${zh ? "库存" : "Inventory"}:</strong> ${escapeHtml(product.inventory || (zh ? "请确认库存" : "Confirm availability"))}</p>
-      <p><strong>${zh ? "交付" : "Delivery"}:</strong> ${escapeHtml(product.shipping_note || (zh ? "交付方式、周期和运费会根据产品、数量和地址确认；批量采购建议先提交询价。" : "No physical shipping is required for digital files."))}</p>
+      <p><strong>${zh ? "价格" : "Price"}:</strong> ${escapeHtml(product.price_cents > 0 ? money(product.price_cents, product.currency) : (zh ? "需要询价" : "Scoped after conversation"))}</p>
+      ${zh ? `<p><strong>库存:</strong> ${escapeHtml(product.inventory || "请确认库存")}</p>` : ""}
+      <p><strong>${zh ? "交付" : "Delivery"}:</strong> ${escapeHtml(product.shipping_note || (zh ? "交付方式、周期和运费会根据产品、数量和地址确认；批量采购建议先提交询价。" : "Delivered digitally through strategy notes, production briefs, website/software work, operating templates, and review calls."))}</p>
     </div>
     <div class="notice" style="margin-top:18px">
-      <h3>${zh ? "规格参数" : "Specifications"}</h3>
+      <h3>${zh ? "规格参数" : "Order scope"}</h3>
       ${specRows.map(([k, v]) => `<p><strong>${escapeHtml(k)}:</strong> ${escapeHtml(v)}</p>`).join("")}
       ${specs ? `<p><strong>${zh ? "详细规格" : "Detailed specs"}:</strong><br>${escapeHtml(specs).replaceAll("\n", "<br>")}</p>` : ""}
     </div>
@@ -1377,20 +1549,20 @@ async function productPage(env, slug, tenant = TENANTS.toumyou) {
     ${
       canCheckout
         ? `<form class="product-buy" method="post" action="/api/cart/add"><input type="hidden" name="product_id" value="${escapeHtml(product.id)}"><div><label>${zh ? "数量" : "Quantity"}</label><input name="quantity" type="number" min="${escapeHtml(minQty)}" max="${escapeHtml(maxQty)}" value="${escapeHtml(minQty)}"></div><button class="btn secondary" type="submit">${zh ? "加入购物车" : "Add to cart"}</button><span class="muted">${zh ? "起订量" : "MOQ"} ${escapeHtml(minQty)}${product.inventory ? `, ${zh ? "当前最多" : "max"} ${escapeHtml(maxQty)}` : ""}</span></form><form class="product-buy" method="post" action="/api/checkout"><input type="hidden" name="product_id" value="${escapeHtml(product.id)}"><input name="quantity" type="hidden" value="${escapeHtml(minQty)}"><button class="btn buy" type="submit">${zh ? "立即购买" : "Buy now"}</button></form>`
-        : `<a class="btn" href="mailto:${escapeHtml(tenant.email)}?subject=${encodeURIComponent(`${zh ? "紧固件询价" : "Product inquiry"}: ${product.name}`)}">${zh ? "发送询价" : "Request quote"}</a>`
+        : `<a class="btn" href="mailto:${escapeHtml(tenant.email)}?subject=${encodeURIComponent(`${zh ? "紧固件询价" : "Media operations order"}: ${product.name}`)}">${zh ? "发送询价" : "Start order"}</a>`
     }
     <a class="btn secondary" href="/shop">${zh ? "返回产品页" : "Back to shop"}</a>
   </div></main>`;
-  const quoteForm = `<section class="section" style="padding-top:40px"><p class="eyebrow">${zh ? "需要定制询价？" : "Need a custom quote?"}</p><h2>${zh ? "发送数量、图纸<br>或详细规格。" : "Send quantity,<br>drawing or specs."}</h2><div class="notice"><form id="quoteForm" class="quote-form">
+  const quoteForm = `<section class="section" style="padding-top:40px"><p class="eyebrow">${zh ? "需要定制询价？" : "Start with context"}</p><h2>${zh ? "发送数量、图纸<br>或详细规格。" : "Send goals,<br>channels and bottlenecks."}</h2><div class="notice"><form id="quoteForm" class="quote-form">
     <input type="hidden" name="product_id" value="${escapeHtml(product.id)}">
     <label>${zh ? "姓名" : "Name"}</label><input name="name" required>
     <label>${zh ? "邮箱" : "Email"}</label><input name="email" type="email" required>
     <label>${zh ? "公司" : "Company"}</label><input name="company">
     <label>${zh ? "地区" : "Country / region"}</label><input name="country">
-    <label>${zh ? "数量" : "Quantity"}</label><input name="quantity" placeholder="${zh ? "例如：500 件 / 20 箱" : "Example: 500 pcs / 20 boxes"}">
-    <label>${zh ? "规格" : "Specifications"}</label><textarea name="specs" placeholder="${zh ? "材质、尺寸、标准、表面处理、图纸链接、包装要求..." : "Material, size, standard, finish, drawing link, packaging..."}"></textarea>
-    <label>${zh ? "备注" : "Message"}</label><textarea name="message" placeholder="${zh ? "交付城市、目标日期或其他特殊要求。" : "Tell us delivery country, target date, or anything special."}"></textarea>
-    <div class="toolbar"><button class="btn" type="submit">${zh ? "提交询价" : "Submit quote request"}</button><a class="btn secondary" href="mailto:${escapeHtml(tenant.email)}?subject=${encodeURIComponent(`${zh ? "紧固件询价" : "Product inquiry"}: ${product.name}`)}">${zh ? "改用邮件发送" : "Email instead"}</a></div>
+    <label>${zh ? "数量" : "Budget / timeline"}</label><input name="quantity" placeholder="${zh ? "例如：500 件 / 20 箱" : "Optional: target launch date, budget range, or urgency"}">
+    <label>${zh ? "规格" : "Current channels"}</label><textarea name="specs" placeholder="${zh ? "材质、尺寸、标准、表面处理、图纸链接、包装要求..." : "Website, short-video accounts, social channels, ads, CRM, analytics, existing content assets..."}"></textarea>
+    <label>${zh ? "备注" : "Message"}</label><textarea name="message" placeholder="${zh ? "交付城市、目标日期或其他特殊要求。" : "Tell us your target market, current bottleneck, decision timeline, and anything special."}"></textarea>
+    <div class="toolbar"><button class="btn" type="submit">${zh ? "提交询价" : "Send service order"}</button><a class="btn secondary" href="mailto:${escapeHtml(tenant.email)}?subject=${encodeURIComponent(`${zh ? "紧固件询价" : "Media operations order"}: ${product.name}`)}">${zh ? "改用邮件发送" : "Email instead"}</a></div>
     <p id="quoteStatus" class="status"></p>
   </form></div>
   <script>
@@ -1401,18 +1573,18 @@ async function productPage(env, slug, tenant = TENANTS.toumyou) {
       const payload = Object.fromEntries(new FormData(event.target).entries());
       payload.page_url = location.href;
       const res = await fetch('/api/quote', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(payload) });
-      status.textContent = res.ok ? ${JSON.stringify(zh ? "询价已提交，我们会通过邮箱联系你。" : "Quote request saved. We will contact you by email.")} : ${JSON.stringify(zh ? "提交失败，请直接发送邮件联系我们。" : "Could not save request. Please email us directly.")};
+      status.textContent = res.ok ? ${JSON.stringify(zh ? "询价已提交，我们会通过邮箱联系你。" : "Service order request saved. We will contact you by email.")} : ${JSON.stringify(zh ? "提交失败，请直接发送邮件联系我们。" : "Could not save request. Please email us directly.")};
       if (res.ok) event.target.reset();
     });
   </script></section>`;
   return html(shell({
-    title: `${product.name} | ${zh ? "上海西缈科技有限公司" : "Toumyou Shop"}`,
-    description: product.excerpt || product.description || (zh ? "紧固件与工业配件产品详情。" : "Digital product details from Toumyou."),
+    title: `${product.name} | ${zh ? "上海西缈科技有限公司" : "Toumyou Service Orders"}`,
+    description: product.excerpt || product.description || (zh ? "紧固件与工业配件产品详情。" : "Toumyou media operations service order details."),
     path: `/shop/products/${product.slug}`,
     content: content.replace("</main>", `${quoteForm}</main>`),
     schema: {
       "@context": "https://schema.org",
-      "@type": "Product",
+      "@type": zh ? "Product" : "Service",
       name: product.name,
       sku: product.sku || product.slug,
       mpn: product.sku || product.slug,
@@ -2026,11 +2198,16 @@ async function stripeWebhook(request, env) {
 }
 
 async function quoteRequest(request, env) {
+  const tenant = tenantFromRequest(request);
   const body = await readBody(request);
   const email = String(body.email || "").trim();
   if (!email || !email.includes("@")) return json({ error: "Valid email is required" }, { status: 400 });
   await ensureCommerce(env);
-  const product = body.product_id ? await getProduct(env, body.product_id) : null;
+  let product = body.product_id ? await getProduct(env, body.product_id) : null;
+  if (!product && tenant.key === "toumyou") {
+    product = TOUMYOU_SERVICE_PRODUCTS.find((item) => item.id === body.product_id || item.slug === body.product_id) || null;
+  }
+  if (product) product = publicProduct(product, tenant);
   const now = Math.floor(Date.now() / 1000);
   const id = crypto.randomUUID();
   await env.DB.prepare("INSERT INTO inquiries (id,product_id,product_slug,product_name,name,email,company,country,quantity,specs,message,status,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
@@ -2042,10 +2219,10 @@ async function quoteRequest(request, env) {
     email,
     company: String(body.company || ""),
     message: [
-      product?.name ? `Quote request for ${product.name}` : "Quote request",
-      body.quantity ? `Quantity: ${body.quantity}` : "",
+      product?.name ? `${tenant.key === "toumyou" ? "Service order" : "Quote request"} for ${product.name}` : (tenant.key === "toumyou" ? "Media operations service order" : "Quote request"),
+      body.quantity ? `${tenant.key === "toumyou" ? "Budget / timeline" : "Quantity"}: ${body.quantity}` : "",
       body.country ? `Country: ${body.country}` : "",
-      body.specs ? `Specs: ${body.specs}` : "",
+      body.specs ? `${tenant.key === "toumyou" ? "Current channels" : "Specs"}: ${body.specs}` : "",
       body.message ? `Message: ${body.message}` : "",
     ].filter(Boolean).join("\n"),
   });
@@ -2123,7 +2300,7 @@ function checkoutSuccessPage(tenant = TENANTS.toumyou) {
         <p><strong>${zh ? "接下来" : "What happens next"}</strong></p>
         <p>${zh ? "1. 支付平台发送最终支付确认。" : "1. Stripe sends Toumyou a signed payment update."}</p>
         <p>${zh ? "2. 已支付订单会进入后台订单列表。" : "2. Paid orders move to the admin order list automatically."}</p>
-        <p>${zh ? "3. 我们会核对 SKU、库存和交付信息。" : "3. We verify SKU, stock, export handling, and freight details before dispatch."}</p>
+        <p>${zh ? "3. 我们会核对 SKU、库存和交付信息。" : "3. We confirm the service scope, timeline, and delivery notes before work starts."}</p>
         <p id="sessionNote" class="muted"></p>
       </div>
       <div class="toolbar"><a class="btn" href="/shop">${zh ? "返回产品页" : "Back to shop"}</a><a class="btn secondary" href="mailto:${escapeHtml(tenant.email)}">${zh ? "联系我们" : "Contact us"}</a></div>
@@ -2143,9 +2320,9 @@ function loginPage(request, env) {
   const next = new URL(request.url).searchParams.get("next") || "/account";
   return html(shell({
     title: zh ? "客户登录 | 上海西缈科技有限公司" : "Customer login | Toumyou",
-    description: zh ? "登录后管理购物车、订单和支付记录。" : "Sign in to Toumyou to manage cart, orders, and payment records.",
+    description: zh ? "登录后管理购物车、订单和支付记录。" : "Sign in to Toumyou to manage service orders and payment records.",
     path: "/login",
-    content: `<main class="listing"><h1>${zh ? "客户登录。" : "Customer login."}</h1><p class="lead">${zh ? "登录后可以保存购物车，查看订单、支付状态和采购记录。" : "Sign in to save your cart and view your Toumyou orders, payment status, shipping address, and Stripe records."}</p>
+    content: `<main class="listing"><h1>${zh ? "客户登录。" : "Customer login."}</h1><p class="lead">${zh ? "登录后可以保存购物车，查看订单、支付状态和采购记录。" : "Sign in with Google to view your Toumyou service orders, payment status, and Stripe records."}</p>
       <div class="notice">
         ${configured
           ? `<a class="btn" href="/api/auth/google/start?next=${encodeURIComponent(next)}">${zh ? "使用 Google 登录" : "Continue with Google"}</a>`
@@ -2168,7 +2345,7 @@ async function accountPage(request, env) {
     return `<article class="article-card">
     <div class="meta">${escapeHtml(o.payment_status || "pending")} / ${escapeHtml(o.fulfillment_status || "new")}</div>
     <h3>${escapeHtml(o.product_name || o.product_slug || (zh ? "西缈订单" : "Toumyou order"))}</h3>
-    <p>${escapeHtml(o.sku || "Order")}<br>${escapeHtml(money(o.amount_total, o.currency))}</p>
+    <p>${escapeHtml(zh ? (o.sku || "Order") : (o.product_slug || "Service order"))}<br>${escapeHtml(money(o.amount_total, o.currency))}</p>
     <p class="muted">${zh ? "数量" : "Quantity"} ${escapeHtml(o.quantity || 1)}. ${zh ? "创建时间" : "Created"} ${escapeHtml(o.created_at ? new Date(Number(o.created_at) * 1000).toLocaleString() : "-")}.</p>
     <p class="muted">Stripe session: ${escapeHtml(o.stripe_session_id || "-")}</p>
     ${o.stripe_payment_intent ? `<a class="btn secondary" href="https://dashboard.stripe.com/payments/${escapeHtml(o.stripe_payment_intent)}" target="_blank">${zh ? "支付记录" : "Payment record"}</a>` : ""}
@@ -2179,7 +2356,7 @@ async function accountPage(request, env) {
     description: zh ? "客户账户与订单历史。" : "Toumyou customer account and order history.",
     path: "/account",
     content: `<main class="listing"><h1>${zh ? "我的账户。" : "My account."}</h1><p class="lead">${escapeHtml(customer.name || customer.email)}<br>${escapeHtml(customer.email || "")}</p>
-      <div class="toolbar"><a class="btn" href="/cart">${zh ? "打开购物车" : "Open cart"}</a><a class="btn secondary" href="/shop">${zh ? "继续采购" : "Continue shopping"}</a><a class="btn secondary" href="/api/auth/logout">${zh ? "退出登录" : "Log out"}</a></div>
+      <div class="toolbar"><a class="btn" href="/cart">${zh ? "打开购物车" : "Open cart"}</a><a class="btn secondary" href="/shop">${zh ? "继续采购" : "Continue service orders"}</a><a class="btn secondary" href="/api/auth/logout">${zh ? "退出登录" : "Log out"}</a></div>
       <section class="section" style="padding:40px 0 0"><p class="eyebrow">${zh ? "订单与支付" : "Orders and payments"}</p><h2>${zh ? "你的订单记录。" : "Your order history."}</h2><div class="article-grid">${cards || `<div class="notice">${zh ? "暂无订单。登录后下单或支付尝试会显示在这里。" : "No orders yet. Paid and attempted Stripe checkouts will appear here after you use this account."}</div>`}</div></section>
     </main>`,
     tenant,
@@ -2197,7 +2374,7 @@ async function cartPage(request, env) {
   const cards = items.map((cartItem) => {
     const item = publicProduct(cartItem, tenant);
     return `<article class="article-card">
-    <div class="meta">${escapeHtml(item.category || (zh ? "紧固件" : "Digital product"))} / ${escapeHtml(item.sku || item.slug)}</div>
+    <div class="meta">${escapeHtml(item.category || (zh ? "紧固件" : "Service order"))}${zh ? ` / ${escapeHtml(item.sku || item.slug)}` : ""}</div>
     <h3>${escapeHtml(item.name)}</h3>
     <p>${escapeHtml(money(item.price_cents, item.currency))}<br>${zh ? "数量" : "Quantity"} ${escapeHtml(item.quantity || 1)}</p>
     <div class="toolbar">
@@ -2208,11 +2385,11 @@ async function cartPage(request, env) {
   }).join("");
   return html(shell({
     title: zh ? "购物车 | 上海西缈科技有限公司" : "Cart | Toumyou",
-    description: zh ? "西缈科技购物车。" : "Toumyou shopping cart.",
+    description: zh ? "西缈科技购物车。" : "Toumyou service order cart.",
     path: "/cart",
-    content: `<main class="listing"><h1>${zh ? "购物车。" : "Shopping cart."}</h1><p class="lead">${items.length} ${zh ? "个产品" : "item(s)"}. ${zh ? "预估小计" : "Estimated subtotal"} ${escapeHtml(money(subtotal, currency))}. ${zh ? "运费和最终支付信息会在付款前确认。" : "Freight is shown before payment."}</p>
-      <div class="toolbar">${items.length ? `<form method="post" action="/api/checkout/cart"><button class="btn buy" type="submit">${zh ? "购买已选产品" : "Buy selected"}</button></form>` : ""}<a class="btn secondary" href="/shop">${zh ? "继续采购" : "Continue shopping"}</a><a class="btn secondary" href="/account">${zh ? "我的账户" : "My account"}</a></div>
-      <div class="article-grid">${cards || `<div class="notice">${zh ? "购物车为空。登录后可从产品页添加产品。" : "Your cart is empty. Add products from the shop after signing in."}</div>`}</div>
+    content: `<main class="listing"><h1>${zh ? "购物车。" : "Service cart."}</h1><p class="lead">${items.length} ${zh ? "个产品" : "item(s)"}. ${zh ? "预估小计" : "Estimated subtotal"} ${escapeHtml(money(subtotal, currency))}. ${zh ? "运费和最终支付信息会在付款前确认。" : "Final payment is enabled only after the service scope is approved."}</p>
+      <div class="toolbar">${items.length ? `<form method="post" action="/api/checkout/cart"><button class="btn buy" type="submit">${zh ? "购买已选产品" : "Buy selected"}</button></form>` : ""}<a class="btn secondary" href="/shop">${zh ? "继续采购" : "Continue service orders"}</a><a class="btn secondary" href="/account">${zh ? "我的账户" : "My account"}</a></div>
+      <div class="article-grid">${cards || `<div class="notice">${zh ? "购物车为空。登录后可从产品页添加产品。" : "Your cart is empty. Service pages currently start with a scope request; approved paid orders can still use cart and Stripe checkout."}</div>`}</div>
     </main>`,
     tenant,
   }), { cache: "no-store" });
@@ -2419,7 +2596,7 @@ async function handleApi(request, env, pathname) {
 
 async function sitemap(env, tenant = TENANTS.toumyou) {
   const posts = await publicArticles(env, tenant);
-  const products = await listProducts(env);
+  const products = tenant.key === "toumyou" ? TOUMYOU_SERVICE_PRODUCTS : await listProducts(env);
   const today = new Date().toISOString().slice(0, 10);
   const toDate = (stamp) => (stamp ? new Date(Number(stamp) * 1000).toISOString().slice(0, 10) : today);
   const urls = tenant.key === "toumyou"
