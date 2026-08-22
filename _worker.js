@@ -5,6 +5,8 @@ const SITE = {
     "Toumyou is a media operations and digital growth company for content systems, short-video production, websites, software development, traffic acquisition, and commercial IP growth.",
 };
 
+const GEO_UPDATED_DATE = "2026-08-22";
+
 const SHOP = {
   name: "Toumyou Fastener Supply",
   description:
@@ -1005,12 +1007,63 @@ async function deleteMedia(env, key) {
   return json({ ok: true, key });
 }
 
+function toumyouFactsBlock(context = "home") {
+  const faqs = [
+    ["What does Toumyou do?", "Toumyou designs media operations systems for content growth, short-video production, websites, software workflows, traffic acquisition, and commercial IP growth."],
+    ["Is Toumyou a production vendor or a strategy partner?", "Toumyou works as an operating partner. Strategy, production, distribution, website conversion, and feedback loops are planned together."],
+    ["How does a project usually start?", "Most work starts with a diagnostic review of the brand narrative, current channels, website journey, content assets, and conversion bottlenecks."],
+    ["Does Toumyou use AI?", "Yes. AI is used for research assistance, topic mining, drafting support, repurposing, QA, reporting, and workflow design. Human judgment controls positioning and taste."],
+  ];
+  const compact = context === "shop";
+  return `<section class="section geo-section" id="geo-facts">
+    <div class="geo-head">
+      <p class="meta">Official facts / Updated ${GEO_UPDATED_DATE}</p>
+      <h2>${compact ? "What this order system is for." : "A clearer source for people and AI."}</h2>
+      <p>Toumyou is a Japan-based media operations and digital growth company. The public site is currently focused on content growth, short-video systems, websites, software workflow, traffic acquisition, and commercial IP operations.</p>
+      <p class="zh-summary">中文摘要：Toumyou 现在定位为媒体运营与数字增长公司，服务包括内容增长、短视频制作、网站制作、软件开发、流量获客、商业 IP 运营和 AI 内容工作流。</p>
+    </div>
+    <div class="geo-grid">
+      <article><span>Definition / 定义</span><h3>Media operations as infrastructure.</h3><p>We connect narrative, production, distribution, conversion surfaces, and measurement so content becomes a repeatable business system.</p></article>
+      <article><span>Numeric facts / 数字事实</span><h3>4 operating steps, 7 service areas.</h3><p>The public scope covers strategy, short video, media matrix, websites, software, traffic acquisition, and AI workflow. This source was updated on ${GEO_UPDATED_DATE}.</p></article>
+      <article><span>Comparison / 对比</span><h3>Not only posting, not only ads.</h3><p>A posting calendar lists output. A growth operating system defines audience, message, channel, conversion path, and learning loop.</p></article>
+      <article><span>Steps / 操作步骤</span><h3>Diagnose, build, distribute, learn.</h3><p>We review the current system, design the operating map, produce channel-ready assets, route traffic to conversion pages, and refine from real signals.</p></article>
+    </div>
+    <p class="meta" style="margin-top:22px">FAQ / 常见问题</p>
+    <div class="faq-strip">
+      ${faqs.map(([q, a]) => `<details><summary>${escapeHtml(q)}</summary><p>${escapeHtml(a)}</p></details>`).join("")}
+    </div>
+  </section>`;
+}
+
+function toumyouFaqSchema() {
+  return {
+    "@type": "FAQPage",
+    mainEntity: [
+      {
+        "@type": "Question",
+        name: "What does Toumyou do?",
+        acceptedAnswer: { "@type": "Answer", text: "Toumyou designs media operations systems for content growth, short-video production, websites, software workflows, traffic acquisition, and commercial IP growth." },
+      },
+      {
+        "@type": "Question",
+        name: "How does a Toumyou project usually start?",
+        acceptedAnswer: { "@type": "Answer", text: "Most work starts with a diagnostic review of the brand narrative, current channels, website journey, content assets, and conversion bottlenecks." },
+      },
+      {
+        "@type": "Question",
+        name: "Does Toumyou use AI?",
+        acceptedAnswer: { "@type": "Answer", text: "Toumyou uses AI for research assistance, topic mining, drafting support, repurposing, QA, reporting, and workflow design while human judgment controls positioning and taste." },
+      },
+    ],
+  };
+}
+
 function shell({ title, description, path = "/", content, schema, image, tenant = TENANTS.toumyou }) {
   const canonical = `${tenant.url}${path}`;
   const absoluteImage = image ? new URL(image, tenant.url).toString() : "";
   const nav = tenant.lang === "zh-CN"
-    ? `<a class="nav" href="/#supply">供应</a><a class="nav" href="/shop">产品</a><a class="nav" href="/cart">购物车</a><a class="nav" href="/account">账户</a><a class="nav" href="/articles">文章</a><a class="nav nav-admin" href="/admin">后台</a>`
-    : `<a class="nav" href="/#growth-os">Growth OS</a><a class="nav" href="/services">Services</a><a class="nav" href="/shop">Orders</a><a class="nav" href="/articles">Insights</a><a class="nav" href="/account">Account</a><a class="nav nav-admin" href="/admin">Admin</a>`;
+    ? `<a class="nav" href="/#supply">供应</a><a class="nav" href="/shop">产品</a><a class="nav" href="/cart">购物车</a><a class="nav" href="/account">账户</a><a class="nav" href="/articles">文章</a>`
+    : `<a class="nav" href="/#growth-os">Growth OS</a><a class="nav" href="/services">Services</a><a class="nav" href="/shop">Orders</a><a class="nav" href="/articles">Insights</a><a class="nav" href="/account">Account</a>`;
   return `<!doctype html>
 <html lang="${escapeHtml(tenant.lang)}">
 <head>
@@ -1045,6 +1098,7 @@ function shell({ title, description, path = "/", content, schema, image, tenant 
     .timeline{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0;margin-top:72px;border-top:1px solid var(--ink)}.timeline article{padding:26px 26px 0 0;min-height:300px;border-right:1px solid var(--line)}.timeline article+article{padding-left:26px}.timeline article:last-child{border-right:0}.timeline img{width:100%;height:135px;object-fit:cover;border-radius:10px;margin-bottom:28px;filter:saturate(.85)}.timeline strong{font-size:13px;text-transform:uppercase;letter-spacing:.8px}.timeline h3{margin:18px 0 12px}.team-panel{margin-top:70px;display:grid;grid-template-columns:.9fr 1.1fr;gap:16px}.team-note{background:var(--ink);color:var(--paper);border-radius:10px;padding:32px;display:flex;flex-direction:column;justify-content:space-between;min-height:420px}.team-note p{font-size:24px;line-height:1.35;margin:0;color:#f2f0e8}.team-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}.person{background:var(--panel);border-radius:10px;overflow:hidden}.person img{width:100%;height:260px;object-fit:cover;display:block;filter:saturate(.85)}.person div{padding:20px}.person h3{margin:0 0 8px;font-size:28px}.person p{margin:0;color:var(--muted)}.logo-row{display:flex;gap:24px;flex-wrap:wrap;align-items:center;margin-top:50px}.logo-row img{max-height:44px;max-width:132px;object-fit:contain;filter:grayscale(1) contrast(.95);opacity:.72}
     .article-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-top:62px}.article-card{min-height:275px;padding:24px;background:var(--panel);display:flex;flex-direction:column;border-radius:6px;transition:transform .2s,background .2s}.article-card:hover{transform:translateY(-3px);background:var(--acid)}.article-cover{width:100%;height:170px;object-fit:cover;border-radius:8px;margin:0 0 18px;background:var(--soft);filter:saturate(.92)}
     .media-hero{background:radial-gradient(circle at 78% 22%,rgba(36,87,255,.18),transparent 30%),linear-gradient(135deg,#f7f8fb 0%,#eef2f8 58%,#e7ecf4 100%)}.media-hero:before{content:"";position:absolute;right:8vw;top:122px;width:min(38vw,520px);height:min(38vw,520px);border:1px solid rgba(18,20,23,.18);border-radius:32px;background:linear-gradient(135deg,rgba(255,255,255,.8),rgba(255,255,255,.12));box-shadow:0 30px 80px rgba(18,20,23,.08);z-index:-1}.media-hero:after{background:linear-gradient(135deg,rgba(36,87,255,.20),rgba(18,20,23,.02) 72%)}.media-signal{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:1px;margin-top:56px;max-width:980px;background:var(--line);border:1px solid var(--line)}.media-signal span{display:block;background:rgba(255,255,255,.68);padding:14px;font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:#303740}.growth-map{display:grid;grid-template-columns:1.1fr .9fr;gap:18px;margin-top:54px}.growth-board{background:var(--ink);color:#fff;border-radius:14px;padding:30px;min-height:420px;display:grid;align-content:space-between;box-shadow:0 28px 80px rgba(18,20,23,.18)}.growth-board h3{color:#fff;margin:0;font-size:clamp(34px,4vw,58px)}.growth-board p{max-width:560px;color:#d7dbe4}.growth-stack{display:grid;gap:12px}.growth-stack div{display:grid;grid-template-columns:120px 1fr;gap:16px;align-items:start;background:var(--soft);border:1px solid var(--line);border-radius:12px;padding:18px}.growth-stack strong{font-size:12px;text-transform:uppercase;letter-spacing:.8px;color:var(--accent)}.growth-stack p{margin:0;color:var(--muted);max-width:520px}.service-ledger{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);margin-top:64px}.service-ledger article{background:var(--soft);padding:30px;min-height:245px}.service-ledger h3{margin:28px 0 12px}.tag-cloud{display:flex;gap:10px;flex-wrap:wrap;margin-top:34px}.tag-cloud span{border:1px solid var(--line);background:rgba(255,255,255,.72);border-radius:999px;padding:8px 12px;font-size:12px;color:#343b45}.proof-strip{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:42px}.proof-strip div{background:var(--soft);border:1px solid var(--line);border-radius:12px;padding:20px}.proof-strip strong{display:block;font-size:13px;text-transform:uppercase;letter-spacing:.8px}.proof-strip span{display:block;margin-top:10px;color:var(--muted);font-size:13px}
+    .geo-section{background:linear-gradient(180deg,#f8fafc 0%,#eef3f9 100%)}.geo-head{max-width:820px}.geo-head h2{font-size:clamp(42px,5.5vw,78px)}.geo-head p{font-size:18px;line-height:1.65;color:#343b45;max-width:720px}.zh-summary{border-left:3px solid var(--accent);padding-left:16px;color:#4a5260!important}.geo-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:44px}.geo-grid article{background:rgba(255,255,255,.72);border:1px solid var(--line);border-radius:14px;padding:22px;min-height:250px}.geo-grid span{font-size:11px;text-transform:uppercase;letter-spacing:.9px;color:var(--accent);font-weight:850}.geo-grid h3{margin:30px 0 12px;font-size:26px}.geo-grid p{margin:0;color:var(--muted)}.faq-strip{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:16px}.faq-strip details{background:var(--soft);border:1px solid var(--line);border-radius:12px;padding:16px}.faq-strip summary{cursor:pointer;font-weight:850;letter-spacing:-.02em}.faq-strip p{color:var(--muted);margin:12px 0 0}
     .commerce-panel{display:grid;grid-template-columns:1.15fr .85fr;gap:18px;margin-top:50px;align-items:stretch}.commerce-card{background:var(--soft);border:1px solid var(--line);border-radius:10px;padding:26px}.commerce-card strong{display:block;font-size:14px;text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px}.commerce-list{list-style:none;margin:0;padding:0;display:grid;gap:12px}.commerce-list li{border-top:1px solid var(--line);padding-top:12px;color:var(--muted)}.metric-strip{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:34px}.metric-strip div{border:1px solid var(--line);border-radius:10px;background:var(--soft);padding:18px}.metric-strip strong{display:block;font-size:28px;line-height:1;letter-spacing:-.04em}.metric-strip span{display:block;margin-top:8px;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px}.shop-filter{display:grid;grid-template-columns:1.3fr .7fr .7fr;gap:12px;margin:34px 0 0}.catalog-first{padding-top:58px}.catalog-first h1{font-family:"Avenir Next",Avenir,"Helvetica Neue","Segoe UI",Helvetica,sans-serif;font-size:clamp(48px,6.4vw,96px);font-weight:850;letter-spacing:-.055em;line-height:.94;margin:0;max-width:940px}.product-card{position:relative;overflow:hidden;background:var(--soft);border:1px solid var(--line)}.product-card:hover{background:var(--soft);border-color:#aeb6c0}.product-card[hidden]{display:none}.card-tag{position:absolute;top:16px;right:16px;border:1px solid var(--ink);border-radius:999px;padding:7px 10px;background:rgba(255,255,255,.94);font-size:11px;font-weight:850;letter-spacing:.5px;text-transform:uppercase}.card-tag.pay{background:var(--accent);color:#fff;border-color:var(--accent)}.pill-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.pill{border:1px solid var(--line);border-radius:999px;padding:6px 10px;font-size:12px;background:rgba(255,255,255,.82)}.status-badge{display:inline-flex;border:1px solid var(--line);border-radius:999px;padding:6px 10px;font-size:11px;font-weight:850;letter-spacing:.5px;text-transform:uppercase;background:var(--soft)}.status-badge.paid{background:#dff7df;border-color:#3d7d3d}.status-badge.failed,.status-badge.expired{background:#ffe2dc}.status-badge.open,.status-badge.unpaid,.status-badge.checkout_created{background:#fff4bd}.product-buy{display:flex;gap:12px;align-items:end;flex-wrap:wrap}.product-buy input{max-width:130px}.gallery-main{width:100%;max-height:500px;object-fit:cover;border-radius:10px;margin:10px 0 16px;background:var(--panel);transition:opacity .28s cubic-bezier(.16,1,.3,1),transform .28s cubic-bezier(.16,1,.3,1)}.gallery-main.is-swapping{opacity:.62;transform:scale(.992)}.gallery-thumbs{display:grid;grid-template-columns:repeat(auto-fit,minmax(76px,96px));gap:10px;margin:0 0 18px}.gallery-thumb{display:block;width:100%;height:72px;border:1px solid var(--line);border-radius:8px;padding:0;background:var(--soft);overflow:hidden;cursor:pointer;transition:transform .2s cubic-bezier(.16,1,.3,1),border-color .2s cubic-bezier(.16,1,.3,1),box-shadow .2s cubic-bezier(.16,1,.3,1)}.gallery-thumb img{width:100%;height:100%;object-fit:cover;display:block}.gallery-thumb:hover,.gallery-thumb.active{border-color:var(--accent);box-shadow:0 10px 22px rgba(36,87,255,.14);transform:translateY(-2px)}.order-meta{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:14px 0}.order-meta span{display:block;border-top:1px solid var(--line);padding-top:8px;color:var(--muted);font-size:13px}.order-dashboard{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:26px 0}.metric-card{border:1px solid var(--line);border-radius:6px;background:var(--soft);padding:16px}.metric-card strong{display:block;font-size:32px;line-height:1;letter-spacing:-.04em}.metric-card span{display:block;margin-top:6px;color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.7px}.order-filter{display:grid;grid-template-columns:1fr 180px;gap:12px;margin:20px 0}.order-card[hidden]{display:none}
     .article-card h3{margin:34px 0 14px}.article-card p{color:var(--muted)}.article-card b{margin-top:auto;font-size:12px}.empty{margin-top:62px;padding:34px;border-top:1px solid var(--ink)}.empty p{font-family:Georgia,"Times New Roman",serif;font-size:32px;margin:0 0 8px}
     .contact{background:var(--ink);color:var(--paper);padding:104px 8vw;min-height:520px}.contact-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:8vw;align-items:end}.contact-mail{display:block;margin-top:48px;font-size:clamp(20px,2.6vw,36px);border-bottom:1px solid #666960;padding-bottom:13px}.contact-list{list-style:none;margin:0;padding:0;border-top:1px solid #666960}.contact-list li{display:grid;grid-template-columns:90px 1fr;gap:24px;padding:18px 0;border-bottom:1px solid #41433d}.contact-list span{font-size:11px;text-transform:uppercase;letter-spacing:.9px;color:#a9ada2}.address{font-size:13px;line-height:1.7;color:#c5c7be;margin:0}
@@ -1053,7 +1107,7 @@ function shell({ title, description, path = "/", content, schema, image, tenant 
     input,textarea,select{width:100%;border:1px solid #aaa69c;border-radius:6px;padding:11px 12px;background:var(--soft);color:var(--ink);font:15px "Avenir Next",Avenir,"Helvetica Neue","Segoe UI",Helvetica,sans-serif}textarea{min-height:150px;line-height:1.45;resize:vertical}label{display:block;margin:14px 0 7px;font-size:12px;font-weight:800;letter-spacing:.3px}.notice{border:1px solid var(--line);padding:18px;border-radius:6px;background:var(--soft)}.support-widget{position:fixed;right:22px;bottom:22px;z-index:20;width:min(390px,calc(100vw - 32px));font-family:"Avenir Next",Avenir,"Helvetica Neue","Segoe UI",Helvetica,sans-serif}.support-toggle{width:100%;justify-content:space-between;border-radius:999px;padding:14px 18px}.support-panel{display:none;margin-top:10px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.97);box-shadow:0 20px 60px rgba(18,20,23,.18);padding:16px;backdrop-filter:blur(18px)}.support-widget.open .support-panel{display:block}.support-panel h3{margin:0 0 8px;font-size:24px}.support-panel p{margin:0;color:var(--muted);font-size:13px}.support-panel textarea{min-height:70px}.support-status{font-size:13px;color:#36510d;margin:10px 0 0;font-weight:700}.support-close{background:transparent;border:0;color:var(--muted);font-weight:800;cursor:pointer;padding:0}.support-head{display:flex;align-items:flex-start;justify-content:space-between;gap:18px}.support-feed{height:230px;overflow:auto;margin:14px 0;padding:12px;background:var(--paper);border:1px solid var(--line);border-radius:10px;display:flex;flex-direction:column;gap:10px}.support-bubble{max-width:86%;padding:10px 12px;border-radius:12px;background:#fff;border:1px solid var(--line);font-size:14px;line-height:1.42;white-space:pre-wrap}.support-bubble.customer{align-self:flex-end;background:var(--accent);border-color:var(--accent);color:#fff}.support-bubble.agent{align-self:flex-start}.support-bubble.system{align-self:center;background:transparent;border:0;color:var(--muted);font-size:12px;text-align:center}.support-fields{display:grid;grid-template-columns:1fr 1fr;gap:8px}.support-fields input{padding:9px 10px}.support-fields.hidden{display:none}.support-chat-row{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:end}.support-chat-row textarea{min-height:58px}.support-meta-line{font-size:12px;color:var(--muted);margin-top:8px}.support-desk{display:grid;grid-template-columns:minmax(260px,360px) minmax(0,1fr);gap:24px;background:transparent;border:0;padding:0}.support-desk aside,.support-desk section{min-height:680px}.support-thread-list{display:grid;gap:10px;margin-top:14px;max-height:680px;overflow:auto}.support-thread{width:100%;text-align:left;border:1px solid var(--line);background:var(--soft);border-radius:10px;padding:14px;cursor:pointer;color:var(--ink)}.support-thread.active,.support-thread:hover{border-color:var(--accent);box-shadow:0 12px 28px rgba(36,87,255,.1)}.support-thread span{display:flex;justify-content:space-between;gap:10px}.support-thread b{display:block;font-size:15px}.support-thread small,.support-thread em{display:block;color:var(--muted);font-size:11px;font-style:normal}.support-thread p{margin:10px 0 0;color:var(--muted);font-size:13px}.support-conversation-head{display:flex;justify-content:space-between;gap:20px;align-items:flex-start;border-bottom:1px solid var(--line);padding-bottom:18px}.support-conversation-head h2{font-family:"Avenir Next",Avenir,"Helvetica Neue","Segoe UI",Helvetica,sans-serif;font-size:clamp(34px,4vw,56px);font-weight:850;letter-spacing:-.055em;line-height:.95;margin:0}.desk-feed{height:430px;overflow:auto;border:1px solid var(--line);border-radius:12px;background:var(--paper);padding:18px;margin:18px 0;display:flex;flex-direction:column;gap:12px}.desk-bubble{max-width:76%;border:1px solid var(--line);border-radius:12px;background:#fff;padding:13px 15px}.desk-bubble.agent{align-self:flex-end;background:var(--accent);color:#fff;border-color:var(--accent)}.desk-bubble.customer{align-self:flex-start}.desk-bubble strong{display:block;font-size:12px;margin-bottom:6px}.desk-bubble p{margin:0;white-space:pre-wrap}.desk-bubble small{display:block;margin-top:8px;font-size:11px;opacity:.72}
     .admin-wrap{padding:58px 5vw 90px}.admin-hero{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:24px;align-items:end;margin-bottom:28px;border-bottom:1px solid var(--ink);padding-bottom:28px}.admin-hero h1{font-size:clamp(48px,6vw,88px);letter-spacing:-.06em;margin:0}.admin-tabs{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 32px}.admin-tab{border:1px solid var(--line);background:var(--soft);border-radius:999px;padding:10px 14px;font-size:12px;font-weight:850;letter-spacing:.5px;text-transform:uppercase}.admin-tab.active,.admin-tab:hover{border-color:var(--ink);background:var(--ink);color:var(--paper)}.editor{display:grid;grid-template-columns:minmax(260px,390px) minmax(0,820px);gap:5vw}.editor aside{border-right:1px solid var(--line);padding-right:28px}.admin-list-tools{display:grid;grid-template-columns:1fr 130px;gap:10px;margin:18px 0}.mini-dashboard{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:18px 0}.mini-dashboard div{border:1px solid var(--line);background:var(--soft);border-radius:8px;padding:14px}.mini-dashboard strong{display:block;font-size:26px;letter-spacing:-.04em}.mini-dashboard span{display:block;margin-top:4px;font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:var(--muted)}.admin-list-empty{border-top:1px solid var(--line);padding:20px 0;color:var(--muted)}.admin-thumb-row{display:grid;grid-template-columns:62px 1fr;gap:12px;align-items:center}.admin-thumb{width:62px;height:52px;border-radius:8px;object-fit:cover;background:var(--panel);border:1px solid var(--line)}.admin-preview-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(72px,1fr));gap:10px;margin:12px 0}.image-chip{position:relative;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--soft);min-height:68px}.image-chip img{width:100%;height:74px;object-fit:cover;display:block}.image-chip span{display:block;padding:6px 8px;font-size:10px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.media-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:14px;margin-top:24px}.media-card{border:1px solid var(--line);border-radius:10px;background:var(--soft);overflow:hidden}.media-card img{width:100%;height:154px;object-fit:cover;background:var(--panel);display:block}.media-card div{padding:12px}.media-card code{display:block;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--muted);background:transparent}.media-card .toolbar{margin:12px 0 0}.field-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.editor-actions{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:20px}.status{margin:12px 0 0;color:#36510d;font-weight:700}.danger{background:transparent;color:var(--ink);border:1px solid var(--line)}
     iframe[src*="tawk.to"],iframe[title*="chat"],iframe[title*="Chat"]{z-index:2147483647!important}
-    :focus-visible{outline:3px solid var(--focus);outline-offset:3px}@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.btn,.btn:before,.article-card,.gallery-main,.gallery-thumb{transition:none}.btn:hover,.btn:active,.article-card:hover,.gallery-thumb:hover,.gallery-thumb.active{transform:none}}@media(max-width:980px){.portfolio-grid,.timeline,.team-panel,.contact-grid,.intro-strip,.commerce-panel,.metric-strip,.order-dashboard,.mini-dashboard,.growth-map,.service-ledger,.proof-strip{grid-template-columns:1fr 1fr}.media-signal{grid-template-columns:repeat(2,minmax(0,1fr))}.portfolio-grid{grid-auto-rows:minmax(310px,auto)}.work-card.large{grid-row:auto}.timeline article,.timeline article+article{border-right:0;border-bottom:1px solid var(--line);padding:26px 0}.team-grid{grid-template-columns:1fr 1fr}.contact-list{margin-top:34px}.support-desk{grid-template-columns:1fr}.support-desk aside,.support-desk section{min-height:auto}}@media(max-width:760px){header{height:auto;min-height:68px;align-items:flex-start;gap:14px;flex-direction:column;padding:18px 6vw}nav{gap:16px;flex-wrap:wrap}.hero{min-height:620px;padding:82px 7vw 46px}.hero:after{width:88vw;height:88vw;right:-36vw;top:126px}.media-hero:before{width:90vw;height:90vw;right:-46vw;top:148px}.hero-note{position:static;margin-top:42px}.section,.contact,.listing,.article-page{padding:72px 7vw}.service-grid,.article-grid,.editor,.team-grid,.shop-filter,.order-filter,.commerce-panel,.metric-strip,.order-dashboard,.mini-dashboard,.field-grid,.admin-hero,.admin-list-tools,.growth-map,.service-ledger,.proof-strip,.media-signal{grid-template-columns:1fr}.service-grid article,.service-grid article+article{border-right:0;border-bottom:1px solid var(--line);min-height:auto;padding:24px 0}.growth-stack div{grid-template-columns:1fr}.service-ledger article{min-height:auto}.person img{height:310px}.insights-head{display:block}.article-grid{margin-top:40px}.editor aside{border-right:0;border-bottom:1px solid var(--line);padding:0 0 26px}footer{display:block}.contact-mail{word-break:break-word}.contact-list li{grid-template-columns:1fr;gap:6px}.support-widget{right:16px;bottom:16px}.desk-feed{height:360px}.desk-bubble{max-width:92%}}
+    :focus-visible{outline:3px solid var(--focus);outline-offset:3px}@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.btn,.btn:before,.article-card,.gallery-main,.gallery-thumb{transition:none}.btn:hover,.btn:active,.article-card:hover,.gallery-thumb:hover,.gallery-thumb.active{transform:none}}@media(max-width:980px){.portfolio-grid,.timeline,.team-panel,.contact-grid,.intro-strip,.commerce-panel,.metric-strip,.order-dashboard,.mini-dashboard,.growth-map,.service-ledger,.proof-strip,.geo-grid,.faq-strip{grid-template-columns:1fr 1fr}.media-signal{grid-template-columns:repeat(2,minmax(0,1fr))}.portfolio-grid{grid-auto-rows:minmax(310px,auto)}.work-card.large{grid-row:auto}.timeline article,.timeline article+article{border-right:0;border-bottom:1px solid var(--line);padding:26px 0}.team-grid{grid-template-columns:1fr 1fr}.contact-list{margin-top:34px}.support-desk{grid-template-columns:1fr}.support-desk aside,.support-desk section{min-height:auto}}@media(max-width:760px){header{height:auto;min-height:68px;align-items:flex-start;gap:14px;flex-direction:column;padding:18px 6vw}nav{gap:16px;flex-wrap:wrap}.hero{min-height:620px;padding:82px 7vw 46px}.hero:after{width:88vw;height:88vw;right:-36vw;top:126px}.media-hero:before{width:90vw;height:90vw;right:-46vw;top:148px}.hero-note{position:static;margin-top:42px}.section,.contact,.listing,.article-page{padding:72px 7vw}.service-grid,.article-grid,.editor,.team-grid,.shop-filter,.order-filter,.commerce-panel,.metric-strip,.order-dashboard,.mini-dashboard,.field-grid,.admin-hero,.admin-list-tools,.growth-map,.service-ledger,.proof-strip,.media-signal,.geo-grid,.faq-strip{grid-template-columns:1fr}.service-grid article,.service-grid article+article{border-right:0;border-bottom:1px solid var(--line);min-height:auto;padding:24px 0}.growth-stack div{grid-template-columns:1fr}.service-ledger article{min-height:auto}.person img{height:310px}.insights-head{display:block}.article-grid{margin-top:40px}.editor aside{border-right:0;border-bottom:1px solid var(--line);padding:0 0 26px}footer{display:block}.contact-mail{word-break:break-word}.contact-list li{grid-template-columns:1fr;gap:6px}.support-widget{right:16px;bottom:16px}.desk-feed{height:360px}.desk-bubble{max-width:92%}}
   </style>
   ${schema ? `<script type="application/ld+json">${JSON.stringify(schema)}</script>` : ""}
 </head>
@@ -1155,6 +1209,7 @@ async function home(env, tenant = TENANTS.toumyou) {
         </div>
       </div>
     </section>
+    ${toumyouFactsBlock("home")}
     <section id="content-engine" class="section">
       <h2>From scattered posts<br>to a media production engine.</h2>
       <div class="service-ledger">
@@ -1184,7 +1239,7 @@ async function home(env, tenant = TENANTS.toumyou) {
     title: "Toumyou | Media Operations & Digital Growth Company",
     description: SITE.description,
     content,
-    schema: { "@context": "https://schema.org", "@type": "ProfessionalService", name: "Toumyou LLC", url: SITE.url, email: "sunflyerjp@gmail.com", telephone: "+8107018461357", address: { "@type": "PostalAddress", streetAddress: "2-1-35 Sugimoto, Sumiyoshi-ku", addressLocality: "Osaka City", addressCountry: "JP" }, description: SITE.description, sameAs: ["https://toumyou.com"], areaServed: "Global", serviceType: ["Media operations", "Short-video production", "Website production", "Software development", "Traffic acquisition", "Commercial IP growth"] },
+    schema: { "@context": "https://schema.org", "@graph": [{ "@type": "ProfessionalService", name: "Toumyou LLC", url: SITE.url, email: "sunflyerjp@gmail.com", telephone: "+8107018461357", address: { "@type": "PostalAddress", streetAddress: "2-1-35 Sugimoto, Sumiyoshi-ku", addressLocality: "Osaka City", addressCountry: "JP" }, description: SITE.description, sameAs: ["https://toumyou.com"], areaServed: "Global", serviceType: ["Media operations", "Short-video production", "Website production", "Software development", "Traffic acquisition", "Commercial IP growth"] }, toumyouFaqSchema()] },
     tenant,
   }));
 }
@@ -1209,6 +1264,7 @@ function mediaServicesPage(path = "/services") {
         </ul>
       </div>
     </section>
+    ${toumyouFactsBlock("services")}
     <section id="portfolio" class="section">
       <h2>A production stack<br>that covers the whole funnel.</h2>
       <div class="portfolio-grid">
@@ -1244,7 +1300,7 @@ function mediaServicesPage(path = "/services") {
     description,
     path,
     content,
-    schema: { "@context": "https://schema.org", "@type": "ProfessionalService", name: "Toumyou Media Operations", url: `${SITE.url}${path}`, email: "sunflyerjp@gmail.com", description, parentOrganization: { "@type": "Organization", name: "Toumyou LLC", url: SITE.url }, serviceType: ["Media operations", "Content growth strategy", "Short-video production", "Website production", "Software development", "Traffic acquisition", "AI workflow systems"] },
+    schema: { "@context": "https://schema.org", "@graph": [{ "@type": "ProfessionalService", name: "Toumyou Media Operations", url: `${SITE.url}${path}`, email: "sunflyerjp@gmail.com", description, parentOrganization: { "@type": "Organization", name: "Toumyou LLC", url: SITE.url }, serviceType: ["Media operations", "Content growth strategy", "Short-video production", "Website production", "Software development", "Traffic acquisition", "AI workflow systems"] }, toumyouFaqSchema()] },
   }));
 }
 
@@ -1436,6 +1492,7 @@ async function shopPage(env, tenant = TENANTS.toumyou) {
           : ""
       }
     </section>
+    ${zh ? "" : toumyouFactsBlock("shop")}
     <section class="section">
       <p class="eyebrow">${zh ? "下单与交付" : "Scope and delivery"}</p>
       <h2>${zh ? "下单前清楚确认<br>规格、数量和交付。" : "Clear scope before<br>the order starts."}</h2>
@@ -1464,7 +1521,7 @@ async function shopPage(env, tenant = TENANTS.toumyou) {
     content,
     schema: {
       "@context": "https://schema.org",
-      "@type": "Store",
+      "@type": zh ? "Store" : "ProfessionalService",
       name: zh ? "上海西缈科技紧固件产品中心" : "Toumyou Media Operations Orders",
       url: `${tenant.url}/shop`,
       description: zh ? "紧固件、工业五金和配件销售。" : "Service order entry points for Toumyou media operations and digital growth work.",
@@ -2621,13 +2678,77 @@ async function sitemap(env, tenant = TENANTS.toumyou) {
   });
 }
 
+function llmsTxt(tenant = TENANTS.toumyou) {
+  const isToumyou = tenant.key === "toumyou";
+  const lines = isToumyou
+    ? [
+        "# Toumyou",
+        "",
+        "Official site: https://toumyou.com",
+        "Last updated: 2026-08-22",
+        "Primary language: English. Chinese summary is provided for cross-border search and AI retrieval.",
+        "",
+        "## Definition",
+        "Toumyou is a Japan-based media operations and digital growth company focused on content systems, short-video production, websites, software workflow, traffic acquisition, commercial IP operations, and AI-assisted content workflows.",
+        "",
+        "## Official facts",
+        "- Legal name used on this site: Toumyou LLC.",
+        "- Base: Osaka City, Japan.",
+        "- Contact: sunflyerjp@gmail.com.",
+        "- Public business scope: media operations, content growth strategy, short-video production, website production, software development, traffic acquisition, commercial IP growth, new-media matrix architecture, and AI workflow systems.",
+        "- Toumyou.com is currently positioned around media operations and digital growth. Ximiaokeji.com is the separate Chinese fastener storefront.",
+        "- Do not infer client logos, revenue, certifications, staff size, or case results unless they are explicitly published on the site.",
+        "",
+        "## 中文摘要",
+        "Toumyou 是一家位于日本大阪的媒体运营与数字增长公司，服务包括内容增长、短视频制作、网站制作、软件开发、流量获客、商业 IP 运营、新媒体矩阵搭建和 AI 内容工作流。",
+        "",
+        "## Main pages",
+        "- https://toumyou.com/ : company overview and growth operating system.",
+        "- https://toumyou.com/services : media operations service scope.",
+        "- https://toumyou.com/shop : service order entry points and scoped paid order flow.",
+        "- https://toumyou.com/articles : media operations and growth articles.",
+        "- https://toumyou.com/login : Google sign-in for customer account, cart, orders, and payment records.",
+        "",
+        "## Service order pages",
+        ...TOUMYOU_SERVICE_PRODUCTS.map((item) => `- https://toumyou.com/shop/products/${item.slug} : ${item.name}. ${item.excerpt}`),
+        "",
+        "## Articles",
+        ...MEDIA_ARTICLES.map((item) => `- https://toumyou.com/articles/${item.slug} : ${item.title}. ${item.excerpt}`),
+      ]
+    : [
+        "# 上海西缈科技有限公司",
+        "",
+        "官方网站: https://ximiaokeji.com",
+        "更新时间: 2026-08-22",
+        "",
+        "## 定义",
+        "上海西缈科技有限公司是面向企业采购的紧固件销售与工业配件供应网站，提供螺丝、螺栓、螺母、垫圈、锚固件、销钉、铆钉及相关工业配件的在线展示、询价、购物车、订单和支付流程。",
+        "",
+        "## 官方事实",
+        "- 公司名称：上海西缈科技有限公司。",
+        "- 电话：18616626832。",
+        "- 邮箱：hello@ximiaokeji.com。",
+        "- 主营业务：紧固件销售、工业配件供应、批量询价和企业采购支持。",
+        "",
+        "## 主要页面",
+        "- https://ximiaokeji.com/ : 公司首页与采购说明。",
+        "- https://ximiaokeji.com/shop : 产品中心。",
+        "- https://ximiaokeji.com/articles : 文章与采购知识。",
+        "- https://ximiaokeji.com/login : 用户登录、购物车、订单和支付记录。",
+      ];
+  return new Response(`${lines.join("\n")}\n`, {
+    headers: { "content-type": "text/plain; charset=utf-8", "cache-control": "no-store, no-cache, must-revalidate" },
+  });
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
     const tenant = tenantFromRequest(request);
     const canonical = canonicalRedirect(url, tenant);
     if (canonical) return canonical;
-    if (url.pathname === "/robots.txt") return new Response(`User-agent: *\nAllow: /\nSitemap: ${tenant.url}/sitemap.xml\n`, { headers: { "content-type": "text/plain; charset=utf-8" } });
+    if (url.pathname === "/robots.txt") return new Response(`User-agent: *\nAllow: /\nSitemap: ${tenant.url}/sitemap.xml\n# AI facts: ${tenant.url}/llms.txt\n`, { headers: { "content-type": "text/plain; charset=utf-8" } });
+    if (url.pathname === "/llms.txt" || url.pathname === "/llms.en.txt") return llmsTxt(tenant);
     if (url.pathname === "/sitemap.xml") return sitemap(env, tenant);
     if (url.pathname.startsWith("/media/")) return mediaFile(request, env, decodeURIComponent(url.pathname.slice("/media/".length)));
     if (url.pathname.startsWith("/api/")) return handleApi(request, env, url.pathname);
