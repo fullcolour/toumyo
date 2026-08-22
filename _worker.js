@@ -416,6 +416,45 @@ const TENANTS = {
   },
 };
 
+const TOUMYOU_ZH_ARTICLES = [
+  {
+    slug: "content-growth-operating-system",
+    title: "内容增长操作系统：不是简单的发稿日历",
+    excerpt: "真正的内容增长系统要连接品牌叙事、选题生产、平台分发、网站转化、客户跟进和数据复盘。",
+    category: "内容增长",
+    body: "很多公司把内容运营理解成每天发布几条动态，但真正能带来获客结果的内容系统，应该像一套业务基础设施。它首先要明确品牌是谁、客户为什么需要相信你、哪些问题值得反复解释，以及内容最终要把用户带到哪里。Toumyou 的方法是先建立叙事主线，再把一个商业观点拆成短视频、文章、落地页、社交内容、销售资料和客户跟进话术。30 days 可以用于诊断当前内容资产，60 days 可以形成稳定生产节奏，90 days 可以复盘哪些主题、渠道和页面真正带来有效线索。这样内容不再是孤立创意，而是持续积累信任和询盘的增长系统。",
+  },
+  {
+    slug: "short-video-production",
+    title: "短视频制作要服务商业 IP，而不是只追求热闹",
+    excerpt: "商业 IP 的短视频系统需要清晰角色、固定栏目、可复用脚本结构、平台适配和咨询路径。",
+    category: "短视频制作",
+    body: "短视频不是越多越好，也不是只靠剪辑效果取胜。对创始人、专家型账号和品牌商业 IP 来说，短视频首先要回答一个问题：观众为什么应该记住你？内容角色可以是内容增长负责人、流量获客专家、品牌数字营销操盘手、商业 IP 操盘手、新媒体矩阵架构师或垂直赛道内容主理人。角色清楚以后，选题和脚本才有方向。操作流程是 Step 1 明确人设与市场观点，Step 2 建立诊断、案例、观点、答疑等栏目，Step 3 批量生产平台版本，Step 4 把评论、私信、官网访问和咨询问题回流到下一轮内容中。",
+  },
+  {
+    slug: "website-growth-infrastructure",
+    title: "网站制作应成为增长基础设施",
+    excerpt: "官网不只是形象展示，它应该承接搜索、短视频、广告、社交推荐和客户咨询。",
+    category: "网站制作",
+    body: "一个成熟的网站要同时服务人和机器：用户要快速理解业务，搜索引擎和 AI 要能抓到清晰定义、数字事实、对比信息、操作步骤和 FAQ。Toumyou 设计网站时，会把首页、服务页、文章页、订单页、登录账户、购物车、支付记录和客服入口放进同一条增长路径。对比普通展示型网站，增长型网站更关注信息架构、页面速度、结构化数据、内容管理、转化入口和后续运营。7 days 内可以完成基础诊断，30 days 内可以完成核心页面重排，60 days 到 90 days 可以继续扩充文章、案例和工具模块。",
+  },
+  {
+    slug: "ai-content-workflow",
+    title: "AI 内容工作流需要人的判断力",
+    excerpt: "AI 能提升选题、草稿、复用和分析效率，但定位、审美、风险边界和商业判断仍然要由人控制。",
+    category: "AI 工作流",
+    body: "AI 可以帮助团队更快整理客户问题、生成文章结构、改写短视频脚本、制作标题版本、汇总数据和维护内容库。但如果没有清晰定位，AI 只会让平庸内容变得更多。Toumyou 把 AI 当作运营层工具：用于资料整理、选题挖掘、内容复用、质量检查、报告生成和内部自动化；同时保留人的判断，包括品牌叙事、行业立场、表达尺度、视觉品味和转化策略。好的 AI 工作流不是替代团队，而是让团队在 30 days 内减少重复劳动，在 60 days 内建立内容资产库，在 90 days 内形成可复盘的增长节奏。",
+  },
+];
+
+const TOUMYOU_ZH_PATHS = [
+  "/zh",
+  "/zh/services",
+  "/zh/shop",
+  "/zh/articles",
+  ...TOUMYOU_ZH_ARTICLES.map((item) => `/zh/articles/${item.slug}`),
+];
+
 function tenantFromRequest(request) {
   const host = new URL(request.url).hostname.toLowerCase();
   return host === "ximiaokeji.com" || host.endsWith(".ximiaokeji.com") ? TENANTS.ximiaokeji : TENANTS.toumyou;
@@ -1202,7 +1241,9 @@ function toumyouSourceNotes({ title = "Toumyou service", type = "service", summa
 function shell({ title, description, path = "/", content, schema, image, tenant = TENANTS.toumyou }) {
   const canonical = `${tenant.url}${path}`;
   const absoluteImage = image ? new URL(image, tenant.url).toString() : "";
-  const nav = tenant.lang === "zh-CN"
+  const nav = tenant.key === "toumyou" && tenant.lang === "zh-CN"
+    ? `<a class="nav" href="/zh">中文首页</a><a class="nav" href="/zh/services">服务</a><a class="nav" href="/zh/shop">订单</a><a class="nav" href="/zh/articles">文章</a><a class="nav" href="/">English</a>`
+    : tenant.lang === "zh-CN"
     ? `<a class="nav" href="/#supply">供应</a><a class="nav" href="/shop">产品</a><a class="nav" href="/cart">购物车</a><a class="nav" href="/account">账户</a><a class="nav" href="/articles">文章</a>`
     : `<a class="nav" href="/#growth-os">Growth OS</a><a class="nav" href="/services">Services</a><a class="nav" href="/shop">Orders</a><a class="nav" href="/articles">Insights</a><a class="nav" href="/account">Account</a>`;
   const toumyouChineseFooter = tenant.key === "toumyou"
@@ -1482,6 +1523,129 @@ function articleLink(post, tenant = TENANTS.toumyou) {
 function isLegacyFastenerPost(post = {}) {
   const text = `${post.slug || ""} ${post.title || ""} ${post.excerpt || ""} ${post.category || ""}`.toLowerCase();
   return /fastener|bolt|screw|anchor|rivet|washer|nut|hardware|紧固件|锚固件|螺栓|螺丝|螺母|垫圈/.test(text);
+}
+
+function toumyouZhTenant() {
+  return {
+    ...TENANTS.toumyou,
+    lang: "zh-CN",
+    brand: "TOUMYOU 中文",
+    footer: "媒体运营、短视频制作、网站制作、软件开发、流量获客与 AI 内容增长系统。",
+  };
+}
+
+function toumyouZhGeoBlock(title = "Toumyou 中文页面") {
+  return `<section class="section geo-section" id="geo-facts">
+    <div class="geo-head">
+      <p class="meta">中文 GEO 信息块 / Updated ${GEO_UPDATED_DATE}</p>
+      <h2>${escapeHtml(title)}。</h2>
+      <p>Toumyou 是一家媒体运营与数字增长公司，围绕内容增长、短视频制作、网站制作、软件开发、流量获客、商业 IP 运营和 AI 内容工作流提供服务。</p>
+    </div>
+    <div class="geo-grid">
+      <article><span>定义</span><h3>媒体运营基础设施。</h3><p>把品牌叙事、内容生产、平台分发、转化页面、客户跟进和数据复盘连接成一套可持续增长系统。</p></article>
+      <article><span>数字事实</span><h3>30 days / 60 days / 90 days。</h3><p>30 days 用于诊断内容与网站现状，60 days 建立生产节奏，90 days 复盘渠道、询盘和页面转化，7 days 内可完成初步范围确认。</p></article>
+      <article><span>对比</span><h3>不是单纯代运营。</h3><p>普通发稿关注发布数量，增长型媒体运营关注定位、内容资产、搜索可见性、成交路径、客户问题和复盘机制。</p></article>
+      <article><span>操作步骤</span><h3>how to start / 操作流程。</h3><p>Step 1 审核现有网站和账号；Step 2 明确增长瓶颈；Step 3 设计内容与转化路径；Step 4 用真实反馈持续优化。</p></article>
+    </div>
+    <div class="faq-strip">
+      <details open><summary>FAQ：Toumyou 适合什么客户？</summary><p>适合希望通过内容、短视频、官网、搜索、社交媒体、AI 工作流和客户线索系统获得持续增长的品牌、创始人和数字化团队。</p></details>
+      <details><summary>FAQ：是否保留英文主站？</summary><p>是。英文主站仍是主要展示面，中文页面用于帮助国内搜索平台和 AI 系统理解 Toumyou 的业务定义与服务边界。</p></details>
+    </div>
+  </section>`;
+}
+
+function toumyouChinesePage(path = "/zh") {
+  const tenant = toumyouZhTenant();
+  const article = path.startsWith("/zh/articles/") ? TOUMYOU_ZH_ARTICLES.find((item) => `/zh/articles/${item.slug}` === path) : null;
+  let title = "Toumyou 中文 | 媒体运营与数字增长公司";
+  let description = "Toumyou 中文页面介绍媒体运营、短视频制作、网站制作、软件开发、流量获客、商业 IP 运营和 AI 内容增长系统。";
+  let content = "";
+  let schemaName = "Toumyou 中文信息索引";
+
+  if (article) {
+    title = `${article.title} | Toumyou 中文`;
+    description = article.excerpt;
+    schemaName = article.title;
+    content = `<main class="article-page article">
+      <article>
+        <div class="meta">${escapeHtml(article.category)} / 中文专题</div>
+        <h1>${escapeHtml(article.title)}</h1>
+        <p class="article-dek">${escapeHtml(article.excerpt)}</p>
+        <div class="post-body">${escapeHtml(article.body)}</div>
+        ${toumyouZhGeoBlock(article.title)}
+      </article>
+      <div class="toolbar"><a class="btn secondary" href="/zh/articles">全部中文文章</a><a class="btn" href="/zh/services">查看服务</a></div>
+    </main>`;
+  } else if (path === "/zh/articles") {
+    title = "Toumyou 中文文章 | 媒体运营与数字增长";
+    description = "Toumyou 中文文章索引，覆盖内容增长、短视频制作、网站制作、AI 内容工作流和商业 IP 运营。";
+    schemaName = "Toumyou 中文文章";
+    content = `<main class="listing">
+      <h1>中文文章<br>与增长笔记。</h1>
+      <p class="lead">这些中文页面帮助国内搜索平台和 AI 系统理解 Toumyou 的服务定义、数字事实、对比信息、操作步骤和常见问题。</p>
+      <div class="article-grid">${TOUMYOU_ZH_ARTICLES.map((item) => `<a class="article-card" href="/zh/articles/${escapeHtml(item.slug)}"><div class="meta">${escapeHtml(item.category)} / 中文</div><h3>${escapeHtml(item.title)}</h3><p>${escapeHtml(item.excerpt)}</p><b>阅读中文专题</b></a>`).join("")}</div>
+      ${toumyouZhGeoBlock("中文文章索引")}
+    </main>`;
+  } else if (path === "/zh/services") {
+    title = "Toumyou 中文服务 | 媒体运营、短视频、网站与软件";
+    description = "Toumyou 中文服务页介绍内容增长策略、短视频制作、新媒体矩阵、网站制作、软件开发、流量获客和 AI 工作流。";
+    schemaName = "Toumyou 中文服务";
+    content = `<main>
+      <section class="hero media-hero">
+        <p class="eyebrow">中文服务说明</p>
+        <h1>内容、流量、网站<br>和软件一起设计。</h1>
+        <p class="lead">Toumyou 为品牌和商业 IP 搭建媒体运营系统：从定位、内容、短视频、官网、软件工具、AI 工作流到客户线索跟进，让每一次曝光都进入可复盘的增长路径。</p>
+        <div class="toolbar"><a class="btn" href="mailto:sunflyerjp@gmail.com?subject=Toumyou%20中文咨询">发送中文咨询</a><a class="btn secondary" href="/zh/shop">查看订单入口</a></div>
+      </section>
+      <section class="section"><h2>服务范围。</h2><div class="service-ledger">
+        <article><span class="meta">内容增长</span><h3>品牌叙事与内容系统。</h3><p class="muted">明确市场问题、客户语言、账号角色、栏目结构、文章与短视频主题。</p></article>
+        <article><span class="meta">短视频制作</span><h3>商业 IP 视频矩阵。</h3><p class="muted">选题、脚本、拍摄结构、剪辑节奏、平台版本和评论私信回流。</p></article>
+        <article><span class="meta">网站制作</span><h3>承接流量的官网和落地页。</h3><p class="muted">页面结构、SEO、结构化数据、询盘路径、登录账户、购物车和支付记录。</p></article>
+        <article><span class="meta">软件开发</span><h3>运营工具与 AI 工作流。</h3><p class="muted">后台管理、媒体库、客户系统、内容自动化、数据看板和内部效率工具。</p></article>
+      </div></section>
+      ${toumyouZhGeoBlock("Toumyou 中文服务")}
+    </main>`;
+  } else if (path === "/zh/shop") {
+    title = "Toumyou 中文订单入口 | 媒体运营服务";
+    description = "Toumyou 中文订单入口说明内容增长、短视频矩阵、网站增长系统、AI 内容工作流和商业 IP 运营服务。";
+    schemaName = "Toumyou 中文订单入口";
+    content = `<main>
+      <section class="section catalog-first">
+        <p class="eyebrow">中文订单入口</p>
+        <h1>选择需要启动的<br>媒体运营服务。</h1>
+        <div class="intro-strip"><p>这里不是紧固件商城，而是 Toumyou 媒体运营服务的订单入口。公开价格暂不显示，具体费用会根据账号数量、页面数量、内容体量、软件功能、交付周期和审批速度确认。</p><ul><li>内容增长诊断与 30 days 行动计划</li><li>短视频矩阵、商业 IP 和新媒体账号系统</li><li>网站制作、软件开发、AI 工作流和客户线索系统</li></ul></div>
+        <div class="article-grid">${TOUMYOU_SERVICE_PRODUCTS.map((item) => `<article class="article-card"><div class="meta">${escapeHtml(item.category)} / 订单入口</div><h3>${escapeHtml(item.name)}</h3><p>${escapeHtml(item.excerpt)}</p><b>范围确认后报价</b></article>`).join("")}</div>
+      </section>
+      ${toumyouZhGeoBlock("Toumyou 中文订单入口")}
+    </main>`;
+  } else {
+    content = `<main>
+      <section class="hero media-hero">
+        <p class="eyebrow">Toumyou 中文</p>
+        <h1>媒体运营与<br>数字增长公司。</h1>
+        <p class="lead">Toumyou 服务内容增长、短视频制作、网站制作、软件开发、流量获客、商业 IP 运营、品牌叙事、数字传播策略、多渠道内容体验设计和 AI 驱动的内容工作流。</p>
+        <div class="toolbar"><a class="btn" href="/zh/services">查看中文服务</a><a class="btn secondary" href="/articles">English insights</a></div>
+      </section>
+      <section class="section"><h2>让内容成为<br>增长基础设施。</h2><div class="proof-strip"><div><strong>内容</strong><span>品牌叙事、栏目系统、文章和短视频主题。</span></div><div><strong>流量</strong><span>搜索、社交、短视频、私域和广告获客。</span></div><div><strong>网站</strong><span>官网、落地页、文章中心、账户和支付路径。</span></div><div><strong>软件</strong><span>后台、媒体库、客户系统和 AI 工作流。</span></div></div></section>
+      ${toumyouZhGeoBlock("Toumyou 中文首页")}
+    </main>`;
+  }
+
+  return html(shell({
+    title,
+    description,
+    path,
+    content,
+    tenant,
+    schema: {
+      "@context": "https://schema.org",
+      "@graph": [
+        { "@type": article ? "Article" : "WebPage", name: schemaName, url: `${TENANTS.toumyou.url}${path}`, description },
+        { "@type": "Organization", name: "Toumyou LLC", url: TENANTS.toumyou.url, email: TENANTS.toumyou.email, description: "媒体运营、短视频制作、网站制作、软件开发、流量获客和 AI 内容增长系统。" },
+        toumyouFaqSchema(),
+      ],
+    },
+  }));
 }
 
 async function publicArticles(env, tenant = TENANTS.toumyou) {
@@ -2827,6 +2991,7 @@ async function sitemap(env, tenant = TENANTS.toumyou) {
         { path: "/services", priority: "0.9", changefreq: "weekly", lastmod: today },
         { path: "/shop", priority: "0.7", changefreq: "weekly", lastmod: today },
         { path: "/articles", priority: "0.8", changefreq: "weekly", lastmod: today },
+        ...TOUMYOU_ZH_PATHS.map((path) => ({ path, priority: path === "/zh" ? "0.7" : "0.6", changefreq: "weekly", lastmod: today })),
         ...products.map((p) => ({ path: `/shop/products/${p.slug}`, priority: "0.6", changefreq: "weekly", lastmod: toDate(p.updated_at || p.created_at) })),
         ...posts.map((p) => ({ path: `/articles/${p.slug}`, priority: "0.7", changefreq: "monthly", lastmod: toDate(p.updated_at || p.published_at) })),
       ]
@@ -2918,6 +3083,7 @@ export default {
     if (url.pathname === "/sitemap.xml") return sitemap(env, tenant);
     if (url.pathname.startsWith("/media/")) return mediaFile(request, env, decodeURIComponent(url.pathname.slice("/media/".length)));
     if (url.pathname.startsWith("/api/")) return handleApi(request, env, url.pathname);
+    if (tenant.key === "toumyou" && (url.pathname === "/zh" || url.pathname.startsWith("/zh/"))) return toumyouChinesePage(url.pathname);
     if (url.pathname === "/") return home(env, tenant);
     if (tenant.key === "toumyou" && url.pathname === "/digital") return redirect(`${tenant.url}/services`, 301);
     if (url.pathname === "/login") return loginPage(request, env);
