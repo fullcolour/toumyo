@@ -47,6 +47,25 @@ const SHOP = {
 
 const MEDIA_ARTICLES = [
   {
+    slug: "ai-content-workflow-quality-control",
+    title: "AI content workflows need quality control before scale",
+    excerpt: "How growth teams use AI to increase content output while protecting strategy, evidence, brand voice, and conversion intent.",
+    category: "AI Content Workflow",
+    published_at: dayStamp("2026-08-24"),
+    updated_at: dayStamp("2026-08-24"),
+    body: `AI can make a content team faster, but speed without control creates a new problem: more assets that sound plausible, repeat familiar language, and fail to move the buyer toward a real decision. The strongest teams treat AI as a workflow layer, not as an automatic publisher.
+
+Quality control starts before drafting. A useful brief should define the audience, the commercial problem, the buyer's current belief, the desired belief after reading, the proof points, the call to action, and the channel where the asset will live. When these inputs are missing, AI fills the gap with generic structure and safe claims.
+
+The next layer is source discipline. Content that can be cited by search systems and AI answer engines needs clear definitions, specific reasoning, and observable evidence. A good editor asks whether the article explains terms precisely, separates opinion from fact, and gives the reader a practical way to evaluate the idea.
+
+Brand voice is also a control system. It is not only tone; it is the way a company frames problems, chooses examples, names tradeoffs, and connects insight to action. AI drafts should be checked against that voice instead of accepted because they are grammatically clean.
+
+Finally, every workflow needs a conversion review. A short video, article, landing page, and email may share the same strategic idea, but each asset should guide the reader to the next appropriate step. If the path is unclear, the content is unfinished.
+
+AI increases leverage when humans own the standards. The goal is not to publish more words. The goal is to build a reliable content machine that compounds trust, search visibility, and qualified demand.`,
+  },
+  {
     slug: "content-growth-operating-system",
     title: "A content growth operating system is not a posting calendar",
     excerpt: "How brands turn scattered publishing into a repeatable loop of narrative, production, distribution, conversion, and learning.",
