@@ -47,6 +47,25 @@ const SHOP = {
 
 const MEDIA_ARTICLES = [
   {
+    slug: "short-video-retention-design-for-service-brands",
+    title: "Short-video retention design starts before the edit",
+    excerpt: "How service brands improve watch time and conversion by designing audience tension, proof, pacing, and next steps before production begins.",
+    category: "Short Video Strategy",
+    published_at: dayStamp("2026-08-26"),
+    updated_at: dayStamp("2026-08-26"),
+    body: `Retention is often treated as an editing problem. Better captions, faster cuts, and stronger music can help, but they cannot rescue a video that has no strategic tension. For service brands, retention design begins before the camera turns on.
+
+The first question is not “what should we post?” It is “what uncertainty does the viewer already have?” A strong video enters an existing tension: a business owner is unsure why traffic is unstable, a founder cannot explain the offer clearly, or a marketing team is producing content without a reliable path to qualified demand. The opening should name that tension quickly and specifically.
+
+The second layer is proof sequencing. Viewers stay when each sentence gives them a reason to continue. A useful sequence can move from diagnosis to cause, from cause to example, from example to operating principle, and from principle to action. This structure keeps the video from becoming a list of claims.
+
+The third layer is format discipline. A diagnostic clip, a case breakdown, a founder point-of-view video, and a landing-page explanation should not share the same pacing. Each format has a different job in the content system. Awareness videos need sharp recognition. Consideration videos need clarity and evidence. Conversion videos need confidence and a visible next step.
+
+AI can support retention design by testing hooks, compressing scripts, identifying weak transitions, and comparing the video against the intended buyer journey. Human judgment still decides whether the idea is distinctive, accurate, and worth the audience's time.
+
+When retention is designed upstream, short video becomes more than attention capture. It becomes a repeatable way to turn market questions into trust, and trust into action.`,
+  },
+  {
     slug: "ai-content-workflow-quality-control",
     title: "AI content workflows need quality control before scale",
     excerpt: "How growth teams use AI to increase content output while protecting strategy, evidence, brand voice, and conversion intent.",
