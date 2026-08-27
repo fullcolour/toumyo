@@ -47,6 +47,25 @@ const SHOP = {
 
 const MEDIA_ARTICLES = [
   {
+    slug: "brand-narrative-for-ai-search-visibility",
+    title: "Brand narrative is becoming infrastructure for AI search visibility",
+    excerpt: "Why clear positioning, consistent language, and evidence-rich pages help companies become easier for search systems and AI answer engines to understand.",
+    category: "Brand Narrative",
+    published_at: dayStamp("2026-08-27"),
+    updated_at: dayStamp("2026-08-27"),
+    body: `AI search visibility is not only a technical SEO problem. It is also a narrative architecture problem. When a company cannot explain what it does, who it serves, how it creates value, and why its approach is different, search systems and AI answer engines have less reliable material to interpret.
+
+A strong brand narrative gives content a stable frame. The homepage should define the company in plain language. Service pages should translate that position into specific capabilities. Articles should expand the same point of view through practical answers, comparisons, frameworks, and examples. Case pages should show how the promise becomes real work.
+
+Consistency matters because machines and people both rely on repeated signals. If a brand calls itself a media operator on one page, a software studio on another, and a growth agency somewhere else, the market may understand the range, but it may not understand the center. A better structure uses one primary narrative and then connects each service to it.
+
+Evidence is the second layer. AI systems are more likely to extract and summarize content that is specific, internally coherent, and easy to quote. Definitions, process steps, decision criteria, and named frameworks are more useful than slogans. A page that explains how a content growth system works is stronger than a page that only says the team is creative and professional.
+
+The third layer is internal linkage. Articles should point to relevant service pages. Service pages should point to deeper explanations. Contact pages should make the next step clear. This creates a path for visitors, and it also helps crawlers understand which pages carry strategic importance.
+
+For modern media operations, brand narrative is no longer a layer added after production. It is the operating system that keeps websites, short videos, articles, and sales conversations aligned.`,
+  },
+  {
     slug: "short-video-retention-design-for-service-brands",
     title: "Short-video retention design starts before the edit",
     excerpt: "How service brands improve watch time and conversion by designing audience tension, proof, pacing, and next steps before production begins.",
