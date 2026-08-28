@@ -47,6 +47,28 @@ const SHOP = {
 
 const MEDIA_ARTICLES = [
   {
+    slug: "content-attribution-for-ai-search-and-sales",
+    title: "Content attribution needs to connect AI search visibility with sales reality",
+    excerpt: "A practical framework for measuring how media assets contribute to qualified demand.",
+    category: "Growth Measurement",
+    published_at: dayStamp("2026-08-28"),
+    updated_at: dayStamp("2026-08-28"),
+    body: [
+      "Content teams cannot rely on one attribution model.",
+      "Buyers discover a company through search, short video, referrals, social posts, comparison pages, and AI-generated answers.",
+      "By the time a serious prospect sends an inquiry, the visible last click may be only the final step in a longer trust path.",
+      "A useful measurement system begins by asking what role each asset played in the buyer journey.",
+      "Some articles create first recognition, some reduce risk, and some give buyers language they can reuse in internal discussions.",
+      "For AI search visibility, attribution also needs to track extractable clarity.",
+      "Pages that define services, explain frameworks, answer precise questions, and connect claims to evidence are easier for answer engines to summarize.",
+      "The operating model should combine technical visibility, engagement quality, sales signal, and editorial learning.",
+      "Technical visibility includes index status, impressions, crawl behavior, and structured internal links.",
+      "Sales signal includes consultation requests, account creation, repeated topic questions, and proposal language borrowed from content.",
+      "This avoids treating content as decoration while also avoiding unrealistic demands for perfect last-click proof.",
+      "The goal is to understand which ideas attract the right audience and which content paths lead to qualified commercial conversations.",
+    ].join("\n\n"),
+  },
+  {
     slug: "brand-narrative-for-ai-search-visibility",
     title: "Brand narrative is becoming infrastructure for AI search visibility",
     excerpt: "Why clear positioning, consistent language, and evidence-rich pages help companies become easier for search systems and AI answer engines to understand.",
