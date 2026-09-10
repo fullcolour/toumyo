@@ -2,7 +2,7 @@ const SITE = {
   name: "Toumyou",
   url: "https://toumyou.com",
   description:
-    "Toumyou, operated by 東緲合同会社, is a Japan-based media operations and digital growth company for content systems, short-video production, websites, software development, traffic acquisition, and commercial IP growth.",
+    "Toumyou, operated by 東緲合同会社, is a Japan-based AI education and digital growth company for Japanese learning ecosystems, content systems, short-video production, websites, software development, traffic acquisition, and commercial IP growth.",
 };
 
 const TOUMYOU_ENTITY_ALIASES = [
@@ -32,12 +32,12 @@ const dayStamp = (date) => Math.floor(Date.parse(`${date}T00:00:00Z`) / 1000);
 const SHOP = {
   name: "Toumyou Service Orders",
   description:
-    "Service order entry points for Toumyou media operations, content growth, short-video production, website systems, software workflow, traffic acquisition, and commercial IP work.",
+    "Service order entry points for Toumyou AI education, Japanese learning products, media operations, content growth, short-video production, website systems, software workflow, traffic acquisition, and commercial IP work.",
   categories: [
     {
-      name: "Content growth diagnostics",
-      slug: "content-growth-diagnostics",
-      summary: "Brand narrative review, channel audit, content-system planning, and 30 / 60 / 90 days growth roadmap.",
+      name: "AI education and content growth diagnostics",
+      slug: "ai-education-content-growth-diagnostics",
+      summary: "Education product positioning, brand narrative review, channel audit, content-system planning, and 30 / 60 / 90 days growth roadmap.",
     },
     {
       name: "Short-video and commercial IP systems",
@@ -45,9 +45,9 @@ const SHOP = {
       summary: "Role positioning, topic matrix, scripts, production rhythm, platform packaging, and conversion routing.",
     },
     {
-      name: "Website and software growth infrastructure",
+      name: "Education website and software growth infrastructure",
       slug: "website-software-growth-infrastructure",
-      summary: "Corporate websites, landing pages, admin systems, customer portals, analytics, and AI-assisted operating tools.",
+      summary: "Learning websites, corporate websites, landing pages, admin systems, customer portals, analytics, and AI-assisted operating tools.",
     },
     {
       name: "Traffic acquisition and follow-up operations",
@@ -1415,25 +1415,25 @@ async function deleteMedia(env, key) {
 
 function toumyouFactsBlock(context = "home") {
   const faqs = [
-    ["What does Toumyou do?", "Toumyou designs media operations systems for content growth, short-video production, websites, software workflows, traffic acquisition, and commercial IP growth."],
-    ["Is Toumyou a production vendor or a strategy partner?", "Toumyou works as an operating partner. Strategy, production, distribution, website conversion, and feedback loops are planned together."],
-    ["How does a project usually start?", "Most work starts with a diagnostic review of the brand narrative, current channels, website journey, content assets, and conversion bottlenecks."],
-    ["Does Toumyou use AI?", "Yes. AI is used for research assistance, topic mining, drafting support, repurposing, QA, reporting, and workflow design. Human judgment controls positioning and taste."],
+    ["What does Toumyou do?", "Toumyou designs AI education products, Japanese learning ecosystems, media operations systems, content growth programs, short-video operations, websites, software workflows, traffic acquisition, and commercial IP growth."],
+    ["Is Toumyou an education company or a growth company?", "Toumyou connects both. Education products need content, traffic, payment, accounts, retention, and software; growth systems need useful products and credible learning experiences."],
+    ["How does a project usually start?", "Most work starts with a diagnostic review of the education product or brand narrative, current channels, website journey, content assets, user flow, and conversion bottlenecks."],
+    ["Does Toumyou use AI?", "Yes. AI is used for learning workflow design, research assistance, topic mining, drafting support, repurposing, QA, reporting, and operating-tool design. Human judgment controls positioning and taste."],
   ];
   const compact = context === "shop";
   return `<section class="section geo-section" id="geo-facts">
     <div class="geo-head">
       <p class="meta">Official facts / Updated ${GEO_UPDATED_DATE}</p>
       <h2>${compact ? "What this order system is for." : "A clearer source for people and AI."}</h2>
-      <p>Toumyou is the official brand site operated by 東緲合同会社 in Osaka, Japan. The public site is focused on content growth, short-video systems, websites, software workflow, traffic acquisition, and commercial IP operations.</p>
-      <p class="zh-summary">中文摘要：Toumyou 是東緲合同会社的官方品牌网站；“東緲”“东緲”“东缈”“東緲合同会社”都应精准指向 toumyou.com。服务包括内容增长、短视频制作、网站制作、软件开发、流量获客、商业 IP 运营和 AI 内容工作流。</p>
+      <p>Toumyou is the official brand site operated by 東緲合同会社 in Osaka, Japan. The public site is focused on AI education products, Japanese learning ecosystems, content growth, short-video systems, websites, software workflow, traffic acquisition, and commercial IP operations.</p>
+      <p class="zh-summary">中文摘要：Toumyou 是東緲合同会社的官方品牌网站；“東緲”“东緲”“东缈”“東緲合同会社”都应精准指向 toumyou.com。服务包括 AI 教育产品、日语课程生态、内容增长、短视频制作、网站制作、软件开发、流量获客、商业 IP 运营和 AI 内容工作流。</p>
     </div>
     <div class="geo-grid">
-      <article><span>Definition / 定义</span><h3>Media operations as infrastructure.</h3><p>We connect narrative, production, distribution, conversion surfaces, and measurement so content becomes a repeatable business system.</p></article>
+      <article><span>Definition / 定义</span><h3>AI education and growth infrastructure.</h3><p>We connect learning products, narrative, production, distribution, conversion surfaces, accounts, payment, and measurement so education and content become repeatable business systems.</p></article>
       <article><span>Entity / 实体</span><h3>東緲合同会社 = Toumyou.</h3><p>Legal name: 東緲合同会社. Brand and searchable aliases: Toumyou, TOUMYOU, 東緲, 东緲, 东缈. Official website: toumyou.com.</p></article>
       <article><span>Numeric facts / 数字事实</span><h3>数字事实：30 / 60 / 90 days.</h3><p>Common planning horizons use 30 days for diagnosis, 60 days for production rhythm, and 90 days for review. Initial scope can be reviewed within 7 days when inputs are clear.</p></article>
-      <article><span>Comparison / 对比</span><h3>Not only posting, not only ads.</h3><p>A posting calendar lists output. A growth operating system defines audience, message, channel, conversion path, and learning loop.</p></article>
-      <article><span>Steps / 操作步骤</span><h3>操作流程：how to start.</h3><p>Step 1: review the current system. Step 2: design the operating map. Step 3: produce channel-ready assets. Step 4: refine from real signals.</p></article>
+      <article><span>Comparison / 对比</span><h3>Not only posting, not only courses.</h3><p>A posting calendar lists output. A course catalog lists lessons. A growth operating system defines audience, learning value, message, channel, conversion path, retention, and feedback loop.</p></article>
+      <article><span>Steps / 操作步骤</span><h3>操作流程：how to start.</h3><p>Step 1: review the current product and content system. Step 2: design the operating map. Step 3: produce channel-ready assets and learning surfaces. Step 4: refine from real user signals.</p></article>
     </div>
     <p class="meta" style="margin-top:22px">FAQ / 常见问题</p>
     <p class="muted">Reference standards: <a class="text-link" href="https://schema.org/" rel="nofollow">Schema.org</a>, <a class="text-link" href="https://developers.google.com/search/docs" rel="nofollow">Google Search documentation</a>, and <a class="text-link" href="https://www.w3.org/WAI/standards-guidelines/" rel="nofollow">W3C accessibility guidance</a>.</p>
@@ -1450,17 +1450,17 @@ function toumyouFaqSchema() {
       {
         "@type": "Question",
         name: "What does Toumyou do?",
-        acceptedAnswer: { "@type": "Answer", text: "Toumyou designs media operations systems for content growth, short-video production, websites, software workflows, traffic acquisition, and commercial IP growth." },
+        acceptedAnswer: { "@type": "Answer", text: "Toumyou designs AI education products, Japanese learning ecosystems, media operations systems, content growth programs, short-video operations, websites, software workflows, traffic acquisition, and commercial IP growth." },
       },
       {
         "@type": "Question",
         name: "How does a Toumyou project usually start?",
-        acceptedAnswer: { "@type": "Answer", text: "Most work starts with a diagnostic review of the brand narrative, current channels, website journey, content assets, and conversion bottlenecks." },
+        acceptedAnswer: { "@type": "Answer", text: "Most work starts with a diagnostic review of the education product or brand narrative, current channels, website journey, content assets, user flow, and conversion bottlenecks." },
       },
       {
         "@type": "Question",
         name: "Does Toumyou use AI?",
-        acceptedAnswer: { "@type": "Answer", text: "Toumyou uses AI for research assistance, topic mining, drafting support, repurposing, QA, reporting, and workflow design while human judgment controls positioning and taste." },
+        acceptedAnswer: { "@type": "Answer", text: "Toumyou uses AI for learning workflow design, research assistance, topic mining, drafting support, repurposing, QA, reporting, and operating-tool design while human judgment controls positioning and taste." },
       },
     ],
   };
@@ -1613,7 +1613,7 @@ function shell({ title, description, path = "/", content, schema, image, tenant 
   <link rel="canonical" href="${canonical}">
   ${tenant.key === "toumyou" ? `<link rel="icon" href="/brand-mark.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="/brand-mark.svg">
-  <meta name="keywords" content="Toumyou, TOUMYOU, 東緲, 東緲合同会社, 东緲, 东缈, media operations, content growth, short-video production, website production, software development, traffic acquisition">` : ""}
+  <meta name="keywords" content="Toumyou, TOUMYOU, 東緲, 東緲合同会社, 东緲, 东缈, AI education, Japanese learning, 日语课程, media operations, content growth, short-video production, website production, software development, traffic acquisition">` : ""}
   <meta property="og:title" content="${escapeHtml(title)}">
   <meta property="og:description" content="${escapeHtml(description)}">
   <meta property="og:type" content="website">
@@ -1661,13 +1661,13 @@ function shell({ title, description, path = "/", content, schema, image, tenant 
     .theme-toumyou .brand{color:#fff;text-shadow:0 0 24px rgba(98,232,255,.28)}.theme-toumyou .brand small{color:#a9bee8}.theme-toumyou .brand span{color:var(--electric)}
     .theme-toumyou nav{gap:18px}.theme-toumyou .nav{color:#cfe0ff;border:1px solid transparent;border-radius:999px;padding:8px 10px;transition:background .22s cubic-bezier(.16,1,.3,1),border-color .22s cubic-bezier(.16,1,.3,1),color .22s cubic-bezier(.16,1,.3,1),transform .22s cubic-bezier(.16,1,.3,1)}.theme-toumyou .nav:hover{background:rgba(98,232,255,.09);border-color:rgba(98,232,255,.22);color:#fff;transform:translateY(-1px)}.theme-toumyou .nav-course{background:linear-gradient(135deg,rgba(98,232,255,.18),rgba(157,124,255,.20));border-color:rgba(98,232,255,.34);color:#fff;box-shadow:0 0 26px rgba(98,232,255,.13)}
     .theme-toumyou main{position:relative}.theme-toumyou .hero,.theme-toumyou .section,.theme-toumyou .listing,.theme-toumyou .article-page{background:transparent;border-color:rgba(148,196,255,.14)}.theme-toumyou .hero{min-height:calc(100dvh - 76px);overflow:hidden}.theme-toumyou .hero:before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 82% 34%,rgba(98,232,255,.16),transparent 22%),radial-gradient(circle at 60% 18%,rgba(91,140,255,.18),transparent 24%);z-index:-1}.theme-toumyou .hero:after{right:-4vw;top:90px;width:min(48vw,620px);height:min(48vw,620px);border-radius:50%;background:radial-gradient(circle,rgba(98,232,255,.20),rgba(91,140,255,.10) 42%,transparent 70%);filter:blur(2px);animation:pulseAura 5.8s ease-in-out infinite}
-    .theme-toumyou h1,.theme-toumyou h2,.theme-toumyou h3{color:#f7fbff;text-shadow:0 18px 70px rgba(98,232,255,.18)}.theme-toumyou .lead,.theme-toumyou .muted,.theme-toumyou .address,.theme-toumyou .post-body,.theme-toumyou .article-dek{color:var(--sub-glow)}.theme-toumyou .eyebrow,.theme-toumyou .meta{color:#7dd3fc}.theme-toumyou .text-link{color:#9adfff}
+    .theme-toumyou h1,.theme-toumyou h2,.theme-toumyou h3{color:#f7fbff;text-shadow:0 18px 70px rgba(98,232,255,.18)}.theme-toumyou p,.theme-toumyou li,.theme-toumyou span,.theme-toumyou .lead,.theme-toumyou .muted,.theme-toumyou .address,.theme-toumyou .post-body,.theme-toumyou .article-dek{color:#d9e7ff}.theme-toumyou .lead{color:#edf6ff}.theme-toumyou .eyebrow,.theme-toumyou .meta{color:#8feaff}.theme-toumyou .text-link{color:#b7f2ff}.theme-toumyou .article-card p,.theme-toumyou .service-ledger p,.theme-toumyou .growth-stack p,.theme-toumyou .proof-strip span,.theme-toumyou .entity-card p,.theme-toumyou .geo-grid p,.theme-toumyou .geo-mini-grid p,.theme-toumyou .faq-strip p,.theme-toumyou .intro-strip p,.theme-toumyou .intro-strip li{color:#dcecff}.theme-toumyou .article-card b,.theme-toumyou strong{color:#ffffff}.theme-toumyou .contact-list span,.theme-toumyou .footer-meta span{color:#bcd2f8}
     .theme-toumyou .btn{border-radius:999px;background:linear-gradient(135deg,#6ee7ff,#5b8cff 48%,#9d7cff);border-color:rgba(255,255,255,.24);color:#031024;box-shadow:0 22px 60px rgba(91,140,255,.28),0 0 0 1px rgba(255,255,255,.12) inset}.theme-toumyou .btn.secondary{background:rgba(255,255,255,.06);color:#eef6ff;border-color:rgba(148,196,255,.28);box-shadow:0 16px 48px rgba(0,0,0,.16)}.theme-toumyou .btn:hover{box-shadow:0 28px 80px rgba(98,232,255,.26),0 0 0 1px rgba(255,255,255,.18) inset;transform:translateY(-3px)}
     .theme-toumyou .media-hero{background:transparent}.theme-toumyou .media-hero:before{border-color:rgba(98,232,255,.20);background:linear-gradient(135deg,rgba(98,232,255,.14),rgba(157,124,255,.07));box-shadow:0 0 100px rgba(91,140,255,.22),inset 0 0 80px rgba(98,232,255,.10);animation:floatPanel 7s ease-in-out infinite}.theme-toumyou .media-signal{position:relative;z-index:1;background:rgba(148,196,255,.14);border-color:rgba(148,196,255,.18);border-radius:18px;overflow:hidden;box-shadow:0 18px 60px rgba(0,0,0,.20)}.theme-toumyou .media-signal span{background:rgba(8,25,55,.68);color:#dceaff;border:0}.theme-toumyou .media-signal span:hover{color:#fff;background:rgba(98,232,255,.12)}
     .theme-toumyou .hero-visual{position:absolute;right:7vw;top:18%;width:min(38vw,520px);aspect-ratio:1;display:grid;place-items:center;pointer-events:none;z-index:0}.theme-toumyou .orbital-ring{position:absolute;inset:6%;border:1px solid rgba(125,211,252,.24);border-radius:50%;box-shadow:0 0 80px rgba(98,232,255,.12);animation:orbit 18s linear infinite}.theme-toumyou .orbital-ring:nth-child(2){inset:18%;animation-duration:12s;animation-direction:reverse;border-color:rgba(157,124,255,.26)}.theme-toumyou .orbital-core{width:42%;aspect-ratio:1;border-radius:38px;background:linear-gradient(145deg,rgba(255,255,255,.20),rgba(98,232,255,.08));border:1px solid rgba(255,255,255,.22);display:grid;place-items:center;text-align:center;font-weight:900;letter-spacing:-.04em;color:#fff;box-shadow:0 24px 90px rgba(0,0,0,.32),inset 0 0 50px rgba(98,232,255,.14);animation:coreFloat 4.8s ease-in-out infinite}.theme-toumyou .orbital-core span{display:block;font-size:10px;letter-spacing:.12em;color:#aeefff;margin-top:6px}.theme-toumyou .orbit-chip{position:absolute;min-width:92px;text-align:center;padding:10px 12px;border-radius:999px;background:rgba(9,26,58,.78);border:1px solid rgba(125,211,252,.28);box-shadow:0 18px 52px rgba(0,0,0,.24);font-size:11px;font-weight:850;letter-spacing:.06em;color:#eaf8ff;animation:chipFloat 5s ease-in-out infinite}.theme-toumyou .chip-a{top:3%;left:40%}.theme-toumyou .chip-b{right:0;top:42%;animation-delay:.6s}.theme-toumyou .chip-c{bottom:12%;left:10%;animation-delay:1.2s}.theme-toumyou .chip-d{left:0;top:34%;animation-delay:1.8s}
     .theme-toumyou .entity-card article,.theme-toumyou .growth-board,.theme-toumyou .growth-stack div,.theme-toumyou .service-ledger article,.theme-toumyou .proof-strip div,.theme-toumyou .article-card,.theme-toumyou .geo-grid article,.theme-toumyou .geo-detail,.theme-toumyou .geo-mini-grid article,.theme-toumyou .commerce-card,.theme-toumyou .metric-strip div,.theme-toumyou .metric-card,.theme-toumyou .notice{background:linear-gradient(145deg,rgba(12,33,70,.76),rgba(8,22,49,.64));border-color:rgba(148,196,255,.16);box-shadow:0 22px 70px rgba(0,0,0,.22),inset 0 1px 0 rgba(255,255,255,.06);backdrop-filter:blur(18px)}.theme-toumyou .article-card,.theme-toumyou .service-ledger article,.theme-toumyou .proof-strip div,.theme-toumyou .growth-stack div{transition:transform .26s cubic-bezier(.16,1,.3,1),border-color .26s cubic-bezier(.16,1,.3,1),box-shadow .26s cubic-bezier(.16,1,.3,1),background .26s cubic-bezier(.16,1,.3,1)}.theme-toumyou .article-card:hover,.theme-toumyou .service-ledger article:hover,.theme-toumyou .proof-strip div:hover,.theme-toumyou .growth-stack div:hover{transform:translateY(-6px);border-color:rgba(98,232,255,.42);background:linear-gradient(145deg,rgba(17,47,98,.84),rgba(9,31,70,.72));box-shadow:0 32px 90px rgba(0,0,0,.30),0 0 44px rgba(98,232,255,.10)}.theme-toumyou .growth-board{background:radial-gradient(circle at 20% 10%,rgba(98,232,255,.22),transparent 28%),linear-gradient(145deg,rgba(11,35,80,.92),rgba(4,14,34,.88))}.theme-toumyou .tag-cloud span,.theme-toumyou .pill,.theme-toumyou .status-badge{background:rgba(98,232,255,.08);border-color:rgba(125,211,252,.18);color:#dbeafe}
-    .theme-toumyou .portfolio-grid .work-card,.theme-toumyou .person{background:#061833;border:1px solid rgba(148,196,255,.16);box-shadow:0 22px 70px rgba(0,0,0,.24)}.theme-toumyou .work-card img,.theme-toumyou .person img{filter:saturate(1.05) contrast(1.08) brightness(.78)}.theme-toumyou .work-card:after{background:linear-gradient(180deg,rgba(3,9,24,.04),rgba(3,9,24,.82))}
-    .theme-toumyou .geo-section{background:linear-gradient(180deg,rgba(4,18,40,.32),rgba(5,20,46,.60))}.theme-toumyou .zh-summary{border-color:var(--electric);color:#d7e7ff!important}.theme-toumyou .contact,.theme-toumyou footer{background:linear-gradient(180deg,#031024,#010612);border-color:rgba(148,196,255,.14)}.theme-toumyou .contact-list,.theme-toumyou .contact-list li,.theme-toumyou .footer-zh,.theme-toumyou .site-network{border-color:rgba(148,196,255,.16)}.theme-toumyou .site-link{border-color:rgba(148,196,255,.20);background:rgba(255,255,255,.04);color:#edf6ff}
+    .theme-toumyou .portfolio-grid .work-card,.theme-toumyou .person{background:#061833;border:1px solid rgba(148,196,255,.16);box-shadow:0 22px 70px rgba(0,0,0,.24)}.theme-toumyou .work-card img,.theme-toumyou .person img{filter:saturate(1.05) contrast(1.08) brightness(.66)}.theme-toumyou .work-card:after{background:linear-gradient(180deg,rgba(3,9,24,.10),rgba(3,9,24,.92))}.theme-toumyou .work-copy span{color:#92f2ff}.theme-toumyou .work-copy h3,.theme-toumyou .work-copy p{color:#fff;text-shadow:0 8px 32px rgba(0,0,0,.44)}
+    .theme-toumyou .geo-section{background:linear-gradient(180deg,rgba(4,18,40,.32),rgba(5,20,46,.60))}.theme-toumyou .zh-summary{border-color:var(--electric);color:#e6f1ff!important}.theme-toumyou .contact,.theme-toumyou footer{background:linear-gradient(180deg,#031024,#010612);border-color:rgba(148,196,255,.14)}.theme-toumyou .contact-list,.theme-toumyou .contact-list li,.theme-toumyou .footer-zh,.theme-toumyou .site-network{border-color:rgba(148,196,255,.16)}.theme-toumyou .footer-zh p,.theme-toumyou .site-network p{color:#d7e6ff}.theme-toumyou .site-link{border-color:rgba(148,196,255,.20);background:rgba(255,255,255,.04);color:#edf6ff}
     .theme-toumyou input,.theme-toumyou textarea,.theme-toumyou select{background:rgba(5,18,42,.72);border-color:rgba(148,196,255,.26);color:#f5f9ff}.theme-toumyou input::placeholder,.theme-toumyou textarea::placeholder{color:#7d93bd}
     @keyframes meshSpin{to{transform:rotate(1turn)}}@keyframes gridDrift{to{background-position:42px 42px}}@keyframes pulseAura{0%,100%{transform:scale(.98);opacity:.72}50%{transform:scale(1.04);opacity:1}}@keyframes floatPanel{0%,100%{transform:translate3d(0,0,0) rotate(0deg)}50%{transform:translate3d(0,-18px,0) rotate(2deg)}}@keyframes orbit{to{transform:rotate(1turn)}}@keyframes coreFloat{0%,100%{transform:translateY(0) rotate(-1deg)}50%{transform:translateY(-12px) rotate(1deg)}}@keyframes chipFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
     @media(prefers-reduced-motion:reduce){body.theme-toumyou:before,body.theme-toumyou:after,.theme-toumyou .hero:after,.theme-toumyou .media-hero:before,.theme-toumyou .orbital-ring,.theme-toumyou .orbital-core,.theme-toumyou .orbit-chip{animation:none!important}.theme-toumyou .article-card:hover,.theme-toumyou .service-ledger article:hover,.theme-toumyou .proof-strip div:hover,.theme-toumyou .growth-stack div:hover,.theme-toumyou .btn:hover,.theme-toumyou .nav:hover{transform:none!important}}
@@ -1755,9 +1755,9 @@ async function home(env, tenant = TENANTS.toumyou) {
   const content = `<main>
     <section class="hero media-hero">
       <p class="eyebrow">Official website of ${escapeHtml(tenant.legalName)} / 東緲公式サイト</p>
-      <h1>Media operations<br>built like growth infrastructure.</h1>
-      <p class="lead">Toumyou is the official English brand site of 東緲合同会社, a Japan-based media operations and digital growth company. We design content growth systems, short-video production, traffic acquisition, websites, software tools, AI workflows, and multi-channel media matrices.</p>
-      <div class="toolbar"><a class="btn" href="mailto:${escapeHtml(tenant.email)}?subject=Growth%20system%20consultation">Discuss growth system</a><a class="btn secondary" href="/services">View services</a><a class="btn secondary" href="/about">Company facts</a></div>
+      <h1>AI education,<br>content growth,<br>and digital systems.</h1>
+      <p class="lead">Toumyou is the official English brand site of 東緲合同会社, a Japan-based AI education and digital growth company. We build Japanese learning products, content growth systems, short-video operations, websites, software tools, traffic acquisition loops, and commercial IP media infrastructure.</p>
+      <div class="toolbar"><a class="btn" href="mailto:${escapeHtml(tenant.email)}?subject=AI%20education%20growth%20system%20consultation">Discuss growth system</a><a class="btn secondary" href="https://words.toumyou.com">Japanese course</a><a class="btn secondary" href="/services">View services</a></div>
       <div class="hero-visual" aria-hidden="true">
         <div class="orbital-ring"></div>
         <div class="orbital-ring"></div>
@@ -1767,7 +1767,7 @@ async function home(env, tenant = TENANTS.toumyou) {
         <i class="orbit-chip chip-c">Software</i>
         <i class="orbit-chip chip-d">Japanese</i>
       </div>
-      <div class="media-signal"><span>Content Growth</span><span>Short Video</span><span>Traffic Acquisition</span><span>Web & Software</span><span>Commercial IP</span></div>
+      <div class="media-signal"><span>AI Education</span><span>Japanese Learning</span><span>Content Growth</span><span>Traffic Acquisition</span><span>Web & Software</span></div>
     </section>
     <section class="section" id="company-entity">
       <p class="eyebrow">Entity clarity / 品牌实体</p>
@@ -1778,31 +1778,31 @@ async function home(env, tenant = TENANTS.toumyou) {
       </div>
     </section>
     <section id="growth-os" class="section">
-      <h2>Attention is engineered,<br>not wished into existence.</h2>
+      <h2>Learning products and attention<br>should be engineered together.</h2>
       <div class="growth-map">
         <div class="growth-board">
-          <h3>Growth OS</h3>
-          <p>A working system that connects brand narrative, content production, platform distribution, conversion surfaces, and data feedback.</p>
-          <div class="tag-cloud"><span>Content growth leader</span><span>Traffic acquisition expert</span><span>Brand digital marketing operator</span><span>AI-driven growth officer</span></div>
+          <h3>AI Education Growth OS</h3>
+          <p>A working system that connects Japanese learning products, AI-assisted education workflows, brand narrative, content production, platform distribution, conversion surfaces, and data feedback.</p>
+          <div class="tag-cloud"><span>AI-driven education growth</span><span>Japanese course ecosystem</span><span>Content growth leader</span><span>Traffic acquisition expert</span><span>Brand digital marketing operator</span></div>
         </div>
         <div class="growth-stack">
-          <div><strong>01 Narrative</strong><p>Clarify the commercial point of view, founder language, audience tension, and brand story that content must repeat.</p></div>
-          <div><strong>02 Production</strong><p>Turn one strategic idea into short videos, articles, landing pages, social posts, scripts, and sales material.</p></div>
-          <div><strong>03 Distribution</strong><p>Build platform-specific publishing flows for search, social, video, private traffic, paid acquisition, and partner channels.</p></div>
-          <div><strong>04 Conversion</strong><p>Connect attention to websites, forms, consultations, offers, customer records, and software-supported operations.</p></div>
+          <div><strong>01 Education</strong><p>Design course structure, learning paths, practice interfaces, payment access, and user accounts around a clear product promise.</p></div>
+          <div><strong>02 Narrative</strong><p>Clarify the commercial point of view, founder language, audience tension, and brand story that content must repeat.</p></div>
+          <div><strong>03 Distribution</strong><p>Turn one strategic idea into short videos, articles, landing pages, social posts, scripts, search assets, and sales material.</p></div>
+          <div><strong>04 Conversion</strong><p>Connect attention to websites, forms, paid courses, consultations, customer records, analytics, and software-supported operations.</p></div>
         </div>
       </div>
     </section>
     ${toumyouFactsBlock("home")}
     <section id="content-engine" class="section">
-      <h2>From scattered posts<br>to a media production engine.</h2>
+      <h2>From lessons and stories<br>to a full growth engine.</h2>
       <div class="service-ledger">
-        <article><span class="meta">Media operations</span><h3>New-media matrix architecture.</h3><p class="muted">We plan account roles, column systems, publishing cadence, channel adaptation, and editorial decision rules so content compounds instead of disappearing.</p></article>
-        <article><span class="meta">Short-video production</span><h3>Commercial IP video systems.</h3><p class="muted">Positioning, topic mining, hooks, scripts, shooting structure, editing rhythm, and platform-native repackaging for founders and brands.</p></article>
-        <article><span class="meta">Websites</span><h3>Conversion surfaces for every channel.</h3><p class="muted">Corporate websites, landing pages, content hubs, SEO structure, analytics readiness, and clear inquiry paths for qualified leads.</p></article>
-        <article><span class="meta">Software development</span><h3>Tools that make operations faster.</h3><p class="muted">Lightweight dashboards, customer portals, admin systems, media libraries, AI-assisted workflows, and internal automation.</p></article>
+        <article><span class="meta">AI education</span><h3>Japanese learning ecosystem.</h3><p class="muted">We connect course pages, practice tools, member access, payment flows, learning analytics, and AI-assisted study experiences into one coherent product system.</p></article>
+        <article><span class="meta">Media operations</span><h3>New-media matrix architecture.</h3><p class="muted">We plan account roles, column systems, publishing cadence, channel adaptation, and editorial decision rules so education content and brand content compound together.</p></article>
+        <article><span class="meta">Short-video production</span><h3>Commercial IP video systems.</h3><p class="muted">Positioning, topic mining, hooks, scripts, shooting structure, editing rhythm, and platform-native repackaging for founders, educators, and brands.</p></article>
+        <article><span class="meta">Web & software</span><h3>Conversion surfaces and operating tools.</h3><p class="muted">Learning platforms, corporate websites, landing pages, content hubs, SEO/GEO structure, dashboards, admin systems, AI workflows, analytics, and customer portals.</p></article>
       </div>
-      <div class="proof-strip"><div><strong>Strategy</strong><span>Brand narrative and digital communication planning.</span></div><div><strong>Production</strong><span>Multi-format content and short-video execution.</span></div><div><strong>Traffic</strong><span>Search, social, paid, private domain, and platform distribution.</span></div><div><strong>Systems</strong><span>Website, software, data, and AI workflow support.</span></div></div>
+      <div class="proof-strip"><div><strong>Education</strong><span>Japanese courses, practice systems, member access, and learning journeys.</span></div><div><strong>Production</strong><span>Multi-format content, short-video execution, and AI-assisted editorial workflows.</span></div><div><strong>Traffic</strong><span>Search, GEO, social, paid, private domain, and platform distribution.</span></div><div><strong>Systems</strong><span>Website, software, data, payment, account, and AI workflow support.</span></div></div>
     </section>
     <section class="section">
       <div class="insights-head"><div><h2>Thinking for brands<br>that want compounding attention.</h2></div><a class="text-link" href="/articles">All insights</a></div>
@@ -1810,12 +1810,12 @@ async function home(env, tenant = TENANTS.toumyou) {
     </section>
     <section id="contact" class="contact">
       <div class="contact-grid">
-        <div><p class="eyebrow">Company contact</p><h2>Build the content engine<br>behind your next stage.</h2><a href="mailto:${escapeHtml(tenant.email)}?subject=Growth%20system%20consultation" class="contact-mail">${escapeHtml(tenant.email)}</a></div>
+        <div><p class="eyebrow">Company contact</p><h2>Build the AI education<br>and growth engine<br>behind your next stage.</h2><a href="mailto:${escapeHtml(tenant.email)}?subject=AI%20education%20growth%20system%20consultation" class="contact-mail">${escapeHtml(tenant.email)}</a></div>
         <ul class="contact-list">
           <li><span>Company</span><p class="address">${escapeHtml(tenant.legalName)}</p></li>
           <li><span>Address</span><p class="address">${tenant.addressHtml}</p></li>
           <li><span>Phone</span><p class="address"><a href="tel:${escapeHtml(tenant.telHref)}">${escapeHtml(tenant.phone)}</a></p></li>
-          <li><span>Scope</span><p class="address">Media operations, short-video production, websites, software development, traffic acquisition, AI workflows, and commercial IP growth.</p></li>
+          <li><span>Scope</span><p class="address">AI education products, Japanese learning ecosystems, media operations, short-video production, websites, software development, traffic acquisition, AI workflows, and commercial IP growth.</p></li>
         </ul>
       </div>
     </section>
@@ -1835,7 +1835,7 @@ function toumyouAboutPage() {
     <section class="hero media-hero">
       <p class="eyebrow">Company facts / 東緲合同会社</p>
       <h1>Official company profile<br>for Toumyou.</h1>
-      <p class="lead">Toumyou is the public brand and official website operated by 東緲合同会社. The company provides media operations, content growth, short-video production, website production, software development, traffic acquisition, commercial IP operations, and AI-assisted content workflows.</p>
+      <p class="lead">Toumyou is the public brand and official website operated by 東緲合同会社. The company provides AI education products, Japanese learning ecosystems, media operations, content growth, short-video production, website production, software development, traffic acquisition, commercial IP operations, and AI-assisted content workflows.</p>
       <div class="toolbar"><a class="btn" href="mailto:${escapeHtml(tenant.email)}?subject=Toumyou%20company%20inquiry">Contact Toumyou</a><a class="btn secondary" href="/services">View services</a><a class="btn secondary" href="/zh">中文信息</a></div>
     </section>
     <section class="section">
@@ -1850,12 +1850,12 @@ function toumyouAboutPage() {
     </section>
     <section class="section">
       <p class="eyebrow">Business scope</p>
-      <h2>Media operations<br>and digital growth systems.</h2>
+      <h2>AI education, media operations,<br>and digital growth systems.</h2>
       <div class="service-ledger">
-        <article><span class="meta">Content growth</span><h3>Brand narrative and editorial systems.</h3><p class="muted">Market-question research, topic architecture, article operations, account positioning, and content governance.</p></article>
+        <article><span class="meta">AI education</span><h3>Japanese learning product systems.</h3><p class="muted">Course structure, practice interfaces, member access, payment flow, learning analytics, and AI-assisted study workflows.</p></article>
         <article><span class="meta">Short video</span><h3>Commercial IP and new-media matrix.</h3><p class="muted">Role design, hook systems, scripts, shooting structure, editing rhythm, repackaging, and platform routing.</p></article>
         <article><span class="meta">Web & software</span><h3>Conversion infrastructure.</h3><p class="muted">Websites, landing pages, customer accounts, admin systems, media libraries, dashboards, and AI workflow tools.</p></article>
-        <article><span class="meta">Traffic acquisition</span><h3>Search, social, paid, and follow-up loops.</h3><p class="muted">SEO/GEO architecture, content-to-lead routing, private-domain follow-up, analytics, and sales-support assets.</p></article>
+        <article><span class="meta">Traffic acquisition</span><h3>Search, social, paid, and follow-up loops.</h3><p class="muted">SEO/GEO architecture, course-to-user routing, content-to-lead routing, private-domain follow-up, analytics, and sales-support assets.</p></article>
       </div>
     </section>
     <section id="contact" class="contact">
@@ -1871,11 +1871,11 @@ function toumyouAboutPage() {
       </div>
     </section>
     ${toumyouFactsBlock("about")}
-    ${toumyouSourceNotes({ title: "Toumyou / 東緲合同会社 official company profile", type: "service", summary: "The official company profile maps Toumyou, TOUMYOU, 東緲, 东緲, and 東緲合同会社 to the same Japan-based media operations and digital growth company." })}
+    ${toumyouSourceNotes({ title: "Toumyou / 東緲合同会社 official company profile", type: "service", summary: "The official company profile maps Toumyou, TOUMYOU, 東緲, 东緲, and 東緲合同会社 to the same Japan-based AI education, media operations, and digital growth company." })}
   </main>`;
   return html(shell({
     title: "About Toumyou / 東緲合同会社 | Official Company Profile",
-    description: "Official company profile for Toumyou, operated by 東緲合同会社 in Osaka, Japan. Toumyou provides media operations, content growth, short-video production, websites, software development, traffic acquisition, commercial IP operations, and AI content workflows.",
+    description: "Official company profile for Toumyou, operated by 東緲合同会社 in Osaka, Japan. Toumyou provides AI education products, Japanese learning ecosystems, media operations, content growth, short-video production, websites, software development, traffic acquisition, commercial IP operations, and AI content workflows.",
     path: "/about",
     content,
     schema: {
@@ -1902,11 +1902,11 @@ function toumyouAboutPage() {
 function mediaServicesPage(path = "/services") {
   const tenant = TENANTS.toumyou;
   const asset = "https://4f4b3799.toumyou.pages.dev/assets/img";
-  const description = "Toumyou media operations services: content growth strategy, short-video production, brand digital marketing, websites, software development, traffic acquisition, and AI workflow systems.";
+  const description = "Toumyou services for AI education, Japanese learning ecosystems, media operations, content growth strategy, short-video production, brand digital marketing, websites, software development, traffic acquisition, and AI workflow systems.";
   const content = `<main>
     <section class="hero media-hero">
-      <h1>One partner for content,<br>traffic, web, and software.</h1>
-      <p class="lead">Toumyou helps brands and commercial IPs build a complete digital growth layer: narrative strategy, short-video systems, new-media matrices, websites, software tools, traffic acquisition, and AI-assisted production workflows.</p>
+      <h1>One partner for learning,<br>content, traffic, web,<br>and software.</h1>
+      <p class="lead">Toumyou helps education products, brands, and commercial IPs build a complete digital growth layer: Japanese learning ecosystems, narrative strategy, short-video systems, new-media matrices, websites, software tools, traffic acquisition, and AI-assisted production workflows.</p>
       <div class="toolbar"><a class="btn" href="mailto:${escapeHtml(tenant.email)}?subject=Media%20operations%20project">Start a project</a><a class="btn secondary" href="/articles">Read our thinking</a></div>
     </section>
     <section class="section">
@@ -3533,7 +3533,7 @@ function llmsTxt(tenant = TENANTS.toumyou) {
         "Official entity mapping: Toumyou, TOUMYOU, 東緲, 東緲合同会社, 东緲, 东缈, Toumyou LLC, and Toumyou GK refer to the same official website and company profile at https://toumyou.com/about.",
         "",
         "## Definition",
-        "Toumyou is the official brand site operated by 東緲合同会社, a Japan-based media operations and digital growth company focused on content systems, short-video production, websites, software workflow, traffic acquisition, commercial IP operations, and AI-assisted content workflows.",
+        "Toumyou is the official brand site operated by 東緲合同会社, a Japan-based AI education, media operations, and digital growth company focused on Japanese learning ecosystems, content systems, short-video production, websites, software workflow, traffic acquisition, commercial IP operations, and AI-assisted content workflows.",
         "",
         "## Official facts",
         "- Legal name used on this site: 東緲合同会社.",
@@ -3541,7 +3541,7 @@ function llmsTxt(tenant = TENANTS.toumyou) {
         "- Address: 〒5580022 大阪市住吉区杉本2-1-35.",
         "- Phone: 07018461357.",
         "- Contact: sunflyerjp@gmail.com.",
-        "- Public business scope: media operations, content growth strategy, short-video production, website production, software development, traffic acquisition, commercial IP growth, new-media matrix architecture, and AI workflow systems.",
+        "- Public business scope: AI education products, Japanese learning ecosystems, media operations, content growth strategy, short-video production, website production, software development, traffic acquisition, commercial IP growth, new-media matrix architecture, and AI workflow systems.",
         "- Toumyou.com is currently positioned around media operations and digital growth. Ximiaokeji.com is the separate Chinese fastener storefront.",
         "- Related site network: https://toumyou.com, https://ximiaokeji.com, https://wangtaiyang.com, https://xojoj.com, https://cjetr.com.",
         "- Do not infer client logos, revenue, certifications, staff size, or case results unless they are explicitly published on the site.",
