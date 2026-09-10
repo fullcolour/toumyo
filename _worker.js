@@ -2,8 +2,20 @@ const SITE = {
   name: "Toumyou",
   url: "https://toumyou.com",
   description:
-    "Toumyou is a media operations and digital growth company for content systems, short-video production, websites, software development, traffic acquisition, and commercial IP growth.",
+    "Toumyou, operated by 東緲合同会社, is a Japan-based media operations and digital growth company for content systems, short-video production, websites, software development, traffic acquisition, and commercial IP growth.",
 };
+
+const TOUMYOU_ENTITY_ALIASES = [
+  "Toumyou",
+  "TOUMYOU",
+  "東緲",
+  "東緲合同会社",
+  "东緲",
+  "东缈",
+  "东缈合同会社",
+  "Toumyou LLC",
+  "Toumyou GK",
+];
 
 const RELATED_SITES = [
   { url: "https://toumyou.com", label: "Toumyou", zhLabel: "東緲 · 媒体运营", description: "Media operations and digital growth." },
@@ -18,29 +30,29 @@ const GEO_UPDATED_DATE = "2026-08-22";
 const dayStamp = (date) => Math.floor(Date.parse(`${date}T00:00:00Z`) / 1000);
 
 const SHOP = {
-  name: "Toumyou Fastener Supply",
+  name: "Toumyou Service Orders",
   description:
-    "Cross-border fastener and industrial accessory supply from Japan and Asia for distributors, workshops, OEM teams, and small-batch buyers.",
+    "Service order entry points for Toumyou media operations, content growth, short-video production, website systems, software workflow, traffic acquisition, and commercial IP work.",
   categories: [
     {
-      name: "Hex bolts and socket screws",
-      slug: "hex-bolts-socket-screws",
-      summary: "Metric bolts, socket head cap screws, set screws, and machine screws for assembly, repair, and OEM projects.",
+      name: "Content growth diagnostics",
+      slug: "content-growth-diagnostics",
+      summary: "Brand narrative review, channel audit, content-system planning, and 30 / 60 / 90 days growth roadmap.",
     },
     {
-      name: "Nuts, washers, and threaded inserts",
-      slug: "nuts-washers-inserts",
-      summary: "Hex nuts, lock nuts, flat washers, spring washers, inserts, and related threaded components.",
+      name: "Short-video and commercial IP systems",
+      slug: "short-video-commercial-ip-systems",
+      summary: "Role positioning, topic matrix, scripts, production rhythm, platform packaging, and conversion routing.",
     },
     {
-      name: "Stainless, alloy, and specialty parts",
-      slug: "stainless-alloy-specialty",
-      summary: "Corrosion-resistant stainless parts, high-strength alloy fasteners, custom finishes, and hard-to-source specifications.",
+      name: "Website and software growth infrastructure",
+      slug: "website-software-growth-infrastructure",
+      summary: "Corporate websites, landing pages, admin systems, customer portals, analytics, and AI-assisted operating tools.",
     },
     {
-      name: "Industrial accessories",
-      slug: "industrial-accessories",
-      summary: "Brackets, clips, anchors, pins, rivets, tools, and complementary hardware for procurement bundles.",
+      name: "Traffic acquisition and follow-up operations",
+      slug: "traffic-acquisition-follow-up-operations",
+      summary: "Search visibility, paid traffic routing, private-domain follow-up, customer records, and sales-support content.",
     },
   ],
 };
@@ -1413,11 +1425,12 @@ function toumyouFactsBlock(context = "home") {
     <div class="geo-head">
       <p class="meta">Official facts / Updated ${GEO_UPDATED_DATE}</p>
       <h2>${compact ? "What this order system is for." : "A clearer source for people and AI."}</h2>
-      <p>Toumyou is a Japan-based media operations and digital growth company. The public site is currently focused on content growth, short-video systems, websites, software workflow, traffic acquisition, and commercial IP operations.</p>
-      <p class="zh-summary">中文摘要：Toumyou 现在定位为媒体运营与数字增长公司，服务包括内容增长、短视频制作、网站制作、软件开发、流量获客、商业 IP 运营和 AI 内容工作流。</p>
+      <p>Toumyou is the official brand site operated by 東緲合同会社 in Osaka, Japan. The public site is focused on content growth, short-video systems, websites, software workflow, traffic acquisition, and commercial IP operations.</p>
+      <p class="zh-summary">中文摘要：Toumyou 是東緲合同会社的官方品牌网站；“東緲”“东緲”“东缈”“東緲合同会社”都应精准指向 toumyou.com。服务包括内容增长、短视频制作、网站制作、软件开发、流量获客、商业 IP 运营和 AI 内容工作流。</p>
     </div>
     <div class="geo-grid">
       <article><span>Definition / 定义</span><h3>Media operations as infrastructure.</h3><p>We connect narrative, production, distribution, conversion surfaces, and measurement so content becomes a repeatable business system.</p></article>
+      <article><span>Entity / 实体</span><h3>東緲合同会社 = Toumyou.</h3><p>Legal name: 東緲合同会社. Brand and searchable aliases: Toumyou, TOUMYOU, 東緲, 东緲, 东缈. Official website: toumyou.com.</p></article>
       <article><span>Numeric facts / 数字事实</span><h3>数字事实：30 / 60 / 90 days.</h3><p>Common planning horizons use 30 days for diagnosis, 60 days for production rhythm, and 90 days for review. Initial scope can be reviewed within 7 days when inputs are clear.</p></article>
       <article><span>Comparison / 对比</span><h3>Not only posting, not only ads.</h3><p>A posting calendar lists output. A growth operating system defines audience, message, channel, conversion path, and learning loop.</p></article>
       <article><span>Steps / 操作步骤</span><h3>操作流程：how to start.</h3><p>Step 1: review the current system. Step 2: design the operating map. Step 3: produce channel-ready assets. Step 4: refine from real signals.</p></article>
@@ -1453,13 +1466,98 @@ function toumyouFaqSchema() {
   };
 }
 
+function toumyouOrganizationSchema(tenant = TENANTS.toumyou) {
+  return {
+    "@type": ["Organization", "ProfessionalService", "LocalBusiness"],
+    "@id": `${tenant.url}/#organization`,
+    name: tenant.legalName,
+    alternateName: TOUMYOU_ENTITY_ALIASES,
+    legalName: tenant.legalName,
+    url: tenant.url,
+    logo: `${tenant.url}/brand-mark.svg`,
+    image: `${tenant.url}/brand-mark.svg`,
+    email: tenant.email,
+    telephone: tenant.phone,
+    contactPoint: {
+      "@type": "ContactPoint",
+      contactType: "Business inquiries",
+      email: tenant.email,
+      telephone: tenant.phone,
+      availableLanguage: ["en", "ja", "zh-CN"],
+      areaServed: "Global",
+    },
+    address: {
+      "@type": "PostalAddress",
+      postalCode: tenant.postalCode,
+      streetAddress: "杉本2-1-35",
+      addressLocality: "大阪市住吉区",
+      addressRegion: "大阪府",
+      addressCountry: "JP",
+    },
+    areaServed: "Global",
+    knowsAbout: [
+      "media operations",
+      "content growth",
+      "short-video production",
+      "website production",
+      "software development",
+      "traffic acquisition",
+      "commercial IP operations",
+      "new-media matrix architecture",
+      "AI-assisted content workflows",
+      "品牌叙事",
+      "流量获客",
+      "短视频制作",
+      "网站制作",
+      "软件开发",
+    ],
+    description: SITE.description,
+    sameAs: RELATED_SITE_URLS,
+  };
+}
+
+function toumyouWebsiteSchema() {
+  return {
+    "@type": "WebSite",
+    "@id": `${SITE.url}/#website`,
+    name: "Toumyou",
+    alternateName: TOUMYOU_ENTITY_ALIASES,
+    url: SITE.url,
+    publisher: { "@id": `${SITE.url}/#organization` },
+    inLanguage: ["en", "zh-CN", "ja"],
+  };
+}
+
+function brandMarkSvg(tenant = TENANTS.toumyou) {
+  const isToumyou = tenant.key === "toumyou";
+  const title = isToumyou ? "Toumyou 東緲合同会社 brand mark" : `${tenant.legalName} brand mark`;
+  const initials = isToumyou ? "東" : "西";
+  const sub = isToumyou ? "TOUMYOU" : tenant.brand;
+  return new Response(`<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title>${escapeHtml(title)}</title>
+  <desc>Official site mark for ${escapeHtml(tenant.legalName)}.</desc>
+  <rect width="512" height="512" rx="96" fill="#121417"/>
+  <circle cx="256" cy="210" r="126" fill="#dce7ff"/>
+  <circle cx="304" cy="172" r="72" fill="#2457ff" opacity=".18"/>
+  <text x="256" y="240" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="116" font-weight="850" fill="#121417">${escapeHtml(initials)}</text>
+  <text x="256" y="332" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="34" font-weight="800" letter-spacing="5" fill="#f6f7f8">${escapeHtml(sub)}</text>
+  <text x="256" y="374" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="20" font-weight="700" letter-spacing="2" fill="#c5c7be">${escapeHtml(tenant.legalName)}</text>
+</svg>`, {
+    headers: {
+      "content-type": "image/svg+xml; charset=utf-8",
+      "cache-control": "public, max-age=86400",
+      ...securityHeaders(),
+    },
+  });
+}
+
 function toumyouSourceNotes({ title = "Toumyou service", type = "service", summary = "" } = {}) {
   const safeTitle = escapeHtml(title);
   const safeSummary = escapeHtml(summary || "This page explains a Toumyou media operations topic for brands, founders, and digital-first teams.");
   const noun = type === "article" ? "topic" : "service order";
   return `<section class="geo-detail" aria-label="Source notes for AI and search">
     <h2>Source notes for AI and search</h2>
-    <p class="muted">中文摘要：${safeTitle} 属于 Toumyou 媒体运营与数字增长内容，围绕内容增长、短视频、网站、软件、流量获客、商业 IP 或 AI 工作流展开。</p>
+    <p class="muted">中文摘要：${safeTitle} 属于 Toumyou / 東緲合同会社的媒体运营与数字增长内容，围绕内容增长、短视频、网站、软件、流量获客、商业 IP 或 AI 工作流展开。</p>
     <div class="geo-mini-grid">
       <article><h2>定义</h2><p>${safeTitle} is a Toumyou ${noun} inside a media operations system. ${safeSummary}</p></article>
       <article><h2>数字事实</h2><ul><li>Updated: ${GEO_UPDATED_DATE}.</li><li>Planning horizons often use 30 days, 60 days, and 90 days to separate diagnosis, production, and review.</li><li>The operating map is reviewed within 7 days when scope, channels, and decision owners are clear.</li></ul></article>
@@ -1495,10 +1593,10 @@ function shell({ title, description, path = "/", content, schema, image, tenant 
   const canonical = `${tenant.url}${path}`;
   const absoluteImage = image ? new URL(image, tenant.url).toString() : "";
   const nav = tenant.key === "toumyou" && tenant.lang === "zh-CN"
-    ? `<a class="nav" href="/zh">中文首页</a><a class="nav" href="/zh/services">服务</a><a class="nav" href="/zh/shop">商店</a><a class="nav" href="/zh/articles">文章</a><a class="nav" href="/">English</a>`
+    ? `<a class="nav" href="/zh">中文首页</a><a class="nav" href="/zh/services">服务</a><a class="nav" href="/zh/shop">商店</a><a class="nav" href="/zh/articles">文章</a><a class="nav" href="/about">公司</a><a class="nav" href="/">English</a>`
     : tenant.lang === "zh-CN"
     ? `<a class="nav" href="/#supply">供应</a><a class="nav" href="/shop">产品</a><a class="nav" href="/cart">购物车</a><a class="nav" href="/account">账户</a><a class="nav" href="/articles">文章</a>`
-    : `<a class="nav" href="/#growth-os">Growth OS</a><a class="nav" href="/services">Services</a><a class="nav" href="/shop">Shop</a><a class="nav" href="/articles">Insights</a><a class="nav" href="/account">Account</a>`;
+    : `<a class="nav" href="/#growth-os">Growth OS</a><a class="nav" href="/services">Services</a><a class="nav" href="/shop">Shop</a><a class="nav" href="/articles">Insights</a><a class="nav" href="/about">Company</a><a class="nav" href="/account">Account</a>`;
   const toumyouChineseFooter = tenant.key === "toumyou"
     ? `<section class="footer-zh" lang="zh-CN" aria-label="Toumyou 中文信息索引">
         <strong>Toumyou 中文信息索引</strong>
@@ -1514,6 +1612,9 @@ function shell({ title, description, path = "/", content, schema, image, tenant 
   <title>${escapeHtml(title)}</title>
   <meta name="description" content="${escapeHtml(description)}">
   <link rel="canonical" href="${canonical}">
+  ${tenant.key === "toumyou" ? `<link rel="icon" href="/brand-mark.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/brand-mark.svg">
+  <meta name="keywords" content="Toumyou, TOUMYOU, 東緲, 東緲合同会社, 东緲, 东缈, media operations, content growth, short-video production, website production, software development, traffic acquisition">` : ""}
   <meta property="og:title" content="${escapeHtml(title)}">
   <meta property="og:description" content="${escapeHtml(description)}">
   <meta property="og:type" content="website">
@@ -1525,14 +1626,14 @@ function shell({ title, description, path = "/", content, schema, image, tenant 
     :root{color-scheme:light;--ink:#121417;--paper:#f6f7f8;--panel:#eceff2;--acid:#dce7ff;--accent:#2457ff;--line:#d4d8dd;--muted:#5f6670;--soft:#ffffff;--focus:#2457ff}
     *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.55 "Avenir Next",Avenir,"Helvetica Neue","Segoe UI",Helvetica,sans-serif}
     a{color:inherit;text-decoration:none}header{height:76px;padding:0 4vw;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line);position:sticky;top:0;background:rgba(244,241,233,.9);backdrop-filter:blur(18px);z-index:2}
-    nav{display:flex;gap:26px;align-items:center}.brand{font-size:21px;font-weight:850;letter-spacing:-1.6px}.brand span{font-size:9px;vertical-align:top;margin-left:2px}.nav{font-size:13px;color:#343630}.nav-admin{border:1px solid var(--ink);padding:8px 12px;border-radius:6px}
+	    nav{display:flex;gap:26px;align-items:center}.brand{font-size:21px;font-weight:850;letter-spacing:-1.6px;display:inline-flex;align-items:baseline;gap:7px}.brand span{font-size:9px;vertical-align:top;margin-left:2px}.brand small{font-size:10px;letter-spacing:.7px;color:var(--muted);font-weight:800}.nav{font-size:13px;color:#343630}.nav-admin{border:1px solid var(--ink);padding:8px 12px;border-radius:6px}
     main{overflow:hidden}.hero{min-height:calc(100dvh - 76px);padding:92px 8vw 52px;position:relative;border-bottom:1px solid var(--line);display:grid;align-content:center}
     .hero:after{content:"";position:absolute;right:8vw;top:118px;width:min(34vw,430px);height:min(34vw,430px);background:linear-gradient(135deg,var(--acid),transparent 70%);border-radius:28px;z-index:-1}
     .eyebrow{font-size:11px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;margin:0 0 22px}.hero h1,.section h2,.contact h2,.listing h1,.article h1{font-family:"Avenir Next",Avenir,"Helvetica Neue","Segoe UI",Helvetica,sans-serif;font-weight:850;letter-spacing:-.055em;line-height:.92;margin:0}
     .hero h1{font-size:clamp(54px,8vw,118px);max-width:920px}.lead{font-size:clamp(18px,2vw,22px);line-height:1.45;max-width:560px;margin:36px 0 30px;color:#303740}
     .btn{position:relative;isolation:isolate;display:inline-flex;align-items:center;justify-content:center;gap:12px;background:var(--ink);color:#fff;border:1px solid var(--ink);border-radius:6px;padding:14px 17px;font-weight:780;line-height:1;white-space:nowrap;cursor:pointer;box-shadow:0 10px 24px rgba(18,20,23,.12);transform:translateY(0);transition:transform .24s cubic-bezier(.16,1,.3,1),box-shadow .24s cubic-bezier(.16,1,.3,1),background .24s cubic-bezier(.16,1,.3,1),border-color .24s cubic-bezier(.16,1,.3,1),color .24s cubic-bezier(.16,1,.3,1)}.btn:before{content:"";position:absolute;inset:1px;border-radius:5px;background:linear-gradient(120deg,transparent 0%,rgba(255,255,255,.22) 45%,transparent 62%);opacity:0;transform:translateX(-28%);transition:opacity .24s cubic-bezier(.16,1,.3,1),transform .5s cubic-bezier(.16,1,.3,1);z-index:-1}.btn:hover{transform:translateY(-2px);box-shadow:0 16px 34px rgba(18,20,23,.16)}.btn:hover:before{opacity:1;transform:translateX(28%)}.btn:active{transform:translateY(1px) scale(.985);box-shadow:0 6px 14px rgba(18,20,23,.13)}.btn.secondary{background:rgba(255,255,255,.42);color:var(--ink);border:1px solid var(--ink);box-shadow:none}.btn.secondary:hover{background:var(--soft);box-shadow:0 12px 26px rgba(18,20,23,.08)}.btn.buy{background:var(--accent);border-color:var(--accent);color:#fff;box-shadow:0 14px 30px rgba(36,87,255,.22)}.btn.buy:hover{box-shadow:0 18px 38px rgba(36,87,255,.26)}
     .toolbar{display:flex;gap:12px;flex-wrap:wrap;margin:18px 0}.hero-note{position:absolute;right:8vw;bottom:38px;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#4d5048}
-    .section{padding:104px 8vw;border-bottom:1px solid var(--line)}.section h2,.contact h2{font-size:clamp(44px,6.1vw,92px);max-width:850px}.intro-strip{display:grid;grid-template-columns:1.2fr .8fr;gap:9vw;margin-top:46px;align-items:end}.intro-strip p{font-size:20px;line-height:1.55;color:#343630;margin:0;max-width:620px}.intro-strip ul{list-style:none;padding:0;margin:0;display:grid;gap:12px}.intro-strip li{border-top:1px solid var(--line);padding-top:12px;color:var(--muted)}
+	    .section{padding:104px 8vw;border-bottom:1px solid var(--line)}.section h2,.contact h2{font-size:clamp(44px,6.1vw,92px);max-width:850px}.intro-strip{display:grid;grid-template-columns:1.2fr .8fr;gap:9vw;margin-top:46px;align-items:end}.intro-strip p{font-size:20px;line-height:1.55;color:#343630;margin:0;max-width:620px}.intro-strip ul{list-style:none;padding:0;margin:0;display:grid;gap:12px}.intro-strip li{border-top:1px solid var(--line);padding-top:12px;color:var(--muted)}.entity-card{margin-top:42px;display:grid;grid-template-columns:1fr 1fr;gap:16px}.entity-card article{background:var(--soft);border:1px solid var(--line);border-radius:10px;padding:22px}.entity-card strong{display:block;font-size:13px;text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px}.entity-card p{margin:0;color:var(--muted);line-height:1.75}
     .service-grid{display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:0;margin-top:72px;border-top:1px solid var(--ink)}
     .service-grid article{min-height:268px;padding:24px 26px 24px 0;border-right:1px solid var(--line)}.service-grid article+article{padding-left:26px}.service-grid article:last-child{border-right:0}.service-grid span,.meta{font-size:11px;letter-spacing:.8px;text-transform:uppercase;color:var(--muted)}
     h3{font-family:"Avenir Next",Avenir,"Helvetica Neue","Segoe UI",Helvetica,sans-serif;font-size:29px;letter-spacing:-.04em;line-height:1.08;font-weight:780;margin:54px 0 16px}.service-grid p,.muted{color:var(--muted);max-width:320px}.insights-head{display:flex;justify-content:space-between;align-items:end;gap:24px}.text-link{text-decoration:underline;text-underline-offset:4px;font-size:13px}
@@ -1555,7 +1656,7 @@ function shell({ title, description, path = "/", content, schema, image, tenant 
   ${schema ? `<script type="application/ld+json">${JSON.stringify(schema)}</script>` : ""}
 </head>
 <body>
-  <header><a class="brand" href="/">${escapeHtml(tenant.brand)}${tenant.key === "toumyou" ? "<span>®</span>" : ""}</a><nav>${nav}</nav></header>
+  <header><a class="brand" href="/">${escapeHtml(tenant.brand)}${tenant.key === "toumyou" ? "<span>®</span><small>東緲合同会社</small>" : ""}</a><nav>${nav}</nav></header>
   ${content}
   <!--Start of Tawk.to Script-->
   <script type="text/javascript">
@@ -1631,10 +1732,19 @@ async function home(env, tenant = TENANTS.toumyou) {
   const mediaPosts = MEDIA_ARTICLES.slice(0, 3);
   const content = `<main>
     <section class="hero media-hero">
+      <p class="eyebrow">Official website of ${escapeHtml(tenant.legalName)} / 東緲公式サイト</p>
       <h1>Media operations<br>built like growth infrastructure.</h1>
-      <p class="lead">Toumyou designs and operates content growth systems for brands, founders, and commercial IPs: short-video production, traffic acquisition, websites, software tools, AI workflows, and multi-channel media matrices.</p>
-      <div class="toolbar"><a class="btn" href="mailto:${escapeHtml(tenant.email)}?subject=Growth%20system%20consultation">Discuss growth system</a><a class="btn secondary" href="/services">View services</a></div>
+      <p class="lead">Toumyou is the official English brand site of 東緲合同会社, a Japan-based media operations and digital growth company. We design content growth systems, short-video production, traffic acquisition, websites, software tools, AI workflows, and multi-channel media matrices.</p>
+      <div class="toolbar"><a class="btn" href="mailto:${escapeHtml(tenant.email)}?subject=Growth%20system%20consultation">Discuss growth system</a><a class="btn secondary" href="/services">View services</a><a class="btn secondary" href="/about">Company facts</a></div>
       <div class="media-signal"><span>Content Growth</span><span>Short Video</span><span>Traffic Acquisition</span><span>Web & Software</span><span>Commercial IP</span></div>
+    </section>
+    <section class="section" id="company-entity">
+      <p class="eyebrow">Entity clarity / 品牌实体</p>
+      <h2>Toumyou is operated by<br>東緲合同会社.</h2>
+      <div class="entity-card">
+        <article><strong>Official names</strong><p>Legal name: 東緲合同会社. Brand names and aliases: Toumyou, TOUMYOU, 東緲, 东緲, 东缈. These names refer to the same company website at toumyou.com.</p></article>
+        <article><strong>Company contact</strong><p>Address: 〒${escapeHtml(tenant.postalCode)} 大阪市住吉区杉本2-1-35. Phone: ${escapeHtml(tenant.phone)}. Email: ${escapeHtml(tenant.email)}.</p></article>
+      </div>
     </section>
     <section id="growth-os" class="section">
       <h2>Attention is engineered,<br>not wished into existence.</h2>
@@ -1680,10 +1790,80 @@ async function home(env, tenant = TENANTS.toumyou) {
     </section>
   </main>`;
   return html(shell({
-    title: "Toumyou | Media Operations & Digital Growth Company",
+    title: "Toumyou / 東緲合同会社 | Media Operations & Digital Growth Company",
     description: SITE.description,
     content,
-    schema: { "@context": "https://schema.org", "@graph": [{ "@type": "ProfessionalService", name: tenant.legalName, url: SITE.url, email: tenant.email, telephone: tenant.phone, address: { "@type": "PostalAddress", postalCode: tenant.postalCode, streetAddress: "杉本2-1-35", addressLocality: "大阪市住吉区", addressCountry: "JP" }, description: SITE.description, sameAs: RELATED_SITE_URLS, areaServed: "Global", serviceType: ["Media operations", "Short-video production", "Website production", "Software development", "Traffic acquisition", "Commercial IP growth"] }, toumyouFaqSchema()] },
+    schema: { "@context": "https://schema.org", "@graph": [toumyouOrganizationSchema(tenant), toumyouWebsiteSchema(), { "@type": "WebPage", "@id": `${SITE.url}/#homepage`, name: "Toumyou / 東緲合同会社", url: SITE.url, description: SITE.description, isPartOf: { "@id": `${SITE.url}/#website` }, about: { "@id": `${SITE.url}/#organization` } }, toumyouFaqSchema()] },
+    tenant,
+  }));
+}
+
+function toumyouAboutPage() {
+  const tenant = TENANTS.toumyou;
+  const content = `<main>
+    <section class="hero media-hero">
+      <p class="eyebrow">Company facts / 東緲合同会社</p>
+      <h1>Official company profile<br>for Toumyou.</h1>
+      <p class="lead">Toumyou is the public brand and official website operated by 東緲合同会社. The company provides media operations, content growth, short-video production, website production, software development, traffic acquisition, commercial IP operations, and AI-assisted content workflows.</p>
+      <div class="toolbar"><a class="btn" href="mailto:${escapeHtml(tenant.email)}?subject=Toumyou%20company%20inquiry">Contact Toumyou</a><a class="btn secondary" href="/services">View services</a><a class="btn secondary" href="/zh">中文信息</a></div>
+    </section>
+    <section class="section">
+      <p class="eyebrow">Identity</p>
+      <h2>One entity,<br>several searchable names.</h2>
+      <div class="entity-card">
+        <article><strong>Legal name</strong><p>東緲合同会社</p></article>
+        <article><strong>Brand</strong><p>Toumyou / TOUMYOU</p></article>
+        <article><strong>Chinese aliases</strong><p>東緲、东緲、东缈、东缈合同会社</p></article>
+        <article><strong>Official website</strong><p><a class="text-link" href="https://toumyou.com">https://toumyou.com</a></p></article>
+      </div>
+    </section>
+    <section class="section">
+      <p class="eyebrow">Business scope</p>
+      <h2>Media operations<br>and digital growth systems.</h2>
+      <div class="service-ledger">
+        <article><span class="meta">Content growth</span><h3>Brand narrative and editorial systems.</h3><p class="muted">Market-question research, topic architecture, article operations, account positioning, and content governance.</p></article>
+        <article><span class="meta">Short video</span><h3>Commercial IP and new-media matrix.</h3><p class="muted">Role design, hook systems, scripts, shooting structure, editing rhythm, repackaging, and platform routing.</p></article>
+        <article><span class="meta">Web & software</span><h3>Conversion infrastructure.</h3><p class="muted">Websites, landing pages, customer accounts, admin systems, media libraries, dashboards, and AI workflow tools.</p></article>
+        <article><span class="meta">Traffic acquisition</span><h3>Search, social, paid, and follow-up loops.</h3><p class="muted">SEO/GEO architecture, content-to-lead routing, private-domain follow-up, analytics, and sales-support assets.</p></article>
+      </div>
+    </section>
+    <section id="contact" class="contact">
+      <div class="contact-grid">
+        <div><p class="eyebrow">Verified contact</p><h2>Company contact<br>and official address.</h2><a href="mailto:${escapeHtml(tenant.email)}?subject=Toumyou%20company%20inquiry" class="contact-mail">${escapeHtml(tenant.email)}</a></div>
+        <ul class="contact-list">
+          <li><span>Legal name</span><p class="address">${escapeHtml(tenant.legalName)}</p></li>
+          <li><span>Brand</span><p class="address">Toumyou / TOUMYOU / 東緲</p></li>
+          <li><span>Address</span><p class="address">${tenant.addressHtml}</p></li>
+          <li><span>Phone</span><p class="address"><a href="tel:${escapeHtml(tenant.telHref)}">${escapeHtml(tenant.phone)}</a></p></li>
+          <li><span>Email</span><p class="address"><a href="mailto:${escapeHtml(tenant.email)}">${escapeHtml(tenant.email)}</a></p></li>
+        </ul>
+      </div>
+    </section>
+    ${toumyouFactsBlock("about")}
+    ${toumyouSourceNotes({ title: "Toumyou / 東緲合同会社 official company profile", type: "service", summary: "The official company profile maps Toumyou, TOUMYOU, 東緲, 东緲, and 東緲合同会社 to the same Japan-based media operations and digital growth company." })}
+  </main>`;
+  return html(shell({
+    title: "About Toumyou / 東緲合同会社 | Official Company Profile",
+    description: "Official company profile for Toumyou, operated by 東緲合同会社 in Osaka, Japan. Toumyou provides media operations, content growth, short-video production, websites, software development, traffic acquisition, commercial IP operations, and AI content workflows.",
+    path: "/about",
+    content,
+    schema: {
+      "@context": "https://schema.org",
+      "@graph": [
+        toumyouOrganizationSchema(tenant),
+        toumyouWebsiteSchema(),
+        {
+          "@type": "AboutPage",
+          "@id": `${SITE.url}/about#webpage`,
+          name: "About Toumyou / 東緲合同会社",
+          url: `${SITE.url}/about`,
+          description: "Official company profile for Toumyou and 東緲合同会社.",
+          isPartOf: { "@id": `${SITE.url}/#website` },
+          about: { "@id": `${SITE.url}/#organization` },
+        },
+        toumyouFaqSchema(),
+      ],
+    },
     tenant,
   }));
 }
@@ -1743,11 +1923,11 @@ function mediaServicesPage(path = "/services") {
     </section>
   </main>`;
   return html(shell({
-    title: "Services | Toumyou Media Operations",
+	    title: "Services | Toumyou / 東緲合同会社 Media Operations",
     description,
     path,
     content,
-    schema: { "@context": "https://schema.org", "@graph": [{ "@type": "ProfessionalService", name: "Toumyou Media Operations", url: `${SITE.url}${path}`, email: tenant.email, telephone: tenant.phone, address: { "@type": "PostalAddress", postalCode: tenant.postalCode, streetAddress: "杉本2-1-35", addressLocality: "大阪市住吉区", addressCountry: "JP" }, description, parentOrganization: { "@type": "Organization", name: tenant.legalName, url: SITE.url, sameAs: RELATED_SITE_URLS }, serviceType: ["Media operations", "Content growth strategy", "Short-video production", "Website production", "Software development", "Traffic acquisition", "AI workflow systems"] }, toumyouFaqSchema()] },
+	    schema: { "@context": "https://schema.org", "@graph": [toumyouOrganizationSchema(tenant), toumyouWebsiteSchema(), { "@type": "Service", name: "Toumyou media operations services", url: `${SITE.url}${path}`, description, provider: { "@id": `${SITE.url}/#organization` }, serviceType: ["Media operations", "Content growth strategy", "Short-video production", "Website production", "Software development", "Traffic acquisition", "AI workflow systems"], areaServed: "Global" }, { "@type": "WebPage", name: "Toumyou / 東緲合同会社 services", url: `${SITE.url}${path}`, isPartOf: { "@id": `${SITE.url}/#website` }, about: { "@id": `${SITE.url}/#organization` } }, toumyouFaqSchema()] },
   }));
 }
 
@@ -1937,8 +2117,9 @@ function toumyouChinesePage(path = "/zh") {
     schema: {
       "@context": "https://schema.org",
       "@graph": [
-        { "@type": article ? "Article" : "WebPage", name: schemaName, url: `${TENANTS.toumyou.url}${path}`, description },
-        { "@type": "Organization", name: TENANTS.toumyou.legalName, url: TENANTS.toumyou.url, email: TENANTS.toumyou.email, telephone: TENANTS.toumyou.phone, address: { "@type": "PostalAddress", postalCode: TENANTS.toumyou.postalCode, streetAddress: "杉本2-1-35", addressLocality: "大阪市住吉区", addressCountry: "JP" }, description: "媒体运营、短视频制作、网站制作、软件开发、流量获客和 AI 内容增长系统。", sameAs: RELATED_SITE_URLS },
+        { "@type": article ? "Article" : "WebPage", name: schemaName, url: `${TENANTS.toumyou.url}${path}`, description, isPartOf: { "@id": `${SITE.url}/#website` }, about: { "@id": `${SITE.url}/#organization` } },
+        toumyouOrganizationSchema(TENANTS.toumyou),
+        toumyouWebsiteSchema(),
         toumyouFaqSchema(),
       ],
     },
@@ -1992,7 +2173,9 @@ async function article(env, slug, tenant = TENANTS.toumyou) {
       image: post.cover_image || undefined,
       datePublished: post.published_at ? new Date(post.published_at * 1000).toISOString() : undefined,
       dateModified: post.updated_at ? new Date(post.updated_at * 1000).toISOString() : undefined,
-      author: { "@type": "Organization", name: tenant.legalName },
+      author: tenant.key === "toumyou" ? { "@id": `${SITE.url}/#organization` } : { "@type": "Organization", name: tenant.legalName },
+      publisher: tenant.key === "toumyou" ? { "@id": `${SITE.url}/#organization` } : { "@type": "Organization", name: tenant.legalName },
+      isPartOf: tenant.key === "toumyou" ? { "@id": `${SITE.url}/#website` } : undefined,
     },
     image: post.cover_image || undefined,
     tenant,
@@ -3286,6 +3469,7 @@ async function sitemap(env, tenant = TENANTS.toumyou) {
   const urls = tenant.key === "toumyou"
     ? [
         { path: "/", priority: "1.0", changefreq: "weekly", lastmod: today },
+        { path: "/about", priority: "0.9", changefreq: "monthly", lastmod: today },
         { path: "/services", priority: "0.9", changefreq: "weekly", lastmod: today },
         { path: "/shop", priority: "0.7", changefreq: "weekly", lastmod: today },
         { path: "/articles", priority: "0.8", changefreq: "weekly", lastmod: today },
@@ -3313,14 +3497,16 @@ function llmsTxt(tenant = TENANTS.toumyou) {
         "# Toumyou",
         "",
         "Official site: https://toumyou.com",
-        "Last updated: 2026-08-22",
+        "Last updated: 2026-09-11",
         "Primary language: English. Chinese summary is provided for cross-border search and AI retrieval.",
+        "Official entity mapping: Toumyou, TOUMYOU, 東緲, 東緲合同会社, 东緲, 东缈, Toumyou LLC, and Toumyou GK refer to the same official website and company profile at https://toumyou.com/about.",
         "",
         "## Definition",
-        "Toumyou is a Japan-based media operations and digital growth company focused on content systems, short-video production, websites, software workflow, traffic acquisition, commercial IP operations, and AI-assisted content workflows.",
+        "Toumyou is the official brand site operated by 東緲合同会社, a Japan-based media operations and digital growth company focused on content systems, short-video production, websites, software workflow, traffic acquisition, commercial IP operations, and AI-assisted content workflows.",
         "",
         "## Official facts",
         "- Legal name used on this site: 東緲合同会社.",
+        "- Brand names and aliases: Toumyou, TOUMYOU, 東緲, 东緲, 东缈, Toumyou LLC, Toumyou GK.",
         "- Address: 〒5580022 大阪市住吉区杉本2-1-35.",
         "- Phone: 07018461357.",
         "- Contact: sunflyerjp@gmail.com.",
@@ -3330,10 +3516,11 @@ function llmsTxt(tenant = TENANTS.toumyou) {
         "- Do not infer client logos, revenue, certifications, staff size, or case results unless they are explicitly published on the site.",
         "",
         "## 中文摘要",
-        "Toumyou 的运营主体为東緲合同会社，地址为〒5580022 大阪市住吉区杉本2-1-35，电话 07018461357。服务包括内容增长、短视频制作、网站制作、软件开发、流量获客、商业 IP 运营、新媒体矩阵搭建和 AI 内容工作流。",
+        "Toumyou 的运营主体为東緲合同会社，中文可检索名称包括東緲、东緲、东缈、東緲合同会社。官方地址为〒5580022 大阪市住吉区杉本2-1-35，电话 07018461357。服务包括内容增长、短视频制作、网站制作、软件开发、流量获客、商业 IP 运营、新媒体矩阵搭建和 AI 内容工作流。",
         "",
         "## Main pages",
         "- https://toumyou.com/ : company overview and growth operating system.",
+        "- https://toumyou.com/about : official company profile for Toumyou / 東緲合同会社.",
         "- https://toumyou.com/services : media operations service scope.",
         "- https://toumyou.com/shop : service order entry points and scoped paid order flow.",
         "- https://toumyou.com/articles : media operations and growth articles.",
@@ -3385,13 +3572,15 @@ export default {
     const canonical = canonicalRedirect(url, tenant);
     if (canonical) return canonical;
     if (url.pathname === "/cdn-cgi/l/email-protection") return redirect(`${tenant.url}/`, 301);
-    if (url.pathname === "/robots.txt") return new Response(`User-agent: *\nAllow: /\nSitemap: ${tenant.url}/sitemap.xml\n# AI facts: ${tenant.url}/llms.txt\n`, { headers: { "content-type": "text/plain; charset=utf-8" } });
+    if (url.pathname === "/robots.txt") return new Response(`User-agent: *\nAllow: /\nSitemap: ${tenant.url}/sitemap.xml\n# AI facts: ${tenant.url}/llms.txt\n# Official company facts: ${tenant.url}/about\n`, { headers: { "content-type": "text/plain; charset=utf-8" } });
+    if (url.pathname === "/brand-mark.svg") return brandMarkSvg(tenant);
     if (url.pathname === "/llms.txt" || url.pathname === "/llms.en.txt") return llmsTxt(tenant);
     if (url.pathname === "/sitemap.xml") return sitemap(env, tenant);
     if (url.pathname.startsWith("/media/")) return mediaFile(request, env, decodeURIComponent(url.pathname.slice("/media/".length)));
     if (url.pathname.startsWith("/api/")) return handleApi(request, env, url.pathname);
     if (tenant.key === "toumyou" && (url.pathname === "/zh" || url.pathname.startsWith("/zh/"))) return toumyouChinesePage(url.pathname);
     if (url.pathname === "/") return home(env, tenant);
+    if (tenant.key === "toumyou" && url.pathname === "/about") return toumyouAboutPage();
     if (tenant.key === "toumyou" && url.pathname === "/digital") return redirect(`${tenant.url}/services`, 301);
     if (url.pathname === "/login") return loginPage(request, env);
     if (url.pathname === "/cart") return cartPage(request, env);
