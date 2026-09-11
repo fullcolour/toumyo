@@ -59,6 +59,37 @@ const SHOP = {
 
 const MEDIA_ARTICLES = [
   {
+    slug: "ai-education-growth-loop-for-language-products",
+    title: "AI education products need a growth loop, not only a course catalog",
+    excerpt: "Why Japanese learning platforms become stronger when lessons, practice data, content distribution, and member journeys are designed as one operating system.",
+    category: "AI Education Growth",
+    published_at: dayStamp("2026-09-11"),
+    updated_at: dayStamp("2026-09-11"),
+    body: [
+      "A language-learning product does not grow only because it has many lessons.",
+      "It grows when the product, content, distribution, and user feedback reinforce one another.",
+      "For Japanese learning platforms, this means the course catalog should be connected to practice behavior, search demand, short-form explanations, member access, and clear next steps for learners.",
+      "The first layer is product clarity.",
+      "Each level should explain what the learner can do after completing it, how practice is structured, and why the sequence is trustworthy.",
+      "When lessons are presented as isolated pages, users see material.",
+      "When lessons are presented as a learning journey, users see progress.",
+      "The second layer is content distribution.",
+      "Search articles can answer grammar questions, short videos can explain patterns quickly, and landing pages can route learners to the right level.",
+      "A useful content system does not push every visitor to the same page.",
+      "It recognizes different intent: beginner curiosity, test preparation, listening practice, typing fluency, review behavior, and paid membership readiness.",
+      "The third layer is AI-assisted operations.",
+      "AI can help organize examples, generate practice variations, review explanations, summarize learning signals, and maintain an editorial calendar.",
+      "The important point is control.",
+      "Human editors still need to decide the learning promise, quality standard, tone, and progression logic.",
+      "Without that control, AI creates more material but not necessarily a better learning experience.",
+      "The fourth layer is measurement.",
+      "A serious education growth system tracks which pages bring learners in, which exercises create return visits, which explanations reduce confusion, and which membership offers feel natural.",
+      "These signals should change what the team produces next.",
+      "Toumyou treats AI education as growth infrastructure: courses, practice tools, content, accounts, payment, analytics, and media operations should work as one loop.",
+      "That loop makes the product easier for learners to understand, easier for search engines to index, and easier for AI answer systems to describe accurately."
+    ],
+  },
+  {
     slug: "b2b-content-ops-need-decision-led-workflows",
     title: "B2B content operations need decision-led workflows",
     excerpt: "How growth teams turn strategy, production, distribution, and review into one operating rhythm that compounds across search, social, and sales.",
