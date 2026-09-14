@@ -2294,6 +2294,16 @@ function publicProduct(product = {}, tenant = TENANTS.toumyou) {
   return { ...product, ...TOUMYOU_SERVICE_PRODUCTS[0], id: product.id || TOUMYOU_SERVICE_PRODUCTS[0].id, slug: product.slug || TOUMYOU_SERVICE_PRODUCTS[0].slug };
 }
 
+async function checkoutProductFromId(env, tenant, productId) {
+  if (!productId) return null;
+  const stored = await getProduct(env, productId);
+  const fallback = tenant.key === "toumyou"
+    ? TOUMYOU_SERVICE_PRODUCTS.find((item) => item.id === productId || item.slug === productId)
+    : null;
+  const product = stored || fallback;
+  return product ? publicProduct(product, tenant) : null;
+}
+
 function productCard(product, env, tenant = TENANTS.toumyou) {
   product = publicProduct(product, tenant);
   const zh = tenant.lang === "zh-CN";
@@ -2936,11 +2946,10 @@ async function stripeCheckout(request, env) {
   const customer = await currentCustomer(request, env);
   const productId = body.product_id || body.productId;
   const requestedQuantity = Math.min(999, Math.max(1, Number.parseInt(body.quantity || "1", 10) || 1));
-  const product = await getProduct(env, productId);
+  const product = await checkoutProductFromId(env, tenant, productId);
   if (!product || product.status !== "published" || !product.allow_checkout || product.price_cents <= 0) {
     return json({ error: "Product is not available for checkout" }, { status: 400 });
   }
-  const checkoutProduct = publicProduct(product, tenant);
   const minQty = Math.max(1, Number.parseInt(product.moq || 1, 10) || 1);
   const inventory = Math.max(0, Number.parseInt(product.inventory || 0, 10) || 0);
   if (requestedQuantity < minQty) return json({ error: `Minimum order quantity is ${minQty}` }, { status: 400 });
@@ -2992,8 +3001,8 @@ async function stripeCheckout(request, env) {
   params.set("line_items[0][quantity]", String(quantity));
   params.set("line_items[0][price_data][currency]", String(product.currency || "USD").toLowerCase());
   params.set("line_items[0][price_data][unit_amount]", String(product.price_cents));
-  params.set("line_items[0][price_data][product_data][name]", checkoutProduct.name);
-  params.set("line_items[0][price_data][product_data][description]", checkoutProduct.excerpt || checkoutProduct.description || checkoutProduct.sku || checkoutProduct.slug);
+  params.set("line_items[0][price_data][product_data][name]", product.name);
+  params.set("line_items[0][price_data][product_data][description]", product.excerpt || product.description || product.sku || product.slug);
   if (product.image_url) params.set("line_items[0][price_data][product_data][images][0]", product.image_url);
   params.set("metadata[product_id]", product.id);
   params.set("metadata[product_slug]", product.slug);
@@ -3015,7 +3024,7 @@ async function stripeCheckout(request, env) {
   if (!response.ok || !data.url) return json({ error: "Stripe checkout failed", details: data.error?.message || "Unknown error" }, { status: 502 });
   if (env.DB) {
     await env.DB.prepare("INSERT INTO orders (id,stripe_session_id,product_id,product_slug,product_name,sku,quantity,amount_total,currency,payment_status,fulfillment_status,customer_id,customer_email,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
-      .bind(orderId, data.id || "", product.id, product.slug, checkoutProduct.name, product.sku || "", quantity, product.price_cents * quantity, product.currency, "checkout_created", "new", customer?.id || "", customer?.email || "", now, now).run()
+      .bind(orderId, data.id || "", product.id, product.slug, product.name, product.sku || "", quantity, product.price_cents * quantity, product.currency, "checkout_created", "new", customer?.id || "", customer?.email || "", now, now).run()
       .catch(() => {});
   }
   return Response.redirect(data.url, 303);
@@ -3421,7 +3430,7 @@ async function handleApi(request, env, pathname) {
     const customer = await currentCustomer(request, env);
     if (!customer) return Response.redirect(`${tenant.url}/login?next=/cart`, 303);
     const body = await readBody(request);
-    const product = await getProduct(env, body.product_id || body.productId);
+    const product = await checkoutProductFromId(env, tenant, body.product_id || body.productId);
     if (!product || product.status !== "published" || !product.allow_checkout || product.price_cents <= 0) return json({ error: "Product is not available for cart checkout" }, { status: 400 });
     await upsertProductSnapshot(env, product);
     const qty = Math.max(Math.max(1, Number(product.moq || 1)), Math.min(999, Number.parseInt(body.quantity || "1", 10) || 1));
