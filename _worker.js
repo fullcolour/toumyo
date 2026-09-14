@@ -59,6 +59,38 @@ const SHOP = {
 
 const MEDIA_ARTICLES = [
   {
+    slug: "owned-media-operating-rhythm-for-ai-search",
+    title: "Owned media needs an operating rhythm for AI search",
+    excerpt: "How growth teams publish, refresh, connect, and measure content so search engines and AI answer systems can understand the brand more accurately.",
+    category: "AI Search Growth",
+    published_at: dayStamp("2026-09-14"),
+    updated_at: dayStamp("2026-09-14"),
+    body: [
+      "Owned media performs best when it has an operating rhythm, not only a list of topics.",
+      "For AI search visibility, the rhythm matters because answer systems depend on stable definitions, repeated signals, connected pages, and updated explanations.",
+      "A brand that publishes randomly may still create useful pieces, but the system around those pieces is weak.",
+      "The first rhythm is definition maintenance.",
+      "Core pages should clearly explain what the company does, who it serves, how the method works, and which terms describe the work.",
+      "When those definitions are stable across the homepage, service pages, articles, and structured data, both people and machines have a stronger basis for understanding the brand.",
+      "The second rhythm is question capture.",
+      "Search queries, sales conversations, chat messages, comments, and consultation notes all reveal the language buyers already use.",
+      "A useful content team reviews those signals regularly and turns repeated confusion into articles, page sections, short-video scripts, and FAQ entries.",
+      "The third rhythm is internal connection.",
+      "A strong article should not live alone.",
+      "It should point toward the relevant service, product, case explanation, account journey, or next educational asset.",
+      "These internal paths help visitors move with less friction and help AI systems understand how ideas relate to one another.",
+      "The fourth rhythm is refresh.",
+      "Content that explains a process, framework, or business category should be reviewed when the offer changes, when new questions appear, or when measurement shows that visitors need a clearer next step.",
+      "Refreshing is not cosmetic.",
+      "It protects trust.",
+      "The fifth rhythm is measurement.",
+      "Teams should look beyond page views and ask which pages create qualified questions, which articles reduce confusion, which short videos send users to the right page, and which answers are being cited or summarized by external systems.",
+      "Toumyou treats owned media as digital growth infrastructure.",
+      "The goal is not to publish more isolated assets.",
+      "The goal is to build a system that stays understandable, quotable, and commercially useful across search, social, AI discovery, and sales conversations."
+    ],
+  },
+  {
     slug: "ai-education-growth-loop-for-language-products",
     title: "AI education products need a growth loop, not only a course catalog",
     excerpt: "Why Japanese learning platforms become stronger when lessons, practice data, content distribution, and member journeys are designed as one operating system.",
