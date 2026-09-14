@@ -2300,7 +2300,8 @@ async function checkoutProductFromId(env, tenant, productId) {
   const fallback = tenant.key === "toumyou"
     ? TOUMYOU_SERVICE_PRODUCTS.find((item) => item.id === productId || item.slug === productId)
     : null;
-  const product = stored || fallback;
+  const storedByFallbackSlug = !stored && fallback?.slug ? await getProduct(env, fallback.slug) : null;
+  const product = stored || storedByFallbackSlug || fallback;
   return product ? publicProduct(product, tenant) : null;
 }
 
@@ -2328,7 +2329,7 @@ function productCard(product, env, tenant = TENANTS.toumyou) {
       <a class="btn secondary" href="/shop/products/${escapeHtml(product.slug)}">${zh ? "查看详情" : "Details"}</a>
       ${
         canCheckout
-          ? `<form class="product-buy" method="post" action="/api/cart/add"><input type="hidden" name="product_id" value="${escapeHtml(product.id)}"><div class="qty-compact"><label>${zh ? "数量" : "Qty"}</label><input name="quantity" type="number" min="${escapeHtml(minQty)}" max="999" value="${escapeHtml(minQty)}"></div><button class="btn secondary" type="submit">${zh ? "加入购物车" : "Add to cart"}</button></form><form class="product-buy" method="post" action="/api/checkout"><input type="hidden" name="product_id" value="${escapeHtml(product.id)}"><div class="qty-compact"><label>${zh ? "数量" : "Qty"}</label><input name="quantity" type="number" min="${escapeHtml(minQty)}" max="999" value="${escapeHtml(minQty)}"></div><button class="btn buy" type="submit">${zh ? "立即购买" : "Buy now"}</button></form>`
+          ? `<form class="product-buy" method="post" action="/api/cart/add"><input type="hidden" name="product_id" value="${escapeHtml(product.slug || product.id)}"><div class="qty-compact"><label>${zh ? "数量" : "Qty"}</label><input name="quantity" type="number" min="${escapeHtml(minQty)}" max="999" value="${escapeHtml(minQty)}"></div><button class="btn secondary" type="submit">${zh ? "加入购物车" : "Add to cart"}</button></form><form class="product-buy" method="post" action="/api/checkout"><input type="hidden" name="product_id" value="${escapeHtml(product.slug || product.id)}"><div class="qty-compact"><label>${zh ? "数量" : "Qty"}</label><input name="quantity" type="number" min="${escapeHtml(minQty)}" max="999" value="${escapeHtml(minQty)}"></div><button class="btn buy" type="submit">${zh ? "立即购买" : "Buy now"}</button></form>`
           : `<a class="btn" href="mailto:${escapeHtml(tenant.email)}?subject=${encodeURIComponent(`${zh ? "紧固件询价" : "Media operations inquiry"}: ${product.name}`)}">${zh ? "发送询价" : "Start order"}</a>`
       }
     </div>
@@ -2523,7 +2524,7 @@ async function productPage(env, slug, tenant = TENANTS.toumyou) {
   <div class="toolbar">
     ${
       canCheckout
-        ? `<form class="product-buy" method="post" action="/api/cart/add"><input type="hidden" name="product_id" value="${escapeHtml(product.id)}"><div><label>${zh ? "数量" : "Quantity"}</label><input name="quantity" type="number" min="${escapeHtml(minQty)}" max="${escapeHtml(maxQty)}" value="${escapeHtml(minQty)}"></div><button class="btn secondary" type="submit">${zh ? "加入购物车" : "Add to cart"}</button><span class="muted">${zh ? "起订量" : "MOQ"} ${escapeHtml(minQty)}${product.inventory ? `, ${zh ? "当前最多" : "max"} ${escapeHtml(maxQty)}` : ""}</span></form><form class="product-buy" method="post" action="/api/checkout"><input type="hidden" name="product_id" value="${escapeHtml(product.id)}"><div><label>${zh ? "数量" : "Quantity"}</label><input name="quantity" type="number" min="${escapeHtml(minQty)}" max="${escapeHtml(maxQty)}" value="${escapeHtml(minQty)}"></div><button class="btn buy" type="submit">${zh ? "立即购买" : "Buy now"}</button></form>`
+        ? `<form class="product-buy" method="post" action="/api/cart/add"><input type="hidden" name="product_id" value="${escapeHtml(product.slug || product.id)}"><div><label>${zh ? "数量" : "Quantity"}</label><input name="quantity" type="number" min="${escapeHtml(minQty)}" max="${escapeHtml(maxQty)}" value="${escapeHtml(minQty)}"></div><button class="btn secondary" type="submit">${zh ? "加入购物车" : "Add to cart"}</button><span class="muted">${zh ? "起订量" : "MOQ"} ${escapeHtml(minQty)}${product.inventory ? `, ${zh ? "当前最多" : "max"} ${escapeHtml(maxQty)}` : ""}</span></form><form class="product-buy" method="post" action="/api/checkout"><input type="hidden" name="product_id" value="${escapeHtml(product.slug || product.id)}"><div><label>${zh ? "数量" : "Quantity"}</label><input name="quantity" type="number" min="${escapeHtml(minQty)}" max="${escapeHtml(maxQty)}" value="${escapeHtml(minQty)}"></div><button class="btn buy" type="submit">${zh ? "立即购买" : "Buy now"}</button></form>`
         : `<a class="btn" href="mailto:${escapeHtml(tenant.email)}?subject=${encodeURIComponent(`${zh ? "紧固件询价" : "Media operations order"}: ${product.name}`)}">${zh ? "发送询价" : "Start order"}</a>`
     }
     <a class="btn secondary" href="/shop">${zh ? "返回产品页" : "Back to shop"}</a>
@@ -2955,7 +2956,7 @@ async function stripeCheckout(request, env) {
   if (requestedQuantity < minQty) return json({ error: `Minimum order quantity is ${minQty}` }, { status: 400 });
   if (inventory > 0 && requestedQuantity > inventory) return json({ error: `Only ${inventory} units are available for immediate checkout` }, { status: 400 });
   const quantity = requestedQuantity;
-  await upsertProductSnapshot(env, product);
+  await upsertProductSnapshot(env, product).catch(() => {});
   await ensureCommerce(env);
   const orderId = crypto.randomUUID();
   const now = Math.floor(Date.now() / 1000);
@@ -3432,7 +3433,7 @@ async function handleApi(request, env, pathname) {
     const body = await readBody(request);
     const product = await checkoutProductFromId(env, tenant, body.product_id || body.productId);
     if (!product || product.status !== "published" || !product.allow_checkout || product.price_cents <= 0) return json({ error: "Product is not available for cart checkout" }, { status: 400 });
-    await upsertProductSnapshot(env, product);
+    await upsertProductSnapshot(env, product).catch(() => {});
     const qty = Math.max(Math.max(1, Number(product.moq || 1)), Math.min(999, Number.parseInt(body.quantity || "1", 10) || 1));
     const now = Math.floor(Date.now() / 1000);
     await ensureCommerce(env);
