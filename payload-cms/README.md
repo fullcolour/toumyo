@@ -1,6 +1,6 @@
 # Toumyou Payload CMS
 
-This is the planned Payload CMS backend for Toumyou/Ximiao content and product management.
+This is the planned Payload CMS backend for Toumyou content and product management.
 
 It is intentionally separate from the current storefront Worker:
 

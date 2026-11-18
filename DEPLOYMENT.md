@@ -1,18 +1,18 @@
 # Deployment notes
 
-This repository is intended to be connected to Cloudflare Pages.
+Production project: Cloudflare Pages `toumyou-studio` (domains `toumyou.com`, `toumyou-studio.pages.dev`).
 
-Cloudflare should deploy from the repository root. The root contains `_worker.js`, which Cloudflare Pages treats as the Pages Worker entry point.
+Publish only the worker, never the repository root (it contains docs and SQL):
 
-After connecting the repository, keep the existing production project settings aligned with:
+```sh
+mkdir -p /tmp/toumyou-dist && cp _worker.js /tmp/toumyou-dist/
+node --check /tmp/toumyou-dist/_worker.js
+# preview first
+npx wrangler pages deploy /tmp/toumyou-dist --project-name toumyou-studio --branch preview
+# then production
+npx wrangler pages deploy /tmp/toumyou-dist --project-name toumyou-studio --branch main
+```
 
-- Project name: `toumyou-studio`
-- Production branch: `main`
-- D1 binding name: `DB`
-- Public URL: `https://toumyou-studio.pages.dev`
+Preview deployments (`*.toumyou-studio.pages.dev`) render normally and send `X-Robots-Tag: noindex`; `toumyou-studio.pages.dev` itself redirects to `https://toumyou.com`.
 
-The current direct-upload production deployment was validated at:
-
-https://toumyou-studio.pages.dev
-
-When GitHub auto-deploy is connected, push changes to `main` to trigger new Cloudflare builds.
+The project is still linked to GitHub (`fullcolour/toumyo`, branch `main`), so pushing to `main` also triggers a build. Keep the repository and the direct upload in sync.

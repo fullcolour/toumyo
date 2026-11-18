@@ -1,34 +1,20 @@
 # Design
 
-<!-- impeccable:design-schema 1 -->
+## Visual system
 
-## Visual World
+Restrained, Apple-inspired light theme: `#f5f5f7` background, white cards with thin borders, `#1d1d1f` ink, `#0071e3` accent, large tight headlines.
 
-Toumyou uses a “growth command center” identity: editorial authority, analytics-room precision, and a restrained enterprise studio feel. The page should feel like a large digital operations company that can design narrative, produce media, build software, and operate traffic systems.
+## Multilingual typography
 
-## Surface Mode
+- Japanese and Chinese use system CJK fonts (Hiragino / Noto Sans JP / Yu Gothic; PingFang SC / Noto Sans SC / Microsoft YaHei), wider line height, and smaller headline sizes than English. Rules are scoped with `body.lang-ja` / `body.lang-zh`.
+- The language switcher is a segmented pill at the top right; on mobile it stays beside the logo and the navigation scrolls horizontally below.
 
-Persuade. First-time visitors should know within seconds that Toumyou sells media operations, content growth, short-video production, website production, software development, and traffic acquisition.
+## Page structure
 
-## Direction Contract
-
-- First viewport: a thesis about engineered attention and operating media like infrastructure.
-- Visitor path: positioning → operating system → service lines → articles/thinking → consultation.
-- Materials: pale operational surfaces, black ink, vivid blue accents, thin-rule editorial layouts, dense but legible system panels.
-- Motion: subtle command-center drift and button polish only; avoid noisy creator-economy effects.
-- Copy: confident, specific, strategic; no fabricated client claims.
-
-## Components
-
-- Large editorial headings with tight tracking.
-- System panels showing Growth OS, content engine, distribution matrix, conversion layer, and AI workflow.
-- Service cards organized by business outcome rather than generic agency categories.
-- Article cards used as thought leadership surfaces.
-- CTAs should say “Discuss growth system,” “Build the content engine,” or similar consultation language.
+Home: hero → services → process and stack → strengths → own products → articles → FAQ → inquiry form → contact.
 
 ## Anti-patterns
 
-- Do not use fastener, hardware, anchor, or procurement language on Toumyou public pages.
-- Toumyou `/shop` is allowed, but it should read as a clean Japanese files / paid digital-products area rather than a hardware storefront.
-- Do not present fake client logos, testimonials, or revenue numbers.
-- Avoid generic “digital agency” stock phrasing; the site should sound like an operator, not a brochure.
+- No fastener or hardware content.
+- No fake logos, testimonials, or metrics.
+- No mixed-language filler blocks; each language version should read as written for that reader.

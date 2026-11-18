@@ -38,7 +38,7 @@ export const Products: CollectionConfig = {
     {
       name: 'category',
       type: 'text',
-      defaultValue: 'Fasteners',
+      defaultValue: 'Service',
     },
     {
       name: 'material',

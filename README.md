@@ -1,63 +1,48 @@
-# Toumyou Media Operations
+# Toumyou (東緲合同会社)
 
-Cloudflare Pages Worker for the Toumyou and Ximiaokeji sites.
+Cloudflare Pages Worker for https://toumyou.com — the official site of 東緲合同会社, an Osaka-based IT company for website production, web apps and business systems, WeChat mini programs, UI/UX and brand design, and IT operations.
 
-The site is built as a Cloudflare Pages Worker in `_worker.js`. It includes:
+Everything (public site, customer account, cart, Stripe checkout, admin) lives in `_worker.js`.
 
-- `toumyou.com`: media operations, content growth, short-video production, website production, software development, traffic acquisition, and commercial IP growth
-- `ximiaokeji.com`: Chinese fastener and industrial accessory storefront
-- Toumyou keeps `/shop`, `/cart`, `/account`, `/login`, Stripe checkout, and the original test product link as a paid digital-product area named Japanese files
-- Ximiaokeji `/shop` fastener storefront and quote flow
-- Product admin at `/admin/products`
-- Product pages and Stripe Checkout handoff
-- Articles, products, orders, customers, and settings backed by Cloudflare D1
-- Image media library backed by Cloudflare R2 through `/admin/media`
-- `robots.txt` and `sitemap.xml` for search engine and AI crawler discovery
+## Languages
 
-## Cloudflare Pages build settings
+The public site is trilingual, Japanese by default:
 
-Use these settings when connecting this repository to Cloudflare Pages:
+| Language | Path prefix | Example |
+| --- | --- | --- |
+| Japanese (default) | none | `/services` |
+| Simplified Chinese | `/zh` | `/zh/services` |
+| English | `/en` | `/en/services` |
 
-- Framework preset: None
-- Build command: leave empty
-- Build output directory: `/`
-- Production branch: `main`
+- The language switcher sits at the top right of every page and links to the same page in the other language.
+- Every public page outputs `hreflang` alternates (plus `x-default` → Japanese); `sitemap.xml` lists all three versions.
+- Interface copy lives in `UI`; service, process, FAQ, product, and article copy each have `ja` / `zh` / `en` entries (`SERVICE_LINES`, `TOUMYOU_SERVICE_PRODUCTS[].i18n`, `SITE_ARTICLES[].i18n`, …). Add new copy to all three.
+- The chosen language is remembered in the `toumyou_lang` cookie so server redirects (login, cart, Stripe return URLs, logout) land in the right language.
+- Articles and products created in the admin are single-language; they appear in every language listing and their canonical URL is the Japanese path.
+
+## Public routes
+
+`/`, `/services`, `/about`, `/contact`, `/shop`, `/shop/products/:slug`, `/articles`, `/articles/:slug`, `/login`, `/account`, `/cart`, `/shop/success` — each also under `/zh` and `/en`.
+
+Admin (English UI, root only): `/admin`, `/admin/products`, `/admin/orders`, `/admin/customers`, `/admin/media`, `/admin/settings`, `/admin/support`.
+
+Retired URLs (old media-operations articles and service slugs, `/digital`) return 301 redirects.
 
 ## Runtime bindings
 
-Configure these in Cloudflare Pages project settings:
+- D1: `DB` (`toumyou_db`)
+- R2: `PRODUCT_MEDIA` (bucket `image`)
+- Secrets: `ADMIN_PASSWORD`, `ADMIN_SESSION_SECRET`, `CUSTOMER_SESSION_SECRET`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `STRIPE_SECRET_KEY` (or `STRIPE_RESTRICTED_KEY`), `STRIPE_WEBHOOK_SECRET`, `DISCORD_WEBHOOK_URL`
 
-- D1 binding: `DB`
-- R2 binding: `ASSETS`
-- Environment variable: `ADMIN_PASSWORD`
-- Environment variable: `ADMIN_SESSION_SECRET`
-- Optional shop variable: `MEDUSA_BACKEND_URL`
-- Optional shop variable: `MEDUSA_PUBLISHABLE_KEY`
-- Optional payment secret: `STRIPE_RESTRICTED_KEY` (preferred) or `STRIPE_SECRET_KEY`
+Do not commit secret values.
 
-Do not commit secret values to GitHub.
+## Shop
 
-## Public site direction
+- Built-in service orders are defined in `TOUMYOU_SERVICE_PRODUCTS`. The website and system diagnostic (`/shop/products/ewe`) can be bought online; the others start with a quote.
+- Products published in `/admin/products` also appear in the shop.
+- Stripe Checkout uses the visitor's language. Shipping options and address collection are only added for physical products (`weight_grams > 0`).
+- Inquiry forms post to `/api/quote`, are stored in the `inquiries` table, and are forwarded to Discord when configured.
 
-- Toumyou public pages should not use fastener, anchor, hardware, or procurement positioning.
-- Toumyou main navigation focuses on media operations and growth services; `/shop` remains available for Japanese files and paid digital products with the original cart and payment flow.
-- Toumyou articles include the built-in media-operations articles plus existing published D1 articles.
-- Toumyou sitemap includes `/`, `/services`, `/shop`, product URLs, `/articles`, the built-in media-operations articles, and existing published D1 articles.
-- Ximiaokeji keeps the fastener storefront, product catalog, cart, Stripe checkout, and quote flow.
+## Deploy
 
-## Ximiaokeji shop operations
-
-- Open `/admin/products` with the existing admin password.
-- Add products with name, SKU, category, material, size, price, inventory, images, and status.
-- Upload product images in `/admin/media`, then use the returned R2 media URLs as the main image and gallery image URLs.
-- Publish a product to show it on `/shop`.
-- Enable checkout per product only after Stripe is configured.
-- Use Stripe-hosted Checkout for card and wallet payments. Do not store card details in this project.
-
-## CMS direction
-
-Production now uses the lightweight Cloudflare-native CMS built into `_worker.js`: D1 for structured content and commerce records, R2 for media, and Stripe for payment. The experimental Payload CMS package is deferred because deploying Payload on Cloudflare Workers Free can exceed the Worker bundle-size limit. Keep using `/admin`, `/admin/products`, `/admin/media`, `/admin/orders`, `/admin/customers`, and `/admin/settings` for day-to-day operations.
-
-## Commerce direction
-
-See `SHOP_PLAN.md` for the deferred mature shop backend direction. Ximiaokeji remains the fastener storefront. Toumyou keeps a lighter commerce surface for Japanese files and paid digital products, preserving the original test link, cart, account, and Stripe payment flow.
+See `DEPLOYMENT.md`. Only the worker file is published.
