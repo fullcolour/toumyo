@@ -5570,13 +5570,22 @@ async function listProducts(env, { admin = false } = {}) {
     ? "SELECT * FROM products ORDER BY updated_at DESC"
     : "SELECT * FROM products WHERE lower(trim(status))='published' ORDER BY updated_at DESC";
   const result = await env.DB.prepare(sql).all();
-  return result.results || [];
+  const rows = result.results || [];
+  return admin ? rows : rows.filter((row) => !isToumyouOnlyProduct(row));
+}
+
+// Products that belong to toumyou.com (shared database) are hidden on ximiaokeji.com.
+function isToumyouOnlyProduct(product) {
+  if (!product) return false;
+  const slug = String(product.slug || "").toLowerCase();
+  return slug === "ewe" || /^service-/.test(String(product.id || "")) || /^(MEDIA|WEB)-/i.test(String(product.sku || "")) || /content growth audit/i.test(String(product.name || ""));
 }
 
 async function getProduct(env, slugOrId) {
   await ensureCommerce(env);
   if (!env.DB) return null;
-  return await env.DB.prepare("SELECT * FROM products WHERE slug=? OR id=?").bind(slugOrId, slugOrId).first();
+  const row = await env.DB.prepare("SELECT * FROM products WHERE slug=? OR id=?").bind(slugOrId, slugOrId).first();
+  return isToumyouOnlyProduct(row) ? null : row;
 }
 
 async function upsertProductSnapshot(env, product = {}) {
@@ -5765,7 +5774,7 @@ async function listCart(env, customerId) {
     FROM cart_items JOIN products ON products.id=cart_items.product_id
     WHERE cart_items.customer_id=?
     ORDER BY cart_items.updated_at DESC`).bind(customerId).all();
-  return result.results || [];
+  return (result.results || []).filter((row) => !isToumyouOnlyProduct(row));
 }
 
 async function listCustomerOrders(env, customer) {
